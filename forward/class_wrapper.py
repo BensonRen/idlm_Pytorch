@@ -10,6 +10,7 @@ import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
+from torch.optim import lr_scheduler
 
 # Libs
 import numpy as np
@@ -30,7 +31,8 @@ class Network(object):
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
         self.model = self.create_model()                        # The model itself
         self.loss = self.make_loss()                            # The loss function
-        self.optm = self.make_optimizer()                       # The optimizer
+        self.optm = None                                        # The optimizer: Initialized at train()
+        self.lr_scheduler = None                                # The lr scheduler: Initialized at train()
         self.train_loader = train_loader                        # The train data loader
         self.test_loader = test_loader                          # The test data loader
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
@@ -74,6 +76,16 @@ class Network(object):
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
 
+    def make_lr_scheduler(self):
+        """
+        Make the learning rate scheduler as instructed. More modes can be added to this, current supported ones:
+        1. ReduceLROnPlateau (decrease lr when validation error stops improving
+        :return:
+        """
+        return lr_scheduler.ReduceLROnPlateau(optimizer=self.optm, mode='min',
+                                              factor=self.flags.lr_decay_rate,
+                                              patience=10, verbose=True, threshold=1e-4)
+
     def save(self):
         """
         Saving the model to the current check point folder with name best_model.pt
@@ -98,6 +110,11 @@ class Network(object):
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
+
+        # Construct optimizer after the model moved to GPU
+        self.optm = self.make_optimizer()
+        self.lr_scheduler = self.make_lr_scheduler()
+
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
@@ -113,9 +130,12 @@ class Network(object):
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
 
+            # Calculate the avg loss of training
+            train_avg_loss = train_loss.data.numpy() / (j+1)
+
             if epoch % self.flags.eval_step:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                train_avg_loss = train_loss.data.numpy() / (j+1)
+                #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
 
                 # Set to Evaluation Mode
@@ -147,6 +167,9 @@ class Network(object):
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
                               (epoch, self.best_validation_loss))
                         return None
+
+            # Learning rate decay upon plateau
+            self.lr_scheduler.step(train_avg_loss)
 
     def evaluate(self, save_dir='data/'):
         self.load()

@@ -35,11 +35,14 @@ Function completed:
 2. Create a new repo for pytorch version
 3. comments added
 
+## 2019.11.25
+Fuction completed:
+1. Learning rate scheduler (Decay when training error is plateaued)
+
 
 ## To dos:
 0. Tune the model to Christian's accuracy (1.2e-3) using GPU
 1. Add the bounday loss module
-2. Learning rate scheduler function
-3. raw model saving issue
-4. Hyper swiping function transplant from tf version
+2. raw model saving issue
+3. Hyper swiping function transplant from tf version
 

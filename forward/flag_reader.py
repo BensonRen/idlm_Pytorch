@@ -23,7 +23,7 @@ def read_flag():
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
     parser.add_argument('--decay-step', default=DECAY_STEP, type=int,
                         help='decay learning rate at this number of steps')
-    parser.add_argument('--decay-rate', default=DECAY_RATE, type=float,
+    parser.add_argument('--lr-decay-rate', default=LR_DECAY_RATE, type=float,
                         help='decay learn rate by multiplying this factor')
     parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
     parser.add_argument('--data-dir', default=DATA_DIR, type=str, help='data directory')
