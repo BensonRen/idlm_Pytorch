@@ -9,7 +9,7 @@ import time
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
-from torchsummary import summary
+# from torchsummary import summary
 from torch.optim import lr_scheduler
 
 # Libs
@@ -131,7 +131,7 @@ class Network(object):
                 train_loss += loss                                  # Aggregate the loss
 
             # Calculate the avg loss of training
-            train_avg_loss = train_loss.data.numpy() / (j+1)
+            train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
 
             if epoch % self.flags.eval_step:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
@@ -151,7 +151,7 @@ class Network(object):
                     test_loss += loss                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.data.numpy() / (j+1)
+                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
                 self.log.add_scalar('Loss/test', test_avg_loss, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \

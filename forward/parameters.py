@@ -1,11 +1,11 @@
-LINEAR = [8, 50, 500, 1000, 1000, 1000, 500, 250]
+LINEAR = [8, 50, 500, 1000, 1000, 1000, 500, 150]
 CONV_OUT_CHANNEL = [4, 4, 4]
 CONV_KERNEL_SIZE = [8, 5, 5]
 CONV_STRIDE = [2, 1, 1]
 REG_SCALE = 5e-8
 BATCH_SIZE = 128
 EVAL_STEP = 1000
-TRAIN_STEP = 10
+TRAIN_STEP = 200
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5

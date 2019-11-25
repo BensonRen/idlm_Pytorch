@@ -21,8 +21,8 @@ def read_flag():
     parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
-    parser.add_argument('--decay-step', default=DECAY_STEP, type=int,
-                        help='decay learning rate at this number of steps')
+#    parser.add_argument('--decay-step', default=DECAY_STEP, type=int,
+#                        help='decay learning rate at this number of steps')
     parser.add_argument('--lr-decay-rate', default=LR_DECAY_RATE, type=float,
                         help='decay learn rate by multiplying this factor')
     parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
