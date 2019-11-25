@@ -1,6 +1,5 @@
-# Pytorch implementation of the whole repo
-
-This is a transition starting from Nov. 20, 2019
+# Forward Model
+## This is the forward model created by Chrisitan Nadell and Bohao Huang. This is merely an pytorch implementation of the same model (with some parameters slightly different)
 
 # Developer Log:
 
@@ -29,8 +28,18 @@ Function completed/Bug Fixed:
 Function completed:
 1. Forward inference module
 
+## 2019.11.24
+
+Function completed:
+1. GPU training on Tesla
+2. Create a new repo for pytorch version
+3. comments added
+
 
 ## To dos:
-
+0. Tune the model to Christian's accuracy (1.2e-3) using GPU
 1. Add the bounday loss module
-2. Train on GPU environment for forward model
+2. Learning rate scheduler function
+3. raw model saving issue
+4. Hyper swiping function transplant from tf version
+
