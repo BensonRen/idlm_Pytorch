@@ -36,13 +36,17 @@ Function completed:
 3. comments added
 
 ## 2019.11.25
-Fuction completed:
+Function completed:
 1. Learning rate scheduler (Decay when training error is plateaued)
 
+## 2019.11.30
+Function completed:
+1. Pickle the flag object for further retrieval in flag_reader module
+2. Comments furnished
 
 ## To dos:
 0. Tune the model to Christian's accuracy (1.2e-3) using GPU
-1. Add the bounday loss module
+1. Evaluation module
 2. raw model saving issue
 3. Hyper swiping function transplant from tf version
 

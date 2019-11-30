@@ -1,8 +1,17 @@
+"""
+This file serves to hold helper functions that is related to the "Flag" object which contains
+all the parameters during training and inference
+"""
+# Built-in
 import argparse
-import pprint
-import pandas as pd
+import pickle
+import os
+# Libs
+
+# Own module
 from parameters import *
 
+# Torch
 
 def read_flag():
     """
@@ -38,6 +47,28 @@ def read_flag():
     # flagsVar = vars(flags)
     return flags
 
+
+def save_flags(flags, save_file="flags.obj"):
+    """
+    This function serialize the flag object and save it for further retrieval during inference time
+    :param flags: The flags object to save
+    :param save_file: The place to save the file
+    :return: None
+    """
+    with open(save_file,'w') as f:          # Open the file
+        pickle.dump(flags, f)               # Use Pickle to serialize the object
+
+
+def load_flags(save_dir, save_file="flags.obj"):
+    """
+    This function inflate the pickled object to flags object for reuse, typically during evaluation (after training)
+    :param save_dir: The place where the obj is located
+    :param save_file: The file name of the file, usually flags.obj
+    :return: flags
+    """
+    with open(os.path.join(save_dir, save_file), 'r') as f:     # Open the file
+        flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
+    return flags
 
 def write_flags_and_BVE(flags, best_validation_loss):
     """

@@ -1,3 +1,6 @@
+"""
+This file serves as a training interface for training the network
+"""
 # Built in
 import glob
 import os
@@ -12,18 +15,28 @@ from class_wrapper import Network
 from model_maker import Forward
 
 
-def put_param_into_folder():  # Put the parameter.txt into folder and take the best validation error as well
-    list_of_files = glob.glob('models/*')
-    latest_file = max(list_of_files, key=os.path.getctime)
-    print("The parameter.txt is put into folder " + latest_file)
+def put_param_into_folder():
+    """
+    Put the parameter.txt into the folder and the flags.obj as well
+    :return: None
+    """
+    list_of_files = glob.glob('models/*')                           # Use glob to list the dirs in models/
+    latest_file = max(list_of_files, key=os.path.getctime)          # Find the latest file (just trained)
+    print("The parameter.txt is put into folder " + latest_file)    # Print to confirm the filename
+    # Move the parameters.txt
     destination = os.path.join(latest_file, "parameters.txt");
     shutil.move("parameters.txt", destination)
+    # Move the flags.obj
+    destination = os.path.join(latest_file, "flags.obj");
+    shutil.move("flags.obj", destination)
 
 
-if __name__ == '__main__':
-    # Read the parameters to be set
-    flags = flag_reader.read_flag()
-
+def training_from_flag(flag):
+    """
+    Training interface. 1. Read data 2. initialize network 3. train network 4. record flags
+    :param flag: The training flags read from command line or parameter.py
+    :return: None
+    """
     # Get the data
     train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
                                                       y_range=flags.y_range,
@@ -45,9 +58,17 @@ if __name__ == '__main__':
     print("Start training now...")
     ntwk.train()
 
-    # Do the house keeping, write the parameters and put into folder
+    # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct
     flag_reader.write_flags_and_BVE(flags, ntwk.best_validation_loss)
     put_param_into_folder()
-    
+
+
+if __name__ == '__main__':
+    # Read the parameters to be set
+    flags = flag_reader.read_flag()
+
+    # Call the train from flag function
+    training_from_flag(flags)
+
 
 

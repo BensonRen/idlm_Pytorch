@@ -58,7 +58,7 @@ class Network(object):
         if logit is None:
             return None
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss of the
-        BDY_loss = 0 # Implemenation later
+        BDY_loss = 0 # Implemenation later in the backward propagation model
         return MSE_loss + BDY_loss
 
     def make_optimizer(self):
