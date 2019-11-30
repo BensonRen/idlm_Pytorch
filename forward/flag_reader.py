@@ -55,7 +55,7 @@ def save_flags(flags, save_file="flags.obj"):
     :param save_file: The place to save the file
     :return: None
     """
-    with open(save_file,'w') as f:          # Open the file
+    with open(save_file, 'wb') as f:          # Open the file
         pickle.dump(flags, f)               # Use Pickle to serialize the object
 
 
@@ -66,7 +66,7 @@ def load_flags(save_dir, save_file="flags.obj"):
     :param save_file: The file name of the file, usually flags.obj
     :return: flags
     """
-    with open(os.path.join(save_dir, save_file), 'r') as f:     # Open the file
+    with open(os.path.join(save_dir, save_file), 'rb') as f:     # Open the file
         flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
     return flags
 

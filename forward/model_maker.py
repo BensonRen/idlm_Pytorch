@@ -61,7 +61,8 @@ class Forward(nn.Module):
             out = conv(out)
 
         # Final touch, because the input is normalized to [-1,1]
-        S = tanh(out.squeeze())
-        #print(S.size())
+        # S = tanh(out.squeeze())
+        # print(S.size())
+        S = out.squeeze()
         return S
 
