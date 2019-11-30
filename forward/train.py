@@ -46,7 +46,7 @@ def training_from_flag(flag):
                                                       data_dir=flags.data_dir)
     # Reset the boundary is normalized
     if flags.normalize_input:
-        flags.geoboundary = [-1, 1, -1, 1]
+        flags.geoboundary_norm = [-1, 1, -1, 1]
 
     print("Boundary is set at:", flags.geoboundary)
     print("Making network now")

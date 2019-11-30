@@ -41,6 +41,7 @@ def read_flag():
     parser.add_argument('--stop_threshold', default=STOP_THRESHOLD, type=float,
                         help='The threshold below which training should stop')
     parser.add_argument('--optim', default=OPTIM, type=str, help='the type of optimizer that you want to use')
+    parser.add_argument('--eval-model', default=EVAL_MODEL, type=str, help='the folder name of the model that you want to evaluate')
     parser.add_argument('--geoboundary', default=GEOBOUNDARY, type=tuple, help='the boundary of the geometric data')
     flags = parser.parse_args()  # This is for command line version of the code
     # flags = parser.parse_args(args = [])#This is for jupyter notebook version of the code
@@ -55,7 +56,7 @@ def save_flags(flags, save_file="flags.obj"):
     :param save_file: The place to save the file
     :return: None
     """
-    with open(save_file,'w') as f:          # Open the file
+    with open(save_file,'wb') as f:          # Open the file
         pickle.dump(flags, f)               # Use Pickle to serialize the object
 
 
@@ -66,7 +67,7 @@ def load_flags(save_dir, save_file="flags.obj"):
     :param save_file: The file name of the file, usually flags.obj
     :return: flags
     """
-    with open(os.path.join(save_dir, save_file), 'r') as f:     # Open the file
+    with open(os.path.join(save_dir, save_file), 'rb') as f:     # Open the file
         flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
     return flags
 
