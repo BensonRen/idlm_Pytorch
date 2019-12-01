@@ -27,6 +27,7 @@ class Network(object):
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
+            print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
         self.model = self.create_model()                        # The model itself
@@ -100,7 +101,7 @@ class Network(object):
         :return:
         """
         #self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model.load(torch.load(os.path.join(self.ckpt_dir, 'best_model.pt')))
+        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
 
     def train(self):
         """
@@ -172,7 +173,10 @@ class Network(object):
             self.lr_scheduler.step(train_avg_loss)
 
     def evaluate(self, save_dir='data/'):
-        self.load()
+        self.load()                             # load the model as constructed
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model.cuda()
         self.model.eval()                       # Evaluation mode
 
         # Get the file names
@@ -182,12 +186,14 @@ class Network(object):
         #Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))  # For pure forward model, there is no Xpred
 
         # Open those files to append
-        with open(Xtruth_file,'a') as fxt,open(Ytruth_file, 'a') as fyt, open(Ypred_file,'a') as fyp:
+        with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt, open(Ypred_file, 'a') as fyp:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
+                if cuda:
+                    geometry = geometry.cuda()
+                    spectra = spectra.cuda()
                 logits = self.model(geometry)
-                np.savetxt(fxt, geometry.numpy(), fmt='%.3f')
-                np.savetxt(fyt, spectra.numpy(), fmt='%.3f')
-                np.savetxt(fyp, logits.numpy(), fmt='%.3f')
-
-
+                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
+        return

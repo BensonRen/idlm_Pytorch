@@ -57,7 +57,6 @@ def save_flags(flags, save_file="flags.obj"):
     :return: None
     """
     with open(save_file,'wb') as f:          # Open the file
-    with open(save_file, 'wb') as f:          # Open the file
         pickle.dump(flags, f)               # Use Pickle to serialize the object
 
 

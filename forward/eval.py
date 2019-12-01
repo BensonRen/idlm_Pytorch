@@ -22,6 +22,7 @@ def evaluate_from_model(model_dir):
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
     flags = flag_reader.load_flags(os.path.join("models", model_dir))
+    flags.eval_model = model_dir                    # Reset the eval mode
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
@@ -33,16 +34,18 @@ def evaluate_from_model(model_dir):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Forward, flags, train_loader, test_loader)
+    ntwk = Network(Forward, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")
     ntwk.evaluate()
 
+
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
-    flags = flag_reader.read_flag()
+    useless_flags = flag_reader.read_flag()
 
+    print(useless_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(flags.eval_model)
+    evaluate_from_model(useless_flags.eval_model)
 

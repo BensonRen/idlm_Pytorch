@@ -214,7 +214,7 @@ def read_data( x_range, y_range, geoboundary,  batch_size=128,
     num_data_points = len(ftrTrain)
     #train_length = int(.8 * num_data_points)
 
-    print('generating TF dataset')
+    print('generating torch dataset')
     assert np.shape(ftrTrain)[0] == np.shape(lblTrain)[0]
     assert np.shape(ftrTest)[0] == np.shape(lblTest)[0]
 
