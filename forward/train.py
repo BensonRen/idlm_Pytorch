@@ -31,7 +31,7 @@ def put_param_into_folder():
     shutil.move("flags.obj", destination)
 
 
-def training_from_flag(flag):
+def training_from_flag(flags):
     """
     Training interface. 1. Read data 2. initialize network 3. train network 4. record flags
     :param flag: The training flags read from command line or parameter.py

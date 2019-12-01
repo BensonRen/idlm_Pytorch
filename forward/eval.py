@@ -40,6 +40,8 @@ def evaluate_from_model(model_dir):
     print("Start eval now:")
     ntwk.evaluate()
 
+    print("Evaluation finished")
+
 
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used

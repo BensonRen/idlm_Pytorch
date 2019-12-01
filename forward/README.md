@@ -44,9 +44,14 @@ Function completed:
 1. Pickle the flag object for further retrieval in flag_reader module
 2. Comments furnished
 
+## 2019.12.01
+Function completed:
+1. Raw model saving issue solved using torch
+2. Evaluation part finished
+3. Evaluation tested on GPU
+
 ## To dos:
-0. Tune the model to Christian's accuracy (1.2e-3) using GPU
-1. Evaluation module
-2. raw model saving issue
-3. Hyper swiping function transplant from tf version
+
+1. Hyper swiping function transplant from tf version
+2. Tune the model to Christian's accuracy (1.2e-3) using GPU
 

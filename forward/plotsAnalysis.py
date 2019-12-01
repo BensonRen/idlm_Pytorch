@@ -66,13 +66,13 @@ def RetrieveFeaturePredictionNMse(model_name):
     :param model_name: the name of the model
     return Xtruth, Xpred, Ytruth, Ypred
     """
-    ##Retrieve the prediction and truth and prediction first
+    # Retrieve the prediction and truth and prediction first
     feature_file = os.path.join('data', 'test_Xtruth_{}.csv'.format(model_name))
     pred_file = os.path.join('data', 'test_Ypred_{}.csv'.format(model_name))
     truth_file = os.path.join('data', 'test_Ytruth_{}.csv'.format(model_name))
     feat_file = os.path.join('data', 'test_Xpred_{}.csv'.format(model_name))
 
-    #Getting the files from file name
+    # Getting the files from file name
     Xtruth = pd.read_csv(feature_file,header=None, delimiter=' ')
     Xpred = pd.read_csv(feat_file,header=None, delimiter=' ')
     Ytruth = pd.read_csv(truth_file,header=None, delimiter=' ')
