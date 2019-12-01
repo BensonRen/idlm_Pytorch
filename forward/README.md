@@ -49,9 +49,9 @@ Function completed:
 1. Raw model saving issue solved using torch
 2. Evaluation part finished
 3. Evaluation tested on GPU
+4. Hyper swiping module finished and tested
 
 ## To dos:
+1. Tune the model to Christian's accuracy (1.2e-3) using GPU
 
-1. Hyper swiping function transplant from tf version
-2. Tune the model to Christian's accuracy (1.2e-3) using GPU
 
