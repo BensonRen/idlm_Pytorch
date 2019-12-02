@@ -76,7 +76,9 @@ class Forward(nn.Module):
 
     def lorentz_layer(self, S):
         """
-        Lorentzian oscillator function @Omar please fill this in
+        Lorentzian oscillator function takes the input tensor S, and uses the elements in S
+        as parameters for a series of Lorentz oscillators, in groups of 3. Currently uses LO
+        model to calculate and return transmission tensor T to compare to simulations.
         :param S: The previous Spectra output of the model if not using Lorentzian modeule
         :return:
         """
