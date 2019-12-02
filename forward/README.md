@@ -51,6 +51,12 @@ Function completed:
 3. Evaluation tested on GPU
 4. Hyper swiping module finished and tested
 
+## 2019.12.02
+Function Added:
+1. Omar added lorentzian module to model maker
+2. Option created for training with lorentz or not, controlled by flag.use_lorentz
+3. Omar code debugged with type error (torch.pow only works for tensors)
+
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU
 
