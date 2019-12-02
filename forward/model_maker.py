@@ -3,17 +3,20 @@ This is the module where the model is defined. It uses the nn.Module as backbone
 """
 # Own modules
 
-#Built in
-
+# Built in
+import math
 # Libs
 
 # Pytorch module
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import tanh
+import torch
+
 class Forward(nn.Module):
     def __init__(self, flags):
         super(Forward, self).__init__()
+        # Set up whether this uses a Lorentzian oscillator, this is a boolean value
+        self.use_lorentz = flags.use_lorentz
 
         # Linear Layer and Batch_norm Layer definitions here
         self.linears = nn.ModuleList([])
@@ -64,5 +67,66 @@ class Forward(nn.Module):
         # S = tanh(out.squeeze())
         # print(S.size())
         S = out.squeeze()
+
+        # If use lorentzian layer, pass this output to the lorentzian layer
+        if self.use_lorentz:
+            S = self.lorentz_layer(S)
+
         return S
 
+    def lorentz_layer(self, S):
+        """
+        Lorentzian oscillator function @Omar please fill this in
+        :param S: The previous Spectra output of the model if not using Lorentzian modeule
+        :return:
+        """
+
+        T = torch.zeros([S.size(0), S.size(1)], dtype=torch.float32)
+
+        # For each examples in the batch
+        for i in range(S.size(0)):
+            print("i = ", i)
+
+            # For the 300 dimension output
+            for j in range(S.size(1)):
+                # print("j = ", j)
+
+                # For each of the 100 Lorentzian oscillators
+                for k in range(0, S.size(1), 3):
+                    w = 0.8 + j / S.size(1)
+                    wp = S[i, k]
+                    w0 = S[i, k + 1]
+                    g = S[i, k + 2]
+
+                    # e1 = (wp ** 2) * (w0 ** 2 - w ** 2) / ((w0 ** 2 - w ** 2) ** 2 + (w ** 2) * (g ** 2))
+                    # e2 = (wp ** 2) * (w * g) / ((w0 ** 2 - w ** 2) ** 2 + (w ** 2) * (g ** 2))
+                    #
+                    # n = (0.5 * (e1 ** 2 + e2 ** 2) ** 0.5 + 0.5 * e1) ** 0.5
+                    # k = (0.5 * (e1 ** 2 + e2 ** 2) ** 0.5 - 0.5 * e1) ** 0.5
+                    #
+                    # dT = (4 * n) / ((n + 1) ** 2 + k ** 2)
+
+                    """
+                    Ben's debugging code, keep it here before this function runs smoothly
+                    print("w0 type", type(w0))
+                    print("wp type", type(wp))
+                    print("w type", type(w))
+                    print("g type", type(g))
+                    """
+
+                    sub1 = torch.add(torch.pow(w0, 2), - math.pow(w, 2))
+                    num1 = torch.mul(torch.pow(wp, 2), sub1)
+                    num2 = torch.mul(torch.pow(wp, 2), torch.mul(w, g))
+                    denom = torch.add(torch.pow(sub1, 2),
+                                      torch.mul(math.pow(w, 2), torch.pow(g, 2)))
+                    e1 = torch.div(num1, denom)
+                    e2 = torch.div(num2, denom)
+
+                    n = torch.sqrt(torch.add(0.5 * torch.add(torch.pow(e1, 2), torch.pow(e2, 2)), 0.5 * e1))
+                    sub2 = torch.add(0.5 * torch.add(torch.pow(e1, 2), torch.pow(e2, 2)), -0.5 * e1)
+                    k = torch.sqrt(sub2)
+
+                    dT = torch.div(4 * n, torch.add(torch.pow(torch.add(n, 1), 2), math.pow(k, 2)))
+                    T.data[i, j] += dT.data
+
+        return T
