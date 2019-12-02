@@ -196,4 +196,4 @@ class Network(object):
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
-        return
+        return Ypred_file, Ytruth_file

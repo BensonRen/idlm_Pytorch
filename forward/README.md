@@ -56,6 +56,7 @@ Function Added:
 1. Omar added lorentzian module to model maker
 2. Option created for training with lorentz or not, controlled by flag.use_lorentz
 3. Omar code debugged with type error (torch.pow only works for tensors)
+4. Plotting of the MSE loss distribution at the end of evaluation
 
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU

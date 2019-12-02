@@ -92,7 +92,7 @@ def write_flags_and_BVE(flags, best_validation_loss):
     # Convert the dictionary into pandas data frame which is easier to handle with and write read
     print(flags_dict_copy)
     with open('parameters.txt','w') as f:
-        print(flags_dict_copy, file=f)
+        print(flags_dict_copy, file = f )
     # Pickle the obj
     save_flags(flags)
 
