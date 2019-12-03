@@ -83,7 +83,7 @@ class Forward(nn.Module):
         :return:
         """
 
-        T = torch.zeros([S.size(0), S.size(1)], dtype=torch.float32)
+        T = torch.zeros([S.size(0), S.size(1)], dtype=torch.float32, requires_grad=True)
 
         # For each examples in the batch
         for i in range(S.size(0)):
