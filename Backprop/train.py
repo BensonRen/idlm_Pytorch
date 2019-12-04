@@ -12,7 +12,7 @@ import shutil
 import flag_reader
 import data_reader
 from class_wrapper import Network
-from model_maker import Forward
+from model_maker import Backprop
 
 
 def put_param_into_folder():
@@ -52,7 +52,7 @@ def training_from_flag(flags):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Forward, flags, train_loader, test_loader)
+    ntwk = Network(Backprop, flags, train_loader, test_loader)
 
     # Training process
     print("Start training now...")

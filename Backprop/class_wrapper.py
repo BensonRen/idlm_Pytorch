@@ -31,13 +31,40 @@ class Network(object):
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
         self.model = self.create_model()                        # The model itself
-        self.loss = self.make_loss()                            # The loss function
-        self.optm = None                                        # The optimizer: Initialized at train()
-        self.lr_scheduler = None                                # The lr scheduler: Initialized at train()
+        self.loss, self.MSE_loss, self.Boundary_loss = self.make_loss()     # The loss function
+        self.optm = None                                        # The optimizer: Initialized at train() due to GPU
+        self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
+        self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
         self.train_loader = train_loader                        # The train data loader
         self.test_loader = test_loader                          # The test data loader
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
+        self.geometry_eval = self.initialize_geometry_eval()    # Initialize the Geometry initial value
+
+    def make_optimizer_eval(self):
+        """
+        The function to make the optimizer during evaluation time.
+        The difference between optm is that it does not have regularization and it only optmize the self.geometr_eval tensor
+        :return: the optimizer_eval
+        """
+        if self.flags.optim == 'Adam':
+            op = torch.optim.Adam(self.geometry_eval, lr=self.flags.lr)
+        elif self.flags.optim == 'RMSprop':
+            op = torch.optim.RMSprop(self.geometry_eval, lr=self.flags.lr)
+        elif self.flags.optim == 'SGD':
+            op = torch.optim.SGD(self.geometry_eval, lr=self.flags.lr)
+        else:
+            raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
+        return op
+
+    def initialize_geometry_eval(self):
+        """
+        Initialize the geometry eval tensor during the object construction
+        :return:
+        """
+        geo_init_np = np.random.normal(0, 0.2, [self.flags.batch_size, self.flags.linear[0]])
+        geo_init = torch.tensor(geo_init_np)
+        return geo_init
 
     def create_model(self):
         """
@@ -45,7 +72,7 @@ class Network(object):
         :return: the created nn module
         """
         model = self.model_fn(self.flags)
-        #summary(model, input_size=(128, 8))
+        # summary(model, input_size=(128, 8))
         print(model)
         return model
 
@@ -54,13 +81,17 @@ class Network(object):
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
         :param logit: The output of the network
+        :param labels: The ground truth labels
         :return: the total loss
         """
         if logit is None:
             return None
-        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss of the
-        BDY_loss = 0 # Implemenation later in the backward propagation model
-        return MSE_loss + BDY_loss
+        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+
+        # Boundary loss of the geometry_eval to be less than 1
+        BDY_loss = torch.max(torch.abs(self.geometry_eval) - 1, 0)
+
+        return MSE_loss + BDY_loss, MSE_loss, BDY_loss
 
     def make_optimizer(self):
         """
@@ -77,13 +108,13 @@ class Network(object):
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
 
-    def make_lr_scheduler(self):
+    def make_lr_scheduler(self, optm):
         """
         Make the learning rate scheduler as instructed. More modes can be added to this, current supported ones:
         1. ReduceLROnPlateau (decrease lr when validation error stops improving
         :return:
         """
-        return lr_scheduler.ReduceLROnPlateau(optimizer=self.optm, mode='min',
+        return lr_scheduler.ReduceLROnPlateau(optimizer=optm, mode='min',
                                               factor=self.flags.lr_decay_rate,
                                               patience=10, verbose=True, threshold=1e-4)
 
@@ -92,7 +123,7 @@ class Network(object):
         Saving the model to the current check point folder with name best_model.pt
         :return: None
         """
-        #torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
+        # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
         torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
 
     def load(self):
@@ -100,7 +131,7 @@ class Network(object):
         Loading the model from the check point folder with name best_model.pt
         :return:
         """
-        #self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
+        # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
         self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
 
     def train(self):
@@ -114,11 +145,12 @@ class Network(object):
 
         # Construct optimizer after the model moved to GPU
         self.optm = self.make_optimizer()
-        self.lr_scheduler = self.make_lr_scheduler()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm)
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
+            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
@@ -128,18 +160,19 @@ class Network(object):
                 logit = self.model(geometry)                        # Get the output
                 # print("logit type:", logit.dtype)
                 # print("spectra type:", spectra.dtype)
-                loss = self.make_loss(logit, spectra)              # Get the loss tensor
-                loss.backward()                                # Calculate the backward gradients
+                loss = self.make_loss(logit, spectra)               # Get the loss tensor
+                loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
+                # boundary_loss += self.Boundary_loss                 # Aggregate the BDY loss
 
-            # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
-
-            if epoch % self.flags.eval_step:                        # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
+                # Calculate the avg loss of training
+                train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+                # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
                 # Record the training loss to the tensorboard
-                #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()

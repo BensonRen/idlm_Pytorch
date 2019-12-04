@@ -37,6 +37,9 @@ def training_from_flag(flags):
     :param flag: The training flags read from command line or parameter.py
     :return: None
     """
+    if flags.use_cpu_only:
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
     # Get the data
     train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
                                                       y_range=flags.y_range,

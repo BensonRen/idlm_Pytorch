@@ -71,7 +71,7 @@ class Backprop(nn.Module):
         out = G                                                         # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
-            #print(out.size())
+            # print(out.size())
             out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
 
         # If use lorentzian layer, pass this output to the lorentzian layer

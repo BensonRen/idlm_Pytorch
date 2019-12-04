@@ -40,7 +40,11 @@ class Forward(nn.Module):
             w_numpy = np.arange(0.8, 1.5, self.num_spec_point)
 
             # Create the tensor from numpy array
-            self.w = torch.tensor(w_numpy)
+            cuda = True if torch.cuda.is_available() else False
+            if cuda:
+                self.w = torch.tensor(w_numpy).cuda()
+            else:
+                self.w = torch.tensor(w_numpy)
 
         # Conv Layer definitions here
         self.convs = nn.ModuleList([])
