@@ -130,6 +130,7 @@ class Network(object):
                 # print("spectra type:", spectra.dtype)
                 loss = self.make_loss(logit, spectra)              # Get the loss tensor
                 loss.backward()                                # Calculate the backward gradients
+                torch.nn.utils.clip_grad_value_(self.model.parameters(), 10)
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
 

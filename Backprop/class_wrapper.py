@@ -14,7 +14,7 @@ from torch.optim import lr_scheduler
 
 # Libs
 import numpy as np
-
+from math import inf
 # Own module
 
 
@@ -31,7 +31,7 @@ class Network(object):
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
         self.model = self.create_model()                        # The model itself
-        self.loss, self.MSE_loss, self.Boundary_loss = self.make_loss()     # The loss function
+        self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
         self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
@@ -89,9 +89,10 @@ class Network(object):
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
 
         # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.max(torch.abs(self.geometry_eval) - 1, 0)
-
-        return MSE_loss + BDY_loss, MSE_loss, BDY_loss
+        BDY_loss = torch.clamp(torch.abs(self.geometry_eval) - 1, [0, inf])
+        self.MSE_loss = MSE_loss
+        self.Boundary_loss = BDY_loss
+        return torch.add(MSE_loss, BDY_loss)
 
     def make_optimizer(self):
         """
@@ -212,23 +213,57 @@ class Network(object):
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
-        self.model.eval()                       # Evaluation mode
+        # Construct optimizer after the model moved to GPU
+        self.optm_eval = self.make_optimizer_eval()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
+
+        # Set to evaluation mode for batch_norm layers
+        self.model.eval()
 
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(self.saved_model))
-        #Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))  # For pure forward model, there is no Xpred
+        Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))
 
         # Open those files to append
-        with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt, open(Ypred_file, 'a') as fyp:
+        with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
+                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
                 if cuda:
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
-                logits = self.model(geometry)
+                # Initialize the geometry first
+                self.initialize_geometry_eval()
+                Xpred, Ypred = self.evaluate_one(spectra)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fyp, Ypred, fmt='%.3f')
+                np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
+
+    def evaluate_one(self, target_spectra):
+        # expand the target spectra to eval batch size
+        target_spectra_expand = target_spectra.expand([-1, self.flags.eval_batch_size])
+        # Start backprop
+        for i in range(self.flags.back_prop_epoch):
+            logit = self.model(self.geometry_eval)                      # Get the output
+            loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
+            loss.backward(self.geometry_eval)                           # Calculate the Gradient
+            self.optm_eval.step()                                       # Move one step the optimizer
+
+            # check periodically to stop and print stuff
+            if i % self.flags.verb_step == 0:
+                print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
+                if loss.data < self.flags.stop_threshold:                       # Check if stop
+                    print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
+                    break
+
+        # Get the best performing one
+        best_estimate_index = np.argmin(loss.cpu().data.numpy())
+        Xpred_best = self.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
+        Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
+
+        return Xpred_best, Ypred_best
+

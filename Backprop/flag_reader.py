@@ -19,6 +19,7 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument('--use-cpu-only', type=bool, default=USE_CPU_ONLY, help='The boolean flag that indicate use CPU only')
     parser.add_argument('--use-lorentz', type=bool, default=USE_LORENTZ, help='The boolean flag that indicate whether we use lorentz oscillator')
     parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units')
     parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv')
@@ -28,6 +29,7 @@ def read_flag():
     parser.add_argument('--x-range', type=list, default=X_RANGE, help='columns of input parameters')
     parser.add_argument('--y-range', type=list, default=Y_RANGE, help='columns of output parameters')
     parser.add_argument('--batch-size', default=BATCH_SIZE, type=int, help='batch size (100)')
+    parser.add_argument('--bp-batch-size', default=BACK_PROP_BATCH_SIZE, type=int, help='The Batch size for back propagation')
     parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
