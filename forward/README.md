@@ -58,6 +58,10 @@ Function Added:
 3. Omar code debugged with type error (torch.pow only works for tensors)
 4. Plotting of the MSE loss distribution at the end of evaluation
 
+## 2019.12.03
+Function Added:
+1. Parallelizing Omar's Lorentz oscillator, code finished but NAN Error now
+
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU
 

@@ -3,9 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="00575d1a-297f-4886-8b04-1e64e70c979a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/class_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/class_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/eval.py" beforeDir="false" afterPath="$PROJECT_DIR$/eval.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flag_reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/flag_reader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/parameters.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +43,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.eval">
+  <component name="RunManager" selected="Python.train">
     <configuration name="eval" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="forward" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -56,6 +57,48 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/eval.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="model_maker" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="forward" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/model_maker.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="parameters" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="forward" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/parameters.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -110,9 +153,13 @@
       <item itemvalue="Python.train" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.eval" />
+      <item itemvalue="Python.model_maker" />
+      <item itemvalue="Python.parameters" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.parameters" />
+        <item itemvalue="Python.model_maker" />
         <item itemvalue="Python.eval" />
         <item itemvalue="Python.test" />
       </list>
@@ -157,7 +204,14 @@
       <option name="project" value="LOCAL" />
       <updated>1575318079052</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Evaluation module updated with the the plotting the MSE loss at the end of evaluation. Tested and bug fixed.">
+      <created>1575321681546</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1575321681546</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,6 +230,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Pass to Tesla working env" />
     <MESSAGE value="README updated with Omar's code debugged. Option added for training with or without the lorentz oscillators" />
-    <option name="LAST_COMMIT_MESSAGE" value="README updated with Omar's code debugged. Option added for training with or without the lorentz oscillators" />
+    <MESSAGE value="Evaluation module updated with the the plotting the MSE loss at the end of evaluation. Tested and bug fixed." />
+    <option name="LAST_COMMIT_MESSAGE" value="Evaluation module updated with the the plotting the MSE loss at the end of evaluation. Tested and bug fixed." />
   </component>
 </project>

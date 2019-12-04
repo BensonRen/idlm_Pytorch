@@ -126,6 +126,8 @@ class Network(object):
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
                 logit = self.model(geometry)                        # Get the output
+                # print("logit type:", logit.dtype)
+                # print("spectra type:", spectra.dtype)
                 loss = self.make_loss(logit, spectra)              # Get the loss tensor
                 loss.backward()                                # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
