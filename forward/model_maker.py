@@ -46,18 +46,6 @@ class Forward(nn.Module):
             else:
                 self.w = torch.tensor(w_numpy)
 
-            """
-            Testing tensors that check where did the gradient chain broke down
-            """
-            self.c1 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c2 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c3 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c4 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c5 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c6 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-            self.c7 = torch.ones([flags.batch_size, 50, 300], requires_grad=True)
-
-
         # Conv Layer definitions here
         self.convs = nn.ModuleList([])
         in_channel = 1                                                  # Initialize the in_channel number
@@ -88,11 +76,15 @@ class Forward(nn.Module):
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             #print(out.size())
-            out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
-
+            if ind < len(self.linears) - 1:
+                out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            else:
+                out = bn(fc(out))
 
         # If use lorentzian layer, pass this output to the lorentzian layer
         if self.use_lorentz:
+            out = torch.sigmoid(out)
+
             # Get the out into (batch_size, num_lorentz, 3)
             out = out.view([-1, int(out.size(1)/3), 3])
 
@@ -103,27 +95,16 @@ class Forward(nn.Module):
             #print("W0 size:", w0.size())
 
             # Expand them to the make the parallelism, (batch_size, #Lor, #spec_point)
-
             w0 = w0.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             wp = wp.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             g  = g.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             w_expand = self.w.expand_as(g)
-
             """
             Testing code
-            """
             #print("c1 size", self.c1.size())
             #print("w0 size", w0.size())
-            w0 = add(w0, self.c1)
-            wp = add(wp, self.c2)
-            g  = add(g, self.c3)
-            w_expand = add(w_expand, self.c4)
-
-            """
             End of testing module
             """
-
-
             # Get the powers first
             w02 = pow(w0, 2)
             wp2 = pow(wp, 2)
@@ -147,13 +128,9 @@ class Forward(nn.Module):
             k2 = pow(k, 2)
 
             T = div(4*n, add(n_12, k2))
-
             #print("Your T is:", T)
-
             # Last step, sum up except for the 0th dimension of batch_size
             T = torch.sum(T, 1).float()
-            #print("Now your T is:", T)
-
             #print("Type of T is:", T.dtype)
             return T
 
