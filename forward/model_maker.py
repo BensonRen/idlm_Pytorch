@@ -92,7 +92,6 @@ class Forward(nn.Module):
             w0 = out[:, :, 0].unsqueeze(2)
             wp = out[:, :, 1].unsqueeze(2)
             g  = out[:, :, 2].unsqueeze(2)
-            #print("W0 size:", w0.size())
 
             # Expand them to the make the parallelism, (batch_size, #Lor, #spec_point)
             w0 = w0.expand(out.size(0), self.num_lorentz, self.num_spec_point)
@@ -128,24 +127,20 @@ class Forward(nn.Module):
             k2 = pow(k, 2)
 
             T = div(4*n, add(n_12, k2))
-            #print("Your T is:", T)
             # Last step, sum up except for the 0th dimension of batch_size
             T = torch.sum(T, 1).float()
-            #print("Type of T is:", T.dtype)
             return T
 
         # The normal mode to train without Lorentz
         out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
         # For the conv part
         for ind, conv in enumerate(self.convs):
-            #print(out.size())
             out = conv(out)
 
         # Final touch, because the input is normalized to [-1,1]
         # S = tanh(out.squeeze())
         # print(S.size())
         S = out.squeeze()
-        print("Type of R is:", type(S))
         return S
 
     def lorentz_layer(self, S):

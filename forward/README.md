@@ -61,7 +61,13 @@ Function Added:
 ## 2019.12.03
 Function Added:
 1. Parallelizing Omar's Lorentz oscillator, code finished but NAN Error now
-2. NAN error bug fixed with adding sigmoid activation function
+
+## 2019.12.04
+Function added:
+1. NAN error bug fixed with adding sigmoid activation function
+
+## 2019.12.05
+Updated with parameter.py formatting with comments
 
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU

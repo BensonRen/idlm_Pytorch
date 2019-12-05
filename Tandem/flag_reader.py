@@ -21,10 +21,18 @@ def read_flag():
     parser = argparse.ArgumentParser()
     parser.add_argument('--use-cpu-only', type=bool, default=USE_CPU_ONLY, help='The boolean flag that indicate use CPU only')
     parser.add_argument('--use-lorentz', type=bool, default=USE_LORENTZ, help='The boolean flag that indicate whether we use lorentz oscillator')
-    parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units')
-    parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv')
-    parser.add_argument('--conv-kernel-size', type=list, default=CONV_KERNEL_SIZE, help='The kernel size of your 1d conv')
-    parser.add_argument('--conv-stride', type=list, default=CONV_STRIDE, help='The strides of your 1d conv')
+
+    # Forward model architecture hyper parameters
+    parser.add_argument('--linear-f', type=list, default=LINEAR_F, help='The fc layers units for forward model')
+    parser.add_argument('--conv-out-channel-f', type=list, default=CONV_OUT_CHANNEL_F, help='The output channel of your 1d conv for forward model')
+    parser.add_argument('--conv-kernel-size-f', type=list, default=CONV_KERNEL_SIZE_F, help='The kernel size of your 1d conv for forward model')
+    parser.add_argument('--conv-stride-f', type=list, default=CONV_STRIDE_F, help='The strides of your 1d conv fro forward model')
+    # Backward model architecture hyper parameters
+    parser.add_argument('--linear-b', type=list, default=LINEAR_B, help='The fc layers units for forward model')
+    parser.add_argument('--conv-out-channel-b', type=list, default=CONV_OUT_CHANNEL_B, help='The output channel of your 1d conv for forward model')
+    parser.add_argument('--conv-kernel-size-b', type=list, default=CONV_KERNEL_SIZE_B, help='The kernel size of your 1d conv for forward model')
+    parser.add_argument('--conv-stride-b', type=list, default=CONV_STRIDE_B, help='The strides of your 1d conv fro forward model')
+
     parser.add_argument('--reg-scale', type=float, default=REG_SCALE, help='#scale for regularization of dense layers')
     parser.add_argument('--x-range', type=list, default=X_RANGE, help='columns of input parameters')
     parser.add_argument('--y-range', type=list, default=Y_RANGE, help='columns of output parameters')

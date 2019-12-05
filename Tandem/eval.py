@@ -8,7 +8,7 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import Backprop
+from model_maker import Tandem
 import data_reader
 
 # Libs
@@ -38,11 +38,11 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
     plt.hist(mse, bins=100)
     plt.xlabel('Mean Squared Error')
     plt.ylabel('cnt')
-    plt.suptitle('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
+    plt.suptitle('Tandem (Avg MSE={:.4e})'.format(np.mean(mse)))
     plt.savefig(os.path.join(os.path.abspath(''), 'data',
-                             'Backprop_{}.png'.format(flags.eval_model)))
+                             'Tandem_{}.png'.format(flags.eval_model)))
     plt.show()
-    print('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
+    print('Tandem (Avg MSE={:.4e})'.format(np.mean(mse)))
 
 def evaluate_from_model(model_dir):
     """
@@ -66,7 +66,7 @@ def evaluate_from_model(model_dir):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Backprop, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(Tandem, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")
