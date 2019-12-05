@@ -29,9 +29,10 @@ def read_flag():
     parser.add_argument('--x-range', type=list, default=X_RANGE, help='columns of input parameters')
     parser.add_argument('--y-range', type=list, default=Y_RANGE, help='columns of output parameters')
     parser.add_argument('--batch-size', default=BATCH_SIZE, type=int, help='batch size (100)')
-    parser.add_argument('--bp-batch-size', default=BACK_PROP_BATCH_SIZE, type=int, help='The Batch size for back propagation')
+    parser.add_argument('--eval-batch-size', default=EVAL_BATCH_SIZE, type=int, help='The Batch size for back propagation')
     parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
+    parser.add_argument('--verb-step', default=VERB_STEP, type=int, help='# steps to print and check best performance')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
 #    parser.add_argument('--decay-step', default=DECAY_STEP, type=int,
 #                        help='decay learning rate at this number of steps')

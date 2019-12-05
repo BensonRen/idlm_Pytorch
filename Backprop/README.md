@@ -9,9 +9,10 @@
 ## 2019.12.04
 Function completed:
 1. Copied from forward model
-
+2. Boundary loss (New feature during evaluation mode)
+3. Evaluation parameters to train
+4. Initialize the geometry parameters
+5. CPU version tested
+6. Bug fixed with non decreasing evaluation loss 
 
 # To-do list
-1. Boundary loss (New feature during evaluation mode)
-2. Evaluation parameters to train
-3. Initialize the geometry parameters

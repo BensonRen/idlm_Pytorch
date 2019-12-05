@@ -8,8 +8,9 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import Forward
+from model_maker import Backprop
 import data_reader
+
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -65,7 +66,7 @@ def evaluate_from_model(model_dir):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Forward, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(Backprop, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")

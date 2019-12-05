@@ -39,7 +39,6 @@ class Network(object):
         self.test_loader = test_loader                          # The test data loader
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
-        self.geometry_eval = self.initialize_geometry_eval()    # Initialize the Geometry initial value
 
     def make_optimizer_eval(self):
         """
@@ -48,23 +47,14 @@ class Network(object):
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.geometry_eval, lr=self.flags.lr)
+            op = torch.optim.Adam([self.model.geometry_eval], lr=self.flags.lr)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.geometry_eval, lr=self.flags.lr)
+            op = torch.optim.RMSprop([self.model.geometry_eval], lr=self.flags.lr)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.geometry_eval, lr=self.flags.lr)
+            op = torch.optim.SGD([self.model.geometry_eval], lr=self.flags.lr)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
-
-    def initialize_geometry_eval(self):
-        """
-        Initialize the geometry eval tensor during the object construction
-        :return:
-        """
-        geo_init_np = np.random.normal(0, 0.2, [self.flags.batch_size, self.flags.linear[0]])
-        geo_init = torch.tensor(geo_init_np)
-        return geo_init
 
     def create_model(self):
         """
@@ -89,7 +79,7 @@ class Network(object):
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
 
         # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.clamp(torch.abs(self.geometry_eval) - 1, [0, inf])
+        BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
@@ -159,18 +149,17 @@ class Network(object):
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
                 logit = self.model(geometry)                        # Get the output
-                # print("logit type:", logit.dtype)
-                # print("spectra type:", spectra.dtype)
                 loss = self.make_loss(logit, spectra)               # Get the loss tensor
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
                 # boundary_loss += self.Boundary_loss                 # Aggregate the BDY loss
 
+            # Calculate the avg loss of training
+            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
+
             if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
-                # Calculate the avg loss of training
-                train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
-                # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
                 # Record the training loss to the tensorboard
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
                 # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
@@ -213,12 +202,14 @@ class Network(object):
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
-        # Construct optimizer after the model moved to GPU
-        self.optm_eval = self.make_optimizer_eval()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
 
         # Set to evaluation mode for batch_norm layers
         self.model.eval()
+        self.model.bp = True
+
+        # Construct optimizer after the model moved to GPU
+        self.optm_eval = self.make_optimizer_eval()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
 
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
@@ -235,7 +226,9 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                self.initialize_geometry_eval()
+                self.model.randomize_geometry_eval()
+                self.optm_eval = self.make_optimizer_eval()
+                self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
                 Xpred, Ypred = self.evaluate_one(spectra)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
@@ -245,12 +238,12 @@ class Network(object):
 
     def evaluate_one(self, target_spectra):
         # expand the target spectra to eval batch size
-        target_spectra_expand = target_spectra.expand([-1, self.flags.eval_batch_size])
+        target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
         # Start backprop
-        for i in range(self.flags.back_prop_epoch):
-            logit = self.model(self.geometry_eval)                      # Get the output
+        for i in range(self.flags.eval_step):
+            logit = self.model(self.model.geometry_eval)                      # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
-            loss.backward(self.geometry_eval)                           # Calculate the Gradient
+            loss.backward()                           # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
 
             # check periodically to stop and print stuff
@@ -262,7 +255,7 @@ class Network(object):
 
         # Get the best performing one
         best_estimate_index = np.argmin(loss.cpu().data.numpy())
-        Xpred_best = self.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
+        Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
         Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
 
         return Xpred_best, Ypred_best
