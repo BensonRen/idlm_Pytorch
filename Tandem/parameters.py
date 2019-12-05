@@ -2,7 +2,6 @@
 Hyper-parameters of the Tandem model
 """
 # Model Architecture parameters
-USE_LORENTZ = True
 LINEAR_F = [8, 50, 500, 1000, 1000, 1000, 500, 150]
 CONV_OUT_CHANNEL_F = [4, 4, 4]
 CONV_KERNEL_SIZE_F = [8, 5, 5]

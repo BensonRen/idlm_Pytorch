@@ -15,4 +15,6 @@ Function completed:
 5. CPU version tested
 6. Bug fixed with non decreasing evaluation loss 
 
+## 2019.12.05
+1. Parameter.py commented and segmented
 # To-do list

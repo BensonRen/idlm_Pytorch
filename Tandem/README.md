@@ -8,7 +8,7 @@
 
 ## 2019.12.05
 Function completed:
-
+1. parameter.py and flag_reader commented
 
 # To-do list
 1. Get one more module for Backward model
