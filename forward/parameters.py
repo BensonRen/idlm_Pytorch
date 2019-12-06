@@ -2,7 +2,7 @@
 Parameter file for specifying the running parameters for forward model
 """
 # Model Architectural Parameters
-USE_LORENTZ = False
+USE_LORENTZ = True
 LINEAR = [8, 50, 500, 1000, 1000, 1000, 500, 150]
 CONV_OUT_CHANNEL = [4, 4, 4]
 CONV_KERNEL_SIZE = [8, 5, 5]

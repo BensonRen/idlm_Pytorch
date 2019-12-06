@@ -18,19 +18,22 @@ from torch import pow, add, mul, div, sqrt
 class Tandem(nn.Module):
     def __init__(self, flags):
         super(Tandem, self).__init__()
+        """
+        This part is the forward model layers definition:
+        """
         # Linear Layer and Batch_norm Layer definitions here
         self.linears_f = nn.ModuleList([])
         self.bn_linears_f = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
+        for ind, fc_num in enumerate(flags.linear_f[0:-1]):               # Excluding the last one as we need intervals
             self.linears_f.append(nn.Linear(fc_num, flags.linear[ind + 1]))
             self.bn_linears_f.append(nn.BatchNorm1d(flags.linear[ind + 1]))
 
         # Conv Layer definitions here
         self.convs_f = nn.ModuleList([])
         in_channel = 1                                                  # Initialize the in_channel number
-        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel,
-                                                                     flags.conv_kernel_size,
-                                                                     flags.conv_stride)):
+        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_f,
+                                                                     flags.conv_kernel_size_f,
+                                                                     flags.conv_stride_f)):
             if stride == 2:     # We want to double the number
                 pad = int(kernel_size/2 - 1)
             elif stride == 1:   # We want to keep the number unchanged
@@ -44,7 +47,25 @@ class Tandem(nn.Module):
         # Get the channel number down
         self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
-    def forward(self, G):
+        """
+        This part if the backward model layers definition:
+        """
+        # Linear Layer and Batch_norm Layer definitions here
+        self.linears_b = nn.ModuleList([])
+        self.bn_linears_b = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_b.append(nn.Linear(fc_num, flags.linear_b[ind + 1]))
+            self.bn_linears_b.append(nn.BatchNorm1d(flags.linear_b[ind + 1]))
+
+        # Conv Layer definitions here
+        self.convs_b = nn.ModuleList([])
+        in_channel = 1                                                  # Initialize the in_channel number
+        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_g,
+                                                                     flags.conv_kernel_size_g,
+                                                                     flags.conv_stride_g)):
+            self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
+                                          stride=stride, padding=pad))
+    def forward_model(self, G):
         """
         The forward function which defines how the network is connected
         :param G: The input geometry (Since this is a forward network)
@@ -65,3 +86,20 @@ class Tandem(nn.Module):
         S = out.squeeze()
         return S
 
+    def backward_model(self, S):
+        """
+        The backward function defines how the backward network is connected
+        :param S: The 300-d input spectrum
+        :return: G: The 8-d geometry
+        """
+        out = S.unsqueeze(1)
+        # For the Conv Layers
+        for ind, conv in enumerate(self.convs_b):
+            out = conv(out)
+
+        out = out.squeeze()
+        # For the linear part
+        for ind, (fc, bn) in enumerate(zip(self.linears_b, self.bn_linears_b)):
+            out = F.relu(bn(fc(out)))
+        G = out
+        return G
