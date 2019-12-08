@@ -46,7 +46,8 @@ class Tandem(nn.Module):
             in_channel = out_channel # Update the out_channel
         # Get the channel number down
         self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-
+        # Define forward module for separate training
+        self.forward_modules = [self.linears_f, self.bn_linears_f, self.convs_f]
         """
         This part if the backward model layers definition:
         """
@@ -63,8 +64,17 @@ class Tandem(nn.Module):
         for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_g,
                                                                      flags.conv_kernel_size_g,
                                                                      flags.conv_stride_g)):
+            if stride == 2:     # We want to double the number
+                pad = int(kernel_size/2 - 1)
+            elif stride == 1:   # We want to keep the number unchanged
+                pad = int((kernel_size - 1)/2)
+            else:
+                Exception("Now only support stride = 1 or 2, contact Ben")
             self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                           stride=stride, padding=pad))
+        # Define forward module for separate training
+        self.backward_modules = [self.linears_b, self.bn_linears_b, self.convs_b]
+
     def forward_model(self, G):
         """
         The forward function which defines how the network is connected
@@ -81,7 +91,6 @@ class Tandem(nn.Module):
         out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
         # For the conv part
         for ind, conv in enumerate(self.convs_f):
-            #print(out.size())
             out = conv(out)
         S = out.squeeze()
         return S
@@ -103,3 +112,33 @@ class Tandem(nn.Module):
             out = F.relu(bn(fc(out)))
         G = out
         return G
+
+    def forward(self, G_in=None, S_in=None, forward_model=False):
+        """
+        The forward function of the whole model. 2 modes supported for forward module training and full model training
+        :param G_in: The input Geometery for forward training
+        :param S_in: The input Spectra for full model training
+        :param forward_model: Boolean flag for whether only use forward model training or not
+        :return:
+        """
+
+        """
+        # Checking some invariant at testing
+        if forward_model:
+            assert (G_in is not None and S_in is None), \
+                "Forward_model training, G_in can not be None and S_in should be None"
+        else:
+            assert (G_in is None and S_in is not None), \
+                "Full model training, S_in can not be None and G_in should be None"
+        """
+
+        if forward_model:
+            G_out = G_in
+            S_out = forward_model(G_in)
+        else:
+            G_out = backward_model(S_in)
+            S_out = forward_model(G_out)
+        return G_out, S_out
+
+
+
