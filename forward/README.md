@@ -69,6 +69,11 @@ Function added:
 ## 2019.12.05
 Updated with parameter.py formatting with comments
 
+## 2019.12.09
+Function Added:
+1. Intermediate plotting function output to tensorboard for training debugging. (Yet to test on GPU machine)
+
+
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU
 

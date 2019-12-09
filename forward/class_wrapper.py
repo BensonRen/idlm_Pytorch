@@ -16,7 +16,7 @@ from torch.optim import lr_scheduler
 import numpy as np
 
 # Own module
-
+import plotAnalysis
 
 class Network(object):
     def __init__(self, model_fn, flags, train_loader, test_loader,
@@ -141,6 +141,9 @@ class Network(object):
                 # Record the training loss to the tensorboard
                 #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                f = plotAnalysis.compare_spectra(Ypred=logit[1,:].cpu().data.numpy(),
+                                                 Ytruth=spectra[1,:].cpu().data.numpy())
+                self.log.add_figure(tag='reconstruction plot', figure=f, global_step=epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()

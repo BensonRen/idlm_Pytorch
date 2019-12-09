@@ -7,15 +7,39 @@ import pandas as pd
 import evaluate
 import seaborn as sns; sns.set()
 import get_pred_truth_file
-from sklearn.neighbors import NearestNeighbors
-from pandas.plotting import table
+# from sklearn.neighbors import NearestNeighbors
+# from pandas.plotting import table
 from scipy.spatial import distance_matrix
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
+def compare_spectra(Ypred, Ytruth, title=None, figsize=[15,5]):
+    """
+    Function to plot the comparison for predicted spectra and truth spectra
+    :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
+    :param Ytruth:  Truth spectra, this should be a list of number of dimension 300, numpy
+    :param title: The title of the plot, usually it comes with the time
+    :param figsize: The figure size of the plot
+    :return: The identifier of the figure
+    """
+    # Make the frequency into real frequency in THz
+    fre_low = 0.86
+    fre_high = 1.5
+    frequency = fre_low + (fre_high - fre_low)/len(Ytruth[0, :]) * np.arange(300)
+    f = plt.figure(figsize=figsize)
+    plt.plot(frequency, Ypred, label='Pred')
+    plt.plot(frequency, Ytruth, label='Truth')
+    plt.legend()
+    plt.ylim([0,1])
+    plt.xlim([fre_low, fre_high])
+    plt.xlabel("Frequency (THz)")
+    plt.ylabel("Transmittance")
+    if title is not None:
+        plt.title(title)
+    return f
 
 def InferenceAccuracyExamplePlot(model_name, save_name, title, sample_num=10,  fig_size=(15,5), random_seed=1,
-                                 target_region=[0,300 ]):
+                                 target_region=[0,300], draw_query_points=True):
     """
     The function to plot the Inference accuracy and compare with FFDS algorithm.
     It takes the Ypred and Ytruth file as input and plot the first <sample_num> of spectras.
@@ -48,7 +72,8 @@ def InferenceAccuracyExamplePlot(model_name, save_name, title, sample_num=10,  f
         # Start the plotting
         f = plt.figure(figsize=fig_size)
         plt.title(title)
-        plt.scatter(frequency[targets], Ytruth[i,targets], label='S*')
+        if (draw_query_points):
+            plt.scatter(frequency[targets], Ytruth[i,targets], label='S*')
         plt.plot(frequency, Ytruth[i,:], label='FFDS')
         plt.plot(frequency, Ypred[i,:], label='Candidate')
         plt.legend()
