@@ -144,8 +144,18 @@ class Network(object):
                 for j in range(self.flags.num_plot_compare):
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                              Ytruth=spectra[j, :].cpu().data.numpy(),
+                                             E2=self.model.e2[j, :, :],
+                                             E1=self.model.e1[j, :, :])
+                    self.log.add_figure(tag='E1&E2{}'.format(j), figure=f, global_step=epoch)
+                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                            Ytruth=spectra[j, :].cpu().data.numpy(),
+                                            N=self.model.N[j, :, :],
+                                            K=self.model.K[j, :, :])
+                    self.log.add_figure(tag='N&K{}'.format(j), figure=f, global_step=epoch)
+                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                             Ytruth=spectra[j, :].cpu().data.numpy(),
                                              T=self.model.T_each_lor[j, :, :])
-                    self.log.add_figure(tag='reconstruction{}'.format(j), figure=f, global_step=epoch)
+                    self.log.add_figure(tag='T{}'.format(j), figure=f, global_step=epoch)
                 # For debugging purpose, in model:forward function reocrd the tensor
                 self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
                 self.log.add_histogram("wp_histogram", self.model.wps, epoch)
@@ -210,7 +220,7 @@ class Network(object):
                 np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5], T_num=10):
+    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5], T_num=10, E1=None, E2=None, N=None, K=None):
         """
         Function to plot the comparison for predicted spectra and truth spectra
         :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
@@ -228,10 +238,22 @@ class Network(object):
         plt.plot(frequency, Ytruth, label='Truth')
         if T is not None:
             for i in range(np.shape(T)[0]):
-                plt.plot(frequency, T[i, :], linewidth=1)
-        plt.legend()
+                plt.plot(frequency, T[i, :], linewidth=1, linestyle='--')
+        if E2 is not None:
+            for i in range(np.shape(E2)[0]):
+                plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':')
+        if E1 is not None:
+            for i in range(np.shape(E1)[0]):
+                plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-')
+        if N is not None:
+            for i in range(np.shape(N)[0]):
+                plt.plot(frequency, N[i, :], linewidth=1, linestyle=':')
+        if K is not None:
+            for i in range(np.shape(K)[0]):
+                plt.plot(frequency, K[i, :], linewidth=1, linestyle='-')
         # plt.ylim([0, 1])
-        plt.xlim([fre_low, fre_high])
+        plt.legend()
+        #plt.xlim([fre_low, fre_high])
         plt.xlabel("Frequency (THz)")
         plt.ylabel("Transmittance")
         if title is not None:

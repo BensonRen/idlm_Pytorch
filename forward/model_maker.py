@@ -90,22 +90,23 @@ class Forward(nn.Module):
 
         # If use lorentzian layer, pass this output to the lorentzian layer
         if self.use_lorentz:
-            out = torch.sigmoid(out) * 5            # Lets say w0, wp is in range (0,5) for now
+            out = torch.sigmoid(out)            # Lets say w0, wp is in range (0,5) for now
             #out = F.relu(out) + 0.00001
 
             # Get the out into (batch_size, num_lorentz, 3) and the last epsilon_inf baseline
             epsilon_inf = out[:,-1] * 0 # For debugging purpose now
             out = out[:,0:-1].view([-1, int(out.size(1)/3), 3])
 
-            # This is for debugging purpose (Very slow), recording the output tensors
-            self.w0s = out.data.cpu().numpy()[:, :, 0]
-            self.wps = out.data.cpu().numpy()[:, :, 1]
-            self.gs = out.data.cpu().numpy()[:, :, 2]
-
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
-            w0 = out[:, :, 0].unsqueeze(2)
-            wp = out[:, :, 1].unsqueeze(2)
-            g  = out[:, :, 2].unsqueeze(2)
+            w0 = out[:, :, 0].unsqueeze(2) * 5
+            wp = out[:, :, 1].unsqueeze(2) * 5
+            g  = out[:, :, 2].unsqueeze(2) * 0.05
+
+            # This is for debugging purpose (Very slow), recording the output tensors
+            self.w0s = w0.data.cpu().numpy()
+            self.wps = wp.data.cpu().numpy()
+            self.gs = g.data.cpu().numpy()
+
 
             epsilon_inf = epsilon_inf.unsqueeze(1)
             epsilon_inf = epsilon_inf.unsqueeze(2)
@@ -151,7 +152,15 @@ class Forward(nn.Module):
             k2 = pow(k, 2)
 
             T = div(4*n, add(n_12, k2))
-            self.T_each_lor = T.data.cpu().numpy()        # This is for
+            """
+            Debugging and plotting (This is very slow, comment to boost)
+            """
+            self.T_each_lor = T.data.cpu().numpy()          # This is for plotting the transmittion
+            self.e2 = e2.data.cpu().numpy()                 # This is for plotting the imaginary part
+            self.e1 = e1.data.cpu().numpy()                 # This is for plotting the imaginary part
+            self.N = n.data.cpu().numpy()                 # This is for plotting the imaginary part
+            self.K = k.data.cpu().numpy()                 # This is for plotting the imaginary part
+
             # Last step, sum up except for the 0th dimension of batch_size
             T = torch.sum(T, 1).float()
             return T
