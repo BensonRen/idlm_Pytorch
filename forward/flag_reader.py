@@ -47,8 +47,12 @@ def read_flag():
     parser.add_argument('--normalize-input', default=NORMALIZE_INPUT, type=bool,
                         help='whether we should normalize the input or not')
     # Running specific
-    parser.add_argument('--eval-model', default=EVAL_MODEL, type=str, help='the folder name of the model that you want to evaluate')
-    parser.add_argument('--use-cpu-only', type=bool, default=USE_CPU_ONLY, help='The boolean flag that indicate use CPU only')
+    parser.add_argument('--eval-model', default=EVAL_MODEL, type=str,
+                        help='the folder name of the model that you want to evaluate')
+    parser.add_argument('--use-cpu-only', type=bool, default=USE_CPU_ONLY,
+                        help='The boolean flag that indicate use CPU only')
+    parser.add_argument('--num-plot-compare', type=int, default=NUM_COM_PLOT_TENSORBOARD,
+                        help='#Plots to store in tensorboard during training for spectra compare')
     flags = parser.parse_args()  # This is for command line version of the code
     # flags = parser.parse_args(args = [])#This is for jupyter notebook version of the code
     # flagsVar = vars(flags)

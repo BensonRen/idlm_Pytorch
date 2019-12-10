@@ -84,9 +84,15 @@ class Forward(nn.Module):
         # If use lorentzian layer, pass this output to the lorentzian layer
         if self.use_lorentz:
             out = torch.sigmoid(out)
+            #out = F.relu(out) + 0.00001
 
             # Get the out into (batch_size, num_lorentz, 3)
             out = out.view([-1, int(out.size(1)/3), 3])
+
+            # This is for debugging purpose (Very slow), recording the output tensors
+            self.w0s = np.reshape(out.data.cpu().numpy(), [1,-1])
+            self.wps = np.reshape(out.data.cpu().numpy(), [1,-1])
+            self.gs = np.reshape(out.data.cpu().numpy(), [1,-1])
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
             w0 = out[:, :, 0].unsqueeze(2)
@@ -98,7 +104,6 @@ class Forward(nn.Module):
             wp = wp.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             g  = g.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             w_expand = self.w.expand_as(g)
-            print(w_expand[0,0,:])
             """
             Testing code
             #print("c1 size", self.c1.size())

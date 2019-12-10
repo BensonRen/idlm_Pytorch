@@ -141,9 +141,14 @@ class Network(object):
                 # Record the training loss to the tensorboard
                 #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                f = self.compare_spectra(Ypred=logit[1, :].cpu().data.numpy(),
-                                                 Ytruth=spectra[1, :].cpu().data.numpy())
-                self.log.add_figure(tag='reconstruction plot', figure=f, global_step=epoch)
+                for j in range(self.flags.num_plot_compare):
+                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                                 Ytruth=spectra[j, :].cpu().data.numpy())
+                    self.log.add_figure(tag='reconstruction{}'.format(j), figure=f, global_step=epoch)
+                # For debugging purpose, in model:forward function reocrd the tensor
+                self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
+                self.log.add_histogram("wp_histogram", self.model.wps, epoch)
+                self.log.add_histogram("g_histogram", self.model.gs, epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()
