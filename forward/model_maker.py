@@ -90,9 +90,9 @@ class Forward(nn.Module):
             out = out.view([-1, int(out.size(1)/3), 3])
 
             # This is for debugging purpose (Very slow), recording the output tensors
-            self.w0s = np.reshape(out.data.cpu().numpy(), [1,-1])
-            self.wps = np.reshape(out.data.cpu().numpy(), [1,-1])
-            self.gs = np.reshape(out.data.cpu().numpy(), [1,-1])
+            self.w0s = np.reshape(out.data.cpu().numpy()[:, :, 0], [1, -1])
+            self.wps = np.reshape(out.data.cpu().numpy()[:, :, 1], [1, -1])
+            self.gs = np.reshape(out.data.cpu().numpy()[:, :, 2], [1, -1])
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
             w0 = out[:, :, 0].unsqueeze(2)
