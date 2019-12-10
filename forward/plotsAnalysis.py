@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-import evaluate
+from evaluate import compare_truth_pred
 import seaborn as sns; sns.set()
 import get_pred_truth_file
 # from sklearn.neighbors import NearestNeighbors
@@ -104,7 +104,7 @@ def RetrieveFeaturePredictionNMse(model_name):
     Ypred = pd.read_csv(pred_file,header=None, delimiter=' ')
     
     #retrieve mse, mae
-    Ymae, Ymse = evaluate.compare_truth_pred(pred_file, truth_file) #get the maes of y
+    Ymae, Ymse = compare_truth_pred(pred_file, truth_file) #get the maes of y
     
     print(Xtruth.shape)
     return Xtruth.values, Xpred.values, Ytruth.values, Ypred.values, Ymae, Ymse

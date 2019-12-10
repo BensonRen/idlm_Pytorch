@@ -14,9 +14,8 @@ from torch.optim import lr_scheduler
 
 # Libs
 import numpy as np
-
+import matplotlib.pyplot as plt
 # Own module
-import plotAnalysis
 
 class Network(object):
     def __init__(self, model_fn, flags, train_loader, test_loader,
@@ -117,6 +116,7 @@ class Network(object):
         self.lr_scheduler = self.make_lr_scheduler()
 
         for epoch in range(self.flags.train_step):
+            # print("This is training Epoch {}".format(epoch))
             # Set to Training Mode
             train_loss = 0
             self.model.train()
@@ -137,12 +137,12 @@ class Network(object):
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
 
-            if epoch % self.flags.eval_step:                        # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
                 #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                f = plotAnalysis.compare_spectra(Ypred=logit[1,:].cpu().data.numpy(),
-                                                 Ytruth=spectra[1,:].cpu().data.numpy())
+                f = self.compare_spectra(Ypred=logit[1, :].cpu().data.numpy(),
+                                                 Ytruth=spectra[1, :].cpu().data.numpy())
                 self.log.add_figure(tag='reconstruction plot', figure=f, global_step=epoch)
 
                 # Set to Evaluation Mode
@@ -189,7 +189,7 @@ class Network(object):
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(self.saved_model))
-        #Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))  # For pure forward model, there is no Xpred
+        # Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))  # For pure forward model, there is no Xpred
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt, open(Ypred_file, 'a') as fyp:
@@ -203,3 +203,28 @@ class Network(object):
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
         return Ypred_file, Ytruth_file
+
+    def compare_spectra(self, Ypred, Ytruth, title=None, figsize=[15, 5]):
+        """
+        Function to plot the comparison for predicted spectra and truth spectra
+        :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
+        :param Ytruth:  Truth spectra, this should be a list of number of dimension 300, numpy
+        :param title: The title of the plot, usually it comes with the time
+        :param figsize: The figure size of the plot
+        :return: The identifier of the figure
+        """
+        # Make the frequency into real frequency in THz
+        fre_low = 0.86
+        fre_high = 1.5
+        frequency = fre_low + (fre_high - fre_low) / len(Ytruth) * np.arange(300)
+        f = plt.figure(figsize=figsize)
+        plt.plot(frequency, Ypred, label='Pred')
+        plt.plot(frequency, Ytruth, label='Truth')
+        plt.legend()
+        # plt.ylim([0, 1])
+        plt.xlim([fre_low, fre_high])
+        plt.xlabel("Frequency (THz)")
+        plt.ylabel("Transmittance")
+        if title is not None:
+            plt.title(title)
+        return f
