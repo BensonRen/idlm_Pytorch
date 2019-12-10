@@ -4,7 +4,7 @@
     <list default="true" id="00575d1a-297f-4886-8b04-1e64e70c979a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/class_wrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/class_wrapper.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model_maker.py" beforeDir="false" afterPath="$PROJECT_DIR$/model_maker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/parameters.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -191,7 +191,14 @@
       <option name="project" value="LOCAL" />
       <updated>1576006595008</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Plotting N&amp;K, E1&amp;E2, T&amp;pred on the graphs to see whether the calculaiton implementation is correct.">
+      <created>1576011256892</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1576011256892</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -215,7 +222,8 @@
     <MESSAGE value="Possible bug found for self.w_expand and np.arange issue. Testing on GPU now" />
     <MESSAGE value="Bug fixed for histogram values" />
     <MESSAGE value="Individual lorentzian oscillator added along with epsilon_inf. The epsilon_inf right now is disabled with *0 at model_maker.py since it would give nan problem every time. Possible reason might originate from parallelization and expand issue" />
-    <option name="LAST_COMMIT_MESSAGE" value="Individual lorentzian oscillator added along with epsilon_inf. The epsilon_inf right now is disabled with *0 at model_maker.py since it would give nan problem every time. Possible reason might originate from parallelization and expand issue" />
+    <MESSAGE value="Plotting N&amp;K, E1&amp;E2, T&amp;pred on the graphs to see whether the calculaiton implementation is correct." />
+    <option name="LAST_COMMIT_MESSAGE" value="Plotting N&amp;K, E1&amp;E2, T&amp;pred on the graphs to see whether the calculaiton implementation is correct." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -230,7 +230,7 @@ class Network(object):
         :return: The identifier of the figure
         """
         # Make the frequency into real frequency in THz
-        fre_low = 0.86
+        fre_low = 0.8
         fre_high = 1.5
         frequency = fre_low + (fre_high - fre_low) / len(Ytruth) * np.arange(300)
         f = plt.figure(figsize=figsize)
