@@ -60,7 +60,8 @@ Function Added:
 
 ## 2019.12.03
 Function Added:
-1. Parallelizing Omar's Lorentz oscillator, code finished but NAN Error now
+1. Parallelizing Omar's Lorentz oscillat
+or, code finished but NAN Error now
 
 ## 2019.12.04
 Function added:

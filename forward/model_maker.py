@@ -16,7 +16,7 @@ from torch import pow, add, mul, div, sqrt
 
 
 class Forward(nn.Module):
-    def __init__(self, flags):
+    def __init__(self, flags, fre_low=0.8, fre_high=1.5):
         super(Forward, self).__init__()
         # Set up whether this uses a Lorentzian oscillator, this is a boolean value
         self.use_lorentz = flags.use_lorentz
@@ -37,7 +37,7 @@ class Forward(nn.Module):
             self.num_lorentz = int(flags.linear[-1]/3)
 
             # Create the constant for mapping the frequency w
-            w_numpy = np.arange(0.8, 1.5, self.num_spec_point)
+            w_numpy = np.arange(fre_low, fre_high, (fre_high - fre_low) / self.num_spec_point)
 
             # Create the tensor from numpy array
             cuda = True if torch.cuda.is_available() else False
@@ -98,6 +98,7 @@ class Forward(nn.Module):
             wp = wp.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             g  = g.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             w_expand = self.w.expand_as(g)
+            print(w_expand[0,0,:])
             """
             Testing code
             #print("c1 size", self.c1.size())
