@@ -18,23 +18,20 @@ from torch import pow, add, mul, div, sqrt
 class Forward(nn.Module):
     def __init__(self, flags, fre_low=0.8, fre_high=1.5):
         super(Forward, self).__init__()
+
         # Set up whether this uses a Lorentzian oscillator, this is a boolean value
         self.use_lorentz = flags.use_lorentz
 
-        # Linear Layer and Batch_norm Layer definitions here
-        self.linears = nn.ModuleList([])
-        self.bn_linears = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
-            self.linears.append(nn.Linear(fc_num, flags.linear[ind + 1]))
-            self.bn_linears.append(nn.BatchNorm1d(flags.linear[ind + 1]))
-
         # Assert the last entry of the fc_num is a multiple of 3 (This is for Lorentzian part)
         if flags.use_lorentz:
+            # there is 1 extra parameter for lorentzian setting for epsilon_inf
+            flags.linear[-1] += 1
+
             self.num_spec_point = 300
-            assert flags.linear[-1] % 3 == 0, "Please make sure your last layer in linear is\
-                                                multiple of 3 since you are using lorentzian"
+            assert (flags.linear[-1] - 1) % 3 == 0, "Please make sure your last layer in linear is\
+                                                        multiple of 3 (+1) since you are using lorentzian"
             # Set the number of lorentz oscillator
-            self.num_lorentz = int(flags.linear[-1]/3)
+            self.num_lorentz = int(flags.linear[-1] / 3)
 
             # Create the constant for mapping the frequency w
             w_numpy = np.arange(fre_low, fre_high, (fre_high - fre_low) / self.num_spec_point)
@@ -45,6 +42,16 @@ class Forward(nn.Module):
                 self.w = torch.tensor(w_numpy).cuda()
             else:
                 self.w = torch.tensor(w_numpy)
+
+        """
+        General layer definitions:
+        """
+        # Linear Layer and Batch_norm Layer definitions here
+        self.linears = nn.ModuleList([])
+        self.bn_linears = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
+            self.linears.append(nn.Linear(fc_num, flags.linear[ind + 1]))
+            self.bn_linears.append(nn.BatchNorm1d(flags.linear[ind + 1]))
 
         # Conv Layer definitions here
         self.convs = nn.ModuleList([])
@@ -83,27 +90,32 @@ class Forward(nn.Module):
 
         # If use lorentzian layer, pass this output to the lorentzian layer
         if self.use_lorentz:
-            out = torch.sigmoid(out)
+            out = torch.sigmoid(out) * 5            # Lets say w0, wp is in range (0,5) for now
             #out = F.relu(out) + 0.00001
 
-            # Get the out into (batch_size, num_lorentz, 3)
-            out = out.view([-1, int(out.size(1)/3), 3])
+            # Get the out into (batch_size, num_lorentz, 3) and the last epsilon_inf baseline
+            epsilon_inf = out[:,-1] * 0 # For debugging purpose now
+            out = out[:,0:-1].view([-1, int(out.size(1)/3), 3])
 
             # This is for debugging purpose (Very slow), recording the output tensors
-            self.w0s = np.reshape(out.data.cpu().numpy()[:, :, 0], [1, -1])
-            self.wps = np.reshape(out.data.cpu().numpy()[:, :, 1], [1, -1])
-            self.gs = np.reshape(out.data.cpu().numpy()[:, :, 2], [1, -1])
+            self.w0s = out.data.cpu().numpy()[:, :, 0]
+            self.wps = out.data.cpu().numpy()[:, :, 1]
+            self.gs = out.data.cpu().numpy()[:, :, 2]
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
             w0 = out[:, :, 0].unsqueeze(2)
             wp = out[:, :, 1].unsqueeze(2)
             g  = out[:, :, 2].unsqueeze(2)
 
+            epsilon_inf = epsilon_inf.unsqueeze(1)
+            epsilon_inf = epsilon_inf.unsqueeze(2)
+
             # Expand them to the make the parallelism, (batch_size, #Lor, #spec_point)
             w0 = w0.expand(out.size(0), self.num_lorentz, self.num_spec_point)
-            wp = wp.expand(out.size(0), self.num_lorentz, self.num_spec_point)
-            g  = g.expand(out.size(0), self.num_lorentz, self.num_spec_point)
+            wp = wp.expand_as(w0)
+            g = g.expand_as(w0)
             w_expand = self.w.expand_as(g)
+            epsilon_inf = epsilon_inf.expand_as(g)
             """
             Testing code
             #print("c1 size", self.c1.size())
@@ -123,16 +135,23 @@ class Forward(nn.Module):
             n2 = mul(wp2, mul(w_expand, g))
             denom = add(s12, mul(w2, g2))
             e1 = div(n1, denom)
+            """
+            debugging purposes: 2019.12.10 Bens code for debugging the addition of epsilon_inf
+            print("size of e1", e1.size())
+            print("size pf epsilon_inf", epsilon_inf.size())
+            """
+            e1 += epsilon_inf
             e2 = div(n2, denom)
             e12 = pow(e1, 2)
             e22 = pow(e2, 2)
             
-            n = sqrt(0.5* add(sqrt(add(e12, e22)), e1))
-            k = sqrt(0.5* add(sqrt(add(e12, e22)), -e1))
+            n = sqrt(0.5 * add(sqrt(add(e12, e22)), e1))
+            k = sqrt(0.5 * add(sqrt(add(e12, e22)), -e1))
             n_12 = pow(n+1, 2)
             k2 = pow(k, 2)
 
             T = div(4*n, add(n_12, k2))
+            self.T_each_lor = T.data.cpu().numpy()        # This is for
             # Last step, sum up except for the 0th dimension of batch_size
             T = torch.sum(T, 1).float()
             return T

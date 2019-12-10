@@ -75,7 +75,14 @@ Function Added:
 1. Intermediate plotting function output to tensorboard for training debugging. (Yet to test on GPU machine)
 2. GPU test passed
 3. histogram function done for lorentzian parameters
-4. 
+
+## 2019.12.10
+Function added:
+1. plot the individual Lorentzian oscillators
+2. debugging the histogram setting
+3. Set the range of Lorentzian parameters to be [0,5]
+4. Add the epsilon_inf to the function and add to the E1 calculatio
+
 
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU

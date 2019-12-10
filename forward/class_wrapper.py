@@ -143,7 +143,8 @@ class Network(object):
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
                 for j in range(self.flags.num_plot_compare):
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
-                                                 Ytruth=spectra[j, :].cpu().data.numpy())
+                                             Ytruth=spectra[j, :].cpu().data.numpy(),
+                                             T=self.model.T_each_lor[j, :, :])
                     self.log.add_figure(tag='reconstruction{}'.format(j), figure=f, global_step=epoch)
                 # For debugging purpose, in model:forward function reocrd the tensor
                 self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
@@ -209,7 +210,7 @@ class Network(object):
                 np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def compare_spectra(self, Ypred, Ytruth, title=None, figsize=[15, 5]):
+    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5], T_num=10):
         """
         Function to plot the comparison for predicted spectra and truth spectra
         :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
@@ -225,6 +226,9 @@ class Network(object):
         f = plt.figure(figsize=figsize)
         plt.plot(frequency, Ypred, label='Pred')
         plt.plot(frequency, Ytruth, label='Truth')
+        if T is not None:
+            for i in range(np.shape(T)[0]):
+                plt.plot(frequency, T[i, :], linewidth=1)
         plt.legend()
         # plt.ylim([0, 1])
         plt.xlim([fre_low, fre_high])
