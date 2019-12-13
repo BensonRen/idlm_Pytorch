@@ -81,8 +81,12 @@ Function added:
 1. plot the individual Lorentzian oscillators
 2. debugging the histogram setting
 3. Set the range of Lorentzian parameters to be [0,5]
-4. Add the epsilon_inf to the function and add to the E1 calculatio
+4. Add the epsilon_inf to the function and add to the E1 calculation (deactivated)
 
+## 2019.12.12
+Function changed:
+1. Lorentzian calculation bug fixed for aggregating oscillators from eps step instead of Transmission step
+2. Trainable parameter for epsilon_inf activated
 
 ## To dos:
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU

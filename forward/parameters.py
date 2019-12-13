@@ -3,17 +3,17 @@ Parameter file for specifying the running parameters for forward model
 """
 # Model Architectural Parameters
 USE_LORENTZ = True
-LINEAR = [8, 50, 300, 150]
+LINEAR = [8, 30, 30, 30]
 CONV_OUT_CHANNEL = [4, 4, 4]
 CONV_KERNEL_SIZE = [8, 5, 5]
 CONV_STRIDE = [2, 1, 1]
 
 # Optimization parameters
 OPTIM = "Adam"
-REG_SCALE = 5e-7
+REG_SCALE = 5e-4
 BATCH_SIZE = 128
 EVAL_STEP = 1
-TRAIN_STEP = 10
+TRAIN_STEP = 100
 LEARN_RATE = 1e-1
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5

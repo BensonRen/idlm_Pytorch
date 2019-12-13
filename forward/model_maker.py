@@ -94,7 +94,7 @@ class Forward(nn.Module):
             #out = F.relu(out) + 0.00001
 
             # Get the out into (batch_size, num_lorentz, 3) and the last epsilon_inf baseline
-            epsilon_inf = out[:,-1] * 0 # For debugging purpose now
+            epsilon_inf = out[:,-1]  # For debugging purpose now
             out = out[:,0:-1].view([-1, int(out.size(1)/3), 3])
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
@@ -107,16 +107,11 @@ class Forward(nn.Module):
             self.wps = wp.data.cpu().numpy()
             self.gs = g.data.cpu().numpy()
 
-
-            epsilon_inf = epsilon_inf.unsqueeze(1)
-            epsilon_inf = epsilon_inf.unsqueeze(2)
-
             # Expand them to the make the parallelism, (batch_size, #Lor, #spec_point)
             w0 = w0.expand(out.size(0), self.num_lorentz, self.num_spec_point)
             wp = wp.expand_as(w0)
             g = g.expand_as(w0)
             w_expand = self.w.expand_as(g)
-            epsilon_inf = epsilon_inf.expand_as(g)
             """
             Testing code
             #print("c1 size", self.c1.size())
@@ -136,33 +131,44 @@ class Forward(nn.Module):
             n2 = mul(wp2, mul(w_expand, g))
             denom = add(s12, mul(w2, g2))
             e1 = div(n1, denom)
+            e2 = div(n2, denom)
+
+            self.e2 = e2.data.cpu().numpy()                 # This is for plotting the imaginary part
+            self.e1 = e1.data.cpu().numpy()                 # This is for plotting the imaginary part
             """
             debugging purposes: 2019.12.10 Bens code for debugging the addition of epsilon_inf
             print("size of e1", e1.size())
             print("size pf epsilon_inf", epsilon_inf.size())
             """
+            # the correct calculation should be adding up the es
+            e1 = torch.sum(e1, 1)
+            e2 = torch.sum(e2, 1)
+
+            epsilon_inf = epsilon_inf.unsqueeze(1).expand_as(e1)        #Change the shape of the epsilon_inf
+
             e1 += epsilon_inf
-            e2 = div(n2, denom)
+
+            # print("e1 size", e1.size())
+            # print("e2 size", e2.size())
             e12 = pow(e1, 2)
             e22 = pow(e2, 2)
-            
+
             n = sqrt(0.5 * add(sqrt(add(e12, e22)), e1))
             k = sqrt(0.5 * add(sqrt(add(e12, e22)), -e1))
             n_12 = pow(n+1, 2)
             k2 = pow(k, 2)
 
-            T = div(4*n, add(n_12, k2))
+            T = div(4*n, add(n_12, k2)).float()
             """
             Debugging and plotting (This is very slow, comment to boost)
             """
             self.T_each_lor = T.data.cpu().numpy()          # This is for plotting the transmittion
-            self.e2 = e2.data.cpu().numpy()                 # This is for plotting the imaginary part
-            self.e1 = e1.data.cpu().numpy()                 # This is for plotting the imaginary part
             self.N = n.data.cpu().numpy()                 # This is for plotting the imaginary part
             self.K = k.data.cpu().numpy()                 # This is for plotting the imaginary part
 
-            # Last step, sum up except for the 0th dimension of batch_size
-            T = torch.sum(T, 1).float()
+            # print("T size",T.size())
+            # Last step, sum up except for the 0th dimension of batch_size (deprecated since we sum at e above)
+            # T = torch.sum(T, 1).float()
             return T
 
         # The normal mode to train without Lorentz

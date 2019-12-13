@@ -149,12 +149,12 @@ class Network(object):
                     self.log.add_figure(tag='E1&E2{}'.format(j), figure=f, global_step=epoch)
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                             Ytruth=spectra[j, :].cpu().data.numpy(),
-                                            N=self.model.N[j, :, :],
-                                            K=self.model.K[j, :, :])
+                                            N=self.model.N[j, :],
+                                            K=self.model.K[j, :])
                     self.log.add_figure(tag='N&K{}'.format(j), figure=f, global_step=epoch)
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                              Ytruth=spectra[j, :].cpu().data.numpy(),
-                                             T=self.model.T_each_lor[j, :, :])
+                                             T=self.model.T_each_lor[j, :])
                     self.log.add_figure(tag='T{}'.format(j), figure=f, global_step=epoch)
                 # For debugging purpose, in model:forward function reocrd the tensor
                 self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
@@ -237,8 +237,7 @@ class Network(object):
         plt.plot(frequency, Ypred, label='Pred')
         plt.plot(frequency, Ytruth, label='Truth')
         if T is not None:
-            for i in range(np.shape(T)[0]):
-                plt.plot(frequency, T[i, :], linewidth=1, linestyle='--')
+            plt.plot(frequency, T, linewidth=1, linestyle='--')
         if E2 is not None:
             for i in range(np.shape(E2)[0]):
                 plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':')
@@ -246,11 +245,9 @@ class Network(object):
             for i in range(np.shape(E1)[0]):
                 plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-')
         if N is not None:
-            for i in range(np.shape(N)[0]):
-                plt.plot(frequency, N[i, :], linewidth=1, linestyle=':')
+            plt.plot(frequency, N, linewidth=1, linestyle=':')
         if K is not None:
-            for i in range(np.shape(K)[0]):
-                plt.plot(frequency, K[i, :], linewidth=1, linestyle='-')
+            plt.plot(frequency, K, linewidth=1, linestyle='-')
         # plt.ylim([0, 1])
         plt.legend()
         #plt.xlim([fre_low, fre_high])
