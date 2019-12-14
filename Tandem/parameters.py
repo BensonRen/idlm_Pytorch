@@ -15,10 +15,10 @@ CONV_STRIDE_B = [1, 1, 2]
 # Optimizer parameters
 OPTIM = "Adam"
 REG_SCALE = 5e-5
-BATCH_SIZE = 10
+BATCH_SIZE = 128
 EVAL_BATCH_SIZE = 4096
-EVAL_STEP = 2
-TRAIN_STEP = 5
+EVAL_STEP = 1
+TRAIN_STEP = 10
 VERB_STEP = 1
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying

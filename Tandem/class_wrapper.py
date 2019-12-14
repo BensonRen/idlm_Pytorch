@@ -19,10 +19,22 @@ from math import inf
 
 
 class Network(object):
-    def __init__(self, model_fn, flags, train_loader, test_loader,
+    def __init__(self, model_fn_f, model_fn_b, flags, train_loader, test_loader,
                  ckpt_dir=os.path.join(os.path.abspath(''), 'models'),
                  inference_mode=False, saved_model=None):
-        self.model_fn = model_fn                                # The model maker function
+        """
+        The initializer of the Network class which is the wrapper of our neural network, this is for the Tandem model
+        :param model_fn_f:
+        :param model_fn_b:
+        :param flags:
+        :param train_loader:
+        :param test_loader:
+        :param ckpt_dir:
+        :param inference_mode:
+        :param saved_model:
+        """
+        self.model_fn_f = model_fn_f                                # The model maker function for forward
+        self.model_fn_b = model_fn_b                                # The model maker function for backward
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -30,15 +42,15 @@ class Network(object):
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.model = self.create_model()                        # The model itself
+        self.model_f, self.model_b = self.create_model()                        # The model itself
         self.loss = self.make_loss()                            # The loss function
-        self.optm_f = None                                        # The optimizer: Initialized at train() due to GPU
-        self.optm_b = None                                   # The eval_optimizer: Initialized at eva() due to GPU
+        self.optm_f = None                                      # The optimizer: Initialized at train() due to GPU
+        self.optm_b = None                                      # The eval_optimizer: Initialized at eva() due to GPU
         self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
         self.train_loader = train_loader                        # The train data loader
         self.test_loader = test_loader                          # The test data loader
-        self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
-        self.best_validation_loss = float('inf')    # Set the BVL to large number
+        self.log = SummaryWriter(self.ckpt_dir)                 # Create a summary writer for keeping the summary to the tensor board
+        self.best_validation_loss = float('inf')                # Set the BVL to large number
 
     def make_optimizer_b(self):
         """
@@ -47,11 +59,11 @@ class Network(object):
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model.backward_modules, lr=self.flags.lr)
+            op = torch.optim.Adam(self.model_b.parameters(), lr=self.flags.lr)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model.backward_modules, lr=self.flags.lr)
+            op = torch.optim.RMSprop(self.model_b.parameters(), lr=self.flags.lr)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model.backward_modules, lr=self.flags.lr)
+            op = torch.optim.SGD(self.model_b.parameters(), lr=self.flags.lr)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -61,25 +73,30 @@ class Network(object):
         Function to create the network module from provided model fn and flags
         :return: the created nn module
         """
-        model = self.model_fn(self.flags)
-        # summary(model, input_size=(128, 8))
-        print(model)
-        return model
+        model_f = self.model_fn_f(self.flags)
+        model_b = self.model_fn_b(self.flags)
+        print("Forward model", model_f)
+        print("Backward model", model_b)
+        return model_f, model_b
 
-    def make_loss(self, logit=None, labels=None):
+    def make_loss(self, logit=None, labels=None, G=None):
         """
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
         :param logit: The output of the network
         :param labels: The ground truth labels
+        :param G: The geometry predicted
         :return: the total loss
         """
         if logit is None:
             return None
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-
+        BDY_loss = torch.zeros(size=[])
         # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
+        if G is not None:
+            relu = torch.nn.ReLU()
+            BDY_loss_all = relu(torch.abs(G) - 1)
+            BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
@@ -90,11 +107,11 @@ class Network(object):
         :return:
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model.forward_modules, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.Adam(self.model_f.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model.forward_modules, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.RMSprop(self.model_f.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model.forward_modules, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.SGD(self.model_f.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -109,13 +126,20 @@ class Network(object):
                                               factor=self.flags.lr_decay_rate,
                                               patience=10, verbose=True, threshold=1e-4)
 
-    def save(self):
+    def save_f(self):
         """
         Saving the model to the current check point folder with name best_model.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        torch.save(self.model_f, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+
+    def save_b(self):
+        """
+        Saving the model to the current check point folder with name best_model.pt
+        :return: None
+        """
+        torch.save(self.model_b, os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
 
     def load(self):
         """
@@ -123,21 +147,22 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+        self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
 
     def train(self):
         """
         The major training function. This would start the training using information given in the flags
         :return: None
         """
-
         """
         Forward Training part
         """
         print("Start Forward Training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
-            self.model.cuda()
+            self.model_f.cuda()
+            self.model_b.cuda()
 
         # Construct optimizer after the model moved to GPU
         self.optm_f = self.make_optimizer_f()
@@ -147,13 +172,13 @@ class Network(object):
             # Set to Training Mode
             train_loss = 0
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
-            self.model.train()
+            self.model_f.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
-                self.optm.zero_grad()                                   # Zero the gradient first
-                G_out, S_out = self.model(G_in=geometry,forward_modle=True)     # Get the output
+                self.optm_f.zero_grad()                                   # Zero the gradient first
+                S_out = self.model_f(geometry)     # Get the output
                 loss = self.make_loss(S_out, spectra)                   # Get the loss tensor
                 loss.backward()                                         # Calculate the backward gradients
                 self.optm_f.step()                                      # Move one step the optimizer
@@ -164,26 +189,28 @@ class Network(object):
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
             # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                self.log.add_scalar('Loss/forward_train', train_avg_loss, epoch)
+                print("Logging the testing to tb")
+                self.log.add_scalar('Testing', 1, epoch)
                 # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
                 # Set to Evaluation Mode
-                self.model.eval()
-                print("Doing Evaluation on the model now")
+                self.model_f.eval()
+                print("Doing Evaluation on the forward model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    logit = self.model(geometry)
+                    logit = self.model_f(geometry)
                     loss = self.make_loss(logit, spectra)                   # compute the loss
                     test_loss += loss                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
-                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+                self.log.add_scalar('Loss/forward_test', test_avg_loss, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))
@@ -191,7 +218,7 @@ class Network(object):
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
-                    self.save()
+                    self.save_f()
                     print("Saving the model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
@@ -214,14 +241,15 @@ class Network(object):
             # Set to Training Mode
             train_loss = 0
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
-            self.model.train()
+            self.model_b.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
                     geometry = geometry.cuda()  # Put data onto GPU
-                    spectra = spectra.cuda()  # Put data onto GPU
-                self.optm.zero_grad()  # Zero the gradient first
-                G_out, S_out = self.model(G_in=geometry, forward_modle=True)  # Get the output
-                loss = self.make_loss(S_out, spectra)  # Get the loss tensor
+                    spectra = spectra.cuda()    # Put data onto GPU
+                self.optm_b.zero_grad()         # Zero the gradient first
+                G_out = self.model_b(spectra)   # Get the geometry prediction
+                S_out = self.model_f(G_out)     # Get the spectra prediction
+                loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_f.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
@@ -231,26 +259,28 @@ class Network(object):
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
             # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step:  # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:  # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
+                self.log.add_scalar('Loss/backward_train', train_avg_loss, epoch)
+                self.log.add_scalar('Loss/BDY_train', self.Boundary_loss.cpu().data.numpy(), epoch)
 
                 # Set to Evaluation Mode
-                self.model.eval()
-                print("Doing Evaluation on the model now")
+                self.model_b.eval()
+                print("Doing Evaluation on the backward model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    logit = self.model(geometry)
-                    loss = self.make_loss(logit, spectra)  # compute the loss
+                    G_out = self.model_b(spectra)  # Get the geometry prediction
+                    S_out = self.model_f(G_out)  # Get the spectra prediction
+                    loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
-                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+                self.log.add_scalar('Loss/backward_test', test_avg_loss, epoch)
+                self.log.add_scalar('Loss/BDY_test', self.Boundary_loss.cpu().data.numpy(), epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss))
@@ -258,7 +288,7 @@ class Network(object):
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
-                    self.save()
+                    self.save_b()
                     print("Saving the model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
@@ -268,7 +298,7 @@ class Network(object):
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
-
+        self.log.close()
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False

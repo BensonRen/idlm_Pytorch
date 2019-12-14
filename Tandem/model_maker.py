@@ -12,12 +12,11 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from torch import pow, add, mul, div, sqrt
 
 
-class Tandem(nn.Module):
+class Forward(nn.Module):
     def __init__(self, flags):
-        super(Tandem, self).__init__()
+        super(Forward, self).__init__()
         """
         This part is the forward model layers definition:
         """
@@ -25,8 +24,8 @@ class Tandem(nn.Module):
         self.linears_f = nn.ModuleList([])
         self.bn_linears_f = nn.ModuleList([])
         for ind, fc_num in enumerate(flags.linear_f[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_f.append(nn.Linear(fc_num, flags.linear[ind + 1]))
-            self.bn_linears_f.append(nn.BatchNorm1d(flags.linear[ind + 1]))
+            self.linears_f.append(nn.Linear(fc_num, flags.linear_f[ind + 1]))
+            self.bn_linears_f.append(nn.BatchNorm1d(flags.linear_f[ind + 1]))
 
         # Conv Layer definitions here
         self.convs_f = nn.ModuleList([])
@@ -48,34 +47,8 @@ class Tandem(nn.Module):
         self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
         # Define forward module for separate training
         self.forward_modules = [self.linears_f, self.bn_linears_f, self.convs_f]
-        """
-        This part if the backward model layers definition:
-        """
-        # Linear Layer and Batch_norm Layer definitions here
-        self.linears_b = nn.ModuleList([])
-        self.bn_linears_b = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_b.append(nn.Linear(fc_num, flags.linear_b[ind + 1]))
-            self.bn_linears_b.append(nn.BatchNorm1d(flags.linear_b[ind + 1]))
 
-        # Conv Layer definitions here
-        self.convs_b = nn.ModuleList([])
-        in_channel = 1                                                  # Initialize the in_channel number
-        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_g,
-                                                                     flags.conv_kernel_size_g,
-                                                                     flags.conv_stride_g)):
-            if stride == 2:     # We want to double the number
-                pad = int(kernel_size/2 - 1)
-            elif stride == 1:   # We want to keep the number unchanged
-                pad = int((kernel_size - 1)/2)
-            else:
-                Exception("Now only support stride = 1 or 2, contact Ben")
-            self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
-                                          stride=stride, padding=pad))
-        # Define forward module for separate training
-        self.backward_modules = [self.linears_b, self.bn_linears_b, self.convs_b]
-
-    def forward_model(self, G):
+    def forward(self, G):
         """
         The forward function which defines how the network is connected
         :param G: The input geometry (Since this is a forward network)
@@ -95,7 +68,39 @@ class Tandem(nn.Module):
         S = out.squeeze()
         return S
 
-    def backward_model(self, S):
+
+class Backward(nn.Module):
+    def __init__(self, flags):
+        super(Backward, self).__init__()
+        """
+        This part if the backward model layers definition:
+        """
+        # Linear Layer and Batch_norm Layer definitions here
+        self.linears_b = nn.ModuleList([])
+        self.bn_linears_b = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_b[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_b.append(nn.Linear(fc_num, flags.linear_b[ind + 1]))
+            self.bn_linears_b.append(nn.BatchNorm1d(flags.linear_b[ind + 1]))
+
+        # Conv Layer definitions here
+        self.convs_b = nn.ModuleList([])
+        in_channel = 1                                                  # Initialize the in_channel number
+        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_b,
+                                                                     flags.conv_kernel_size_b,
+                                                                     flags.conv_stride_b)):
+            if stride == 2:     # We want to double the number
+                pad = int(kernel_size/2 - 1)
+            elif stride == 1:   # We want to keep the number unchanged
+                pad = int((kernel_size - 1)/2)
+            else:
+                Exception("Now only support stride = 1 or 2, contact Ben")
+            self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
+                                          stride=stride, padding=pad))
+            in_channel = out_channel  # Update the out_channel
+        # Define forward module for separate training
+        self.backward_modules = [self.linears_b, self.bn_linears_b, self.convs_b]
+
+    def forward(self, S):
         """
         The backward function defines how the backward network is connected
         :param S: The 300-d input spectrum
@@ -113,16 +118,17 @@ class Tandem(nn.Module):
         G = out
         return G
 
+"""
     def forward(self, G_in=None, S_in=None, forward_model=False):
-        """
+        ""
         The forward function of the whole model. 2 modes supported for forward module training and full model training
         :param G_in: The input Geometery for forward training
         :param S_in: The input Spectra for full model training
         :param forward_model: Boolean flag for whether only use forward model training or not
         :return:
-        """
+        ""
 
-        """
+        ""
         # Checking some invariant at testing
         if forward_model:
             assert (G_in is not None and S_in is None), \
@@ -130,7 +136,7 @@ class Tandem(nn.Module):
         else:
             assert (G_in is None and S_in is not None), \
                 "Full model training, S_in can not be None and G_in should be None"
-        """
+        ""
 
         if forward_model:
             G_out = G_in
@@ -139,6 +145,6 @@ class Tandem(nn.Module):
             G_out = backward_model(S_in)
             S_out = forward_model(G_out)
         return G_out, S_out
-
+"""
 
 
