@@ -106,6 +106,7 @@ class Forward(nn.Module):
             self.w0s = w0.data.cpu().numpy()
             self.wps = wp.data.cpu().numpy()
             self.gs = g.data.cpu().numpy()
+            self.eps_inf = epsilon_inf.data.cpu().numpy()
 
             # Expand them to the make the parallelism, (batch_size, #Lor, #spec_point)
             w0 = w0.expand(out.size(0), self.num_lorentz, self.num_spec_point)

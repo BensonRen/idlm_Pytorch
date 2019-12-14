@@ -88,7 +88,16 @@ Function changed:
 1. Lorentzian calculation bug fixed for aggregating oscillators from eps step instead of Transmission step
 2. Trainable parameter for epsilon_inf activated
 
+## 2019.12.14
+Function changed:
+1. divide out the batch size in histogram (Not supported in tensorboard current version, abandonded)
+2. Include eps_infinity in tensorboard graphs for e1, e2
+
 ## To dos:
+1. Bunching effect for lorentzian oscillators observed
+2. Pinning the lorenztian frequencies to be a fixed value
+3. Using single spectra value to train
+4. fix the values to plot and compare (for Willie)
 1. Tune the model to Christian's accuracy (1.2e-3) using GPU
 
 

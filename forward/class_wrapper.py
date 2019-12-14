@@ -145,7 +145,8 @@ class Network(object):
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                              Ytruth=spectra[j, :].cpu().data.numpy(),
                                              E2=self.model.e2[j, :, :],
-                                             E1=self.model.e1[j, :, :])
+                                             E1=self.model.e1[j, :, :],
+                                             eps_inf=self.model.eps_inf[j])
                     self.log.add_figure(tag='E1&E2{}'.format(j), figure=f, global_step=epoch)
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                             Ytruth=spectra[j, :].cpu().data.numpy(),
@@ -220,7 +221,8 @@ class Network(object):
                 np.savetxt(fyp, logits.cpu().data.numpy(), fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5], T_num=10, E1=None, E2=None, N=None, K=None):
+    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5],
+                        T_num=10, E1=None, E2=None, N=None, K=None, eps_inf=None):
         """
         Function to plot the comparison for predicted spectra and truth spectra
         :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
@@ -245,9 +247,11 @@ class Network(object):
             for i in range(np.shape(E1)[0]):
                 plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-')
         if N is not None:
-            plt.plot(frequency, N, linewidth=1, linestyle=':')
+            plt.plot(frequency, N, linewidth=1, linestyle=':', label="N")
         if K is not None:
-            plt.plot(frequency, K, linewidth=1, linestyle='-')
+            plt.plot(frequency, K, linewidth=1, linestyle='-', label="K")
+        if eps_inf is not None:
+            plt.plot(frequency, np.ones(np.shape(frequency)) * eps_inf, label="eps_inf")
         # plt.ylim([0, 1])
         plt.legend()
         #plt.xlim([fre_low, fre_high])
