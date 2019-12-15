@@ -251,7 +251,7 @@ class Network(object):
                 S_out = self.model_f(G_out)     # Get the spectra prediction
                 loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
-                self.optm_f.step()  # Move one step the optimizer
+                self.optm_b.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
                 # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
 

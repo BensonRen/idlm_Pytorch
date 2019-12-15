@@ -15,6 +15,7 @@ Function completed:
 1. Forward and backward model separation for Pytorch
 2. Saving module modification to cater the separated saving
 3. The training on CPU tested with boundary loss implemented and documented on tensorboard
-4. 
+4. Bug fixed for increasing backward training loss
+ 
 # To-do list
 1. Evaluation module
