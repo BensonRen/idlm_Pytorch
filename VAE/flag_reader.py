@@ -22,12 +22,12 @@ def read_flag():
     # VAE model architecture hyper parameters
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
     parser.add_argument('--dim-spenc', default=DIM_SPENC, type=int, help='dimension of the spectra encoded conponent')
-    parser.add_argument('--linear-d', type=list, default=LINEAR_D, help='The fc layers units for decoder')
-    parser.add_argument('--linear-e', type=list, default=LINEAR_E, help='The fc layers units for encoder  model')
-    parser.add_argument('--linear-se', type=list, default=LINEAR_SE, help='The fc layers units for spectra encoder model')
-    parser.add_argument('--conv-out-channel-se', type=list, default=CONV_OUT_CHANNEL_SE, help='The output channel of your 1d conv for forward model')
-    parser.add_argument('--conv-kernel-size-se', type=list, default=CONV_KERNEL_SIZE_SE, help='The kernel size of your 1d conv for forward model')
-    parser.add_argument('--conv-stride-se', type=list, default=CONV_STRIDE_SE, help='The strides of your 1d conv fro forward model')
+    parser.add_argument('--linear-D', type=list, default=LINEAR_D, help='The fc layers units for decoder')
+    parser.add_argument('--linear-E', type=list, default=LINEAR_E, help='The fc layers units for encoder  model')
+    parser.add_argument('--linear-SE', type=list, default=LINEAR_SE, help='The fc layers units for spectra encoder model')
+    parser.add_argument('--conv-out-channel-SE', type=list, default=CONV_OUT_CHANNEL_SE, help='The output channel of your 1d conv for forward model')
+    parser.add_argument('--conv-kernel-size-SE', type=list, default=CONV_KERNEL_SIZE_SE, help='The kernel size of your 1d conv for forward model')
+    parser.add_argument('--conv-stride-SE', type=list, default=CONV_STRIDE_SE, help='The strides of your 1d conv fro forward model')
     # Optimization Params
     parser.add_argument('--optim', default=OPTIM, type=str, help='the type of optimizer that you want to use')
     parser.add_argument('--reg-scale', type=float, default=REG_SCALE, help='#scale for regularization of dense layers')

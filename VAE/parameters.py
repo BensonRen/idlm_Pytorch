@@ -4,9 +4,9 @@ The parameter file storing the parameters for VAE Model
 
 # Architectural Params
 DIM_Z = 20
-DIM_SPENC = 10
-LINEAR_D = [DIM_SPENC + DIM_Z, 50, 500, 500, 150]           # Linear units for Decoder
-LINEAR_E = [8 + DIM_Z, 50, 500, 500, 150]                   # Linear units for Encoder
+DIM_SPENC = 15
+LINEAR_D = [DIM_SPENC + DIM_Z, 50, 500, 500, 100, 8]           # Linear units for Decoder
+LINEAR_E = [8 + DIM_SPENC, 50, 500, 500, 150]                   # Linear units for Encoder
 LINEAR_SE = [150, 100,  50, DIM_SPENC]                      # Linear units for spectra encoder
 CONV_OUT_CHANNEL_SE = [8, 4, 1]
 CONV_KERNEL_SIZE_SE = [51, 35, 30]
@@ -18,7 +18,7 @@ REG_SCALE = 5e-5
 BATCH_SIZE = 128
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 2
-TRAIN_STEP = 5
+TRAIN_STEP = 10
 VERB_STEP = 1
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying

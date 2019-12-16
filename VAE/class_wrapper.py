@@ -29,8 +29,9 @@ class Network(object):
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
-        self.loss = self.make_loss()                            # The loss function
+        self.model = self.create_model()
+        # self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
+        # self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
         self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
@@ -51,7 +52,7 @@ class Network(object):
         print(model)
         return model
 
-    def make_loss(logit=None, labels=None, boundary=True, z_log_var=None, z_mean=None):
+    def make_loss(self, logit=None, labels=None, boundary=True, z_log_var=None, z_mean=None):
         """
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
@@ -62,19 +63,21 @@ class Network(object):
         :param z_mean: The z mean vector for VAE kl_loss
         :return: the total loss
         """
-        if logit is None:
-            return None
+        # print("Size of logit", logit.size())
+        # print("Size of labels", labels.size())
         mse_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         # BDY_loss
         if boundary:
             relu = torch.nn.ReLU()
             bdy_loss_all = relu(torch.abs(logit) - 1)
             bdy_loss = torch.mean(bdy_loss_all)
-        kl_loss = 1 + z_log_var - torch.square(z_mean) - torch.exp(z_log_var)
-        print("size of kl_loss",kl_loss.size)
-        kl_loss = torch.mean(kl_loss, dim=-1)
+        kl_loss = 1 + z_log_var - torch.pow(z_mean, 2) - torch.exp(z_log_var)
+        kl_loss = torch.mean(kl_loss)
         kl_loss *= -0.5
         total_loss = kl_loss + mse_loss + bdy_loss
+        # print("size of kl_loss",kl_loss.size())
+        # print("size of mse_loss",mse_loss.size())
+        # print("size of bdy_loss",bdy_loss.size())
         return total_loss, [kl_loss.data.cpu().numpy(), mse_loss.data.cpu().numpy(), bdy_loss.data.cpu().numpy()]
 
     def make_optimizer(self):
@@ -130,6 +133,7 @@ class Network(object):
         The major training function. This would start the training using information given in the flags
         :return: None
         """
+        print("Starting training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
@@ -141,7 +145,7 @@ class Network(object):
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
-            loss_aggregate_list = np.array([0, 0, 0])       # kl_loss, mse_loss, bdy_loss
+            loss_aggregate_list = np.array([0., 0., 0.])       # kl_loss, mse_loss, bdy_loss
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
@@ -149,6 +153,7 @@ class Network(object):
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
                 G_pred, z_mean, z_log_var = self.model(geometry, spectra)              # Get G_pred
+                # print("size of G_pred", G_pred.size())
                 loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
                                                                    z_mean=z_mean, z_log_var=z_log_var)
                 loss.backward()                                     # Calculate the backward gradients
@@ -161,7 +166,7 @@ class Network(object):
             loss_aggregate_list /= (j+1)
             # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
                 self.log.add_scalar('Loss/total_train', train_avg_loss, epoch)
                 self.log.add_scalar('Loss/kl_train', loss_aggregate_list[0], epoch)
@@ -172,7 +177,7 @@ class Network(object):
                 self.model.eval()
                 print("Doing Evaluation on the model now")
                 test_loss = 0
-                loss_aggregate_list = np.array([0, 0, 0])  # kl_loss, mse_loss, bdy_loss
+                loss_aggregate_list = np.array([0., 0., 0.])  # kl_loss, mse_loss, bdy_loss
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()

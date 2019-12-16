@@ -34,8 +34,8 @@ class VAE(nn.Module):
             self.linears_E.append(nn.Linear(fc_num, flags.linear_E[ind + 1]))
             self.bn_linears_E.append(nn.BatchNorm1d(flags.linear_E[ind + 1]))
         # Re-parameterization
-        self.zmean_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
-        self.z_log_var_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
+        self.zmean_layer = nn.Linear(flags.linear_E[-1], self.z_dim)
+        self.z_log_var_layer = nn.Linear(flags.linear_E[-1], self.z_dim)
         # For Spectra Encoder
         self.linears_SE = nn.ModuleList([])
         self.bn_linears_SE = nn.ModuleList([])
@@ -65,7 +65,7 @@ class VAE(nn.Module):
         :param G: Geometry output
         :return: Z_mean, Z_log_var: the re-parameterized mean and variance of the
         """
-        out = torch.concatenate(G, S_enc)  # initialize the out
+        out = torch.cat((G, S_enc), dim=1)  # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_E, self.bn_linears_E)):
             # print(out.size())
@@ -91,7 +91,7 @@ class VAE(nn.Module):
         :param S_enc:  The encoded spectra input
         :return: G: Geometry output
         """
-        out = torch.concatenate(z, S_enc)                                                         # initialize the out
+        out = torch.cat((z, S_enc), dim=1)                                                         # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_D, self.bn_linears_D)):
             # print(out.size())
