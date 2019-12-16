@@ -17,5 +17,6 @@ Function completed:
 3. The training on CPU tested with boundary loss implemented and documented on tensorboard
 4. Bug fixed for increasing backward training loss
  
+
 # To-do list
 1. Evaluation module

@@ -16,13 +16,12 @@ from torch.optim import lr_scheduler
 import numpy as np
 from math import inf
 # Own module
-from model_maker import  Encoder, Decoder, SpectraEncoder
 
 class Network(object):
     def __init__(self, model_fn, flags, train_loader, test_loader,
                  ckpt_dir=os.path.join(os.path.abspath(''), 'models'),
                  inference_mode=False, saved_model=None):
-        # self.model_fn = model_fn                                # The model maker function
+        self.model_fn = model_fn                                # The model maker function
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -40,34 +39,17 @@ class Network(object):
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
 
-    def make_optimizer_eval(self):
-        """
-        The function to make the optimizer during evaluation time.
-        The difference between optm is that it does not have regularization and it only optmize the self.geometr_eval tensor
-        :return: the optimizer_eval
-        """
-        if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model.geometry_eval], lr=self.flags.lr)
-        elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model.geometry_eval], lr=self.flags.lr)
-        elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model.geometry_eval], lr=self.flags.lr)
-        else:
-            raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
-        return op
-
     def create_model(self):
         """
         Function to create the network module from provided model fn and flags
         :return: the created nn module
         """
-        encoder = Encoder(self.flags)
-        decoder = Decoder(self.flags)
-        spec_enc = SpectraEncoder(self.flags)
-        print(encoder)
-        print(decoder)
-        print(spec_enc)
-        return encoder, decoder, spec_enc
+        # encoder = Encoder(self.flags)
+        # decoder = Decoder(self.flags)
+        # spec_enc = SpectraEncoder(self.flags)
+        model = self.model_fn(self.flags)
+        print(model)
+        return model
 
     def make_loss(logit=None, labels=None, boundary=True, z_log_var=None, z_mean=None):
         """
@@ -93,20 +75,20 @@ class Network(object):
         kl_loss = torch.mean(kl_loss, dim=-1)
         kl_loss *= -0.5
         total_loss = kl_loss + mse_loss + bdy_loss
-        return total_loss
+        return total_loss, [kl_loss.data.cpu().numpy(), mse_loss.data.cpu().numpy(), bdy_loss.data.cpu().numpy()]
 
     def make_optimizer(self):
         """
         Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
         :return:
         """
-        parameters = [self.encoder.parameters(), self.decoder.parameters(), self.spec_enc.parameters()]
+        # parameters = [self.encoder.parameters(), self.decoder.parameters(), self.spec_enc.parameters()]
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.Adam(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.RMSprop(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.SGD(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -127,9 +109,10 @@ class Network(object):
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.encoder, os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
-        torch.save(self.decoder, os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
-        torch.save(self.spec_enc, os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
+        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        # torch.save(self.encoder, os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
+        # torch.save(self.decoder, os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
+        # torch.save(self.spec_enc, os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
 
     def load(self):
         """
@@ -137,9 +120,10 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.encoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
-        self.decoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
-        self.spec_enc = torch.load(os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
+        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        # self.encoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
+        # self.decoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
+        # self.spec_enc = torch.load(os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
 
     def train(self):
         """
@@ -157,47 +141,55 @@ class Network(object):
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
-            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
+            loss_aggregate_list = np.array([0, 0, 0])       # kl_loss, mse_loss, bdy_loss
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
-                spec_enc = self.spec_enc(spectra)                   # Spectra encoding
-                z_mean, z_log_var = self.encoder(geometry, spec_enc)# Encode them into latent variable
-
-                logit = self.model(geometry)                        # Get the output
-                loss = self.make_loss(logit, spectra)               # Get the loss tensor
+                G_pred, z_mean, z_log_var = self.model(geometry, spectra)              # Get G_pred
+                loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
+                                                                   z_mean=z_mean, z_log_var=z_log_var)
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
-                # boundary_loss += self.Boundary_loss                 # Aggregate the BDY loss
+                loss_aggregate_list += loss_list                    # Aggregate the other loss (in np form)
 
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+            loss_aggregate_list /= (j+1)
             # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
             if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
+                self.log.add_scalar('Loss/total_train', train_avg_loss, epoch)
+                self.log.add_scalar('Loss/kl_train', loss_aggregate_list[0], epoch)
+                self.log.add_scalar('Loss/mse_train', loss_aggregate_list[1], epoch)
+                self.log.add_scalar('Loss/bdy_train', loss_aggregate_list[2], epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()
                 print("Doing Evaluation on the model now")
                 test_loss = 0
+                loss_aggregate_list = np.array([0, 0, 0])  # kl_loss, mse_loss, bdy_loss
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    logit = self.model(geometry)
-                    loss = self.make_loss(logit, spectra)                   # compute the loss
+                    G_pred, z_mean, z_log_var = self.model(geometry, spectra)  # Get G_pred
+                    loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
+                                          z_mean=z_mean, z_log_var=z_log_var)  # Get the loss tensor
                     test_loss += loss                                       # Aggregate the loss
+                    loss_aggregate_list += loss_list                    # Aggregate the other loss (in np form)
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
-                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+                loss_aggregate_list /= (j + 1)
+                self.log.add_scalar('Loss/total_test', test_avg_loss, epoch)
+                self.log.add_scalar('Loss/kl_test', loss_aggregate_list[0], epoch)
+                self.log.add_scalar('Loss/mse_test', loss_aggregate_list[1], epoch)
+                self.log.add_scalar('Loss/bdy_test', loss_aggregate_list[2], epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))

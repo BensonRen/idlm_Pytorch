@@ -19,9 +19,9 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
-
-
-    # Forward model architecture hyper parameters
+    # VAE model architecture hyper parameters
+    parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
+    parser.add_argument('--dim-spenc', default=DIM_SPENC, type=int, help='dimension of the spectra encoded conponent')
     parser.add_argument('--linear-d', type=list, default=LINEAR_D, help='The fc layers units for decoder')
     parser.add_argument('--linear-e', type=list, default=LINEAR_E, help='The fc layers units for encoder  model')
     parser.add_argument('--linear-se', type=list, default=LINEAR_SE, help='The fc layers units for spectra encoder model')

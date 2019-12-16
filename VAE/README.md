@@ -13,7 +13,13 @@ Function completed:
 ## 2019.12.15
 1. Model maker finished with 3 structure
 2. Parameter section for reading 
-3. 
+
+## 2019.12.16
+ Function completed/Changed:
+ 1. Separate structure abandoned since there is no second step training, combining the model would give better and easier saving and loading behavior
+ 2. kl_loss monitoring added, bdy loss monitoring
+ 3. parameters updated with dim z and dim spectra encoder
+4 . Tested on CPU
 
 
 
