@@ -11,6 +11,9 @@ Function completed:
 1. Parameter.py commented
 
 ## 2019.12.15
+1. Model maker finished with 3 structure
+2. Parameter section for reading 
+3. 
 
 
 

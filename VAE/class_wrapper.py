@@ -16,13 +16,13 @@ from torch.optim import lr_scheduler
 import numpy as np
 from math import inf
 # Own module
-
+from model_maker import  Encoder, Decoder, SpectraEncoder
 
 class Network(object):
     def __init__(self, model_fn, flags, train_loader, test_loader,
                  ckpt_dir=os.path.join(os.path.abspath(''), 'models'),
                  inference_mode=False, saved_model=None):
-        self.model_fn = model_fn                                # The model maker function
+        # self.model_fn = model_fn                                # The model maker function
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -30,7 +30,7 @@ class Network(object):
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.model = self.create_model()                        # The model itself
+        self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
         self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
@@ -61,40 +61,52 @@ class Network(object):
         Function to create the network module from provided model fn and flags
         :return: the created nn module
         """
-        model = self.model_fn(self.flags)
-        # summary(model, input_size=(128, 8))
-        print(model)
-        return model
+        encoder = Encoder(self.flags)
+        decoder = Decoder(self.flags)
+        spec_enc = SpectraEncoder(self.flags)
+        print(encoder)
+        print(decoder)
+        print(spec_enc)
+        return encoder, decoder, spec_enc
 
-    def make_loss(self, logit=None, labels=None):
+    def make_loss(logit=None, labels=None, boundary=True, z_log_var=None, z_mean=None):
         """
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
-        :param logit: The output of the network
-        :param labels: The ground truth labels
+        :param logit: The output of the network, the predicted geometry
+        :param labels: The ground truth labels, the Truth geometry
+        :param boundary: The boolean flag indicating adding boundary loss or not
+        :param z_log_var: The log variance for VAE kl_loss
+        :param z_mean: The z mean vector for VAE kl_loss
         :return: the total loss
         """
         if logit is None:
             return None
-        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-
-        # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
-        self.MSE_loss = MSE_loss
-        self.Boundary_loss = BDY_loss
-        return torch.add(MSE_loss, BDY_loss)
+        mse_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+        # BDY_loss
+        if boundary:
+            relu = torch.nn.ReLU()
+            bdy_loss_all = relu(torch.abs(logit) - 1)
+            bdy_loss = torch.mean(bdy_loss_all)
+        kl_loss = 1 + z_log_var - torch.square(z_mean) - torch.exp(z_log_var)
+        print("size of kl_loss",kl_loss.size)
+        kl_loss = torch.mean(kl_loss, dim=-1)
+        kl_loss *= -0.5
+        total_loss = kl_loss + mse_loss + bdy_loss
+        return total_loss
 
     def make_optimizer(self):
         """
         Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
         :return:
         """
+        parameters = [self.encoder.parameters(), self.decoder.parameters(), self.spec_enc.parameters()]
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.Adam(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.RMSprop(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.SGD(parameters, lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -115,7 +127,9 @@ class Network(object):
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        torch.save(self.encoder, os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
+        torch.save(self.decoder, os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
+        torch.save(self.spec_enc, os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
 
     def load(self):
         """
@@ -123,7 +137,9 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        self.encoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
+        self.decoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
+        self.spec_enc = torch.load(os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
 
     def train(self):
         """
@@ -148,6 +164,9 @@ class Network(object):
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
+                spec_enc = self.spec_enc(spectra)                   # Spectra encoding
+                z_mean, z_log_var = self.encoder(geometry, spec_enc)# Encode them into latent variable
+
                 logit = self.model(geometry)                        # Get the output
                 loss = self.make_loss(logit, spectra)               # Get the loss tensor
                 loss.backward()                                     # Calculate the backward gradients

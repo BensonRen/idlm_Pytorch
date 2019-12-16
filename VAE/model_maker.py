@@ -58,13 +58,14 @@ class Encoder(nn.Module):
         self.zmean_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
         self.z_log_var_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
 
-    def forward(self, z, S_enc):
+    def forward(self, G, S_enc):
         """
         The forward function which defines how the network is connected
         :param S_enc:  The encoded spectra input
-        :return: G: Geometry output
+        :param G: Geometry output
+        :return: Z_mean, Z_log_var: the re-parameterized mean and variance of the
         """
-        out = torch.concatenate(z, S_enc)  # initialize the out
+        out = torch.concatenate(G, S_enc)  # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_E, self.bn_linears_E)):
             # print(out.size())
