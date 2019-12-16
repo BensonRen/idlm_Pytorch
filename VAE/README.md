@@ -9,6 +9,11 @@
 ## 2019.12.04
 Function completed:
 1. Parameter.py commented
+
+## 2019.12.15
+
+
+
 # To-do list
 1. Get the latent variable strucutre
 2. Modify the train 

@@ -3,10 +3,14 @@ The parameter file storing the parameters for VAE Model
 """
 
 # Architectural Params
-LINEAR = [8, 50, 500, 1000, 1000, 1000, 500, 150]
-CONV_OUT_CHANNEL = [4, 4, 4]
-CONV_KERNEL_SIZE = [8, 5, 5]
-CONV_STRIDE = [2, 1, 1]
+DIM_Z = 20
+DIM_SPENC = 10
+LINEAR_D = [DIM_SPENC + DIM_Z, 50, 500, 500, 150]           # Linear units for Decoder
+LINEAR_E = [8 + DIM_Z, 50, 500, 500, 150]                   # Linear units for Encoder
+LINEAR_SE = [150, 100,  50, DIM_SPENC]                      # Linear units for spectra encoder
+CONV_OUT_CHANNEL_SE = [8, 4, 1]
+CONV_KERNEL_SIZE_SE = [51, 35, 30]
+CONV_STRIDE_SE = [1, 1, 2]
 
 # Optimization params
 OPTIM = "Adam"
