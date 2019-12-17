@@ -105,7 +105,7 @@ class Forward(nn.Module):
             if self.fix_w0:
                 w0 = self.w0.unsqueeze(0).unsqueeze(2)
             else:
-                w0 = out[:, :, 0].unsqueeze(2) * 5
+                w0 = out[:, :, 0].unsqueeze(2) * 1.5
             wp = out[:, :, 1].unsqueeze(2) * 5
             g  = out[:, :, 2].unsqueeze(2) * 0.05
 

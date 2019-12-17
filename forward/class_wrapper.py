@@ -28,7 +28,7 @@ class Network(object):
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
-            if flags.model_name is not None:                    # leave custume name if possible
+            if flags.model_name is None:                    # leave custume name if possible
                 self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
             else:
                 self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
