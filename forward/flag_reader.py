@@ -21,6 +21,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # Model Architectural Params
     parser.add_argument('--use-lorentz', type=bool, default=USE_LORENTZ, help='The boolean flag that indicate whether we use lorentz oscillator')
+    parser.add_argument('--fix-w0', type=bool, default=FIX_W0, help='The boolean flag that indicate whether fix the lorentzian frequencis')
     parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units')
     parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv')
     parser.add_argument('--conv-kernel-size', type=list, default=CONV_KERNEL_SIZE, help='The kernel size of your 1d conv')
@@ -41,11 +42,12 @@ def read_flag():
     parser.add_argument('--stop_threshold', default=STOP_THRESHOLD, type=float,
                         help='The threshold below which training should stop')
     # Data specific Params
-    parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
     parser.add_argument('--geoboundary', default=GEOBOUNDARY, type=tuple, help='the boundary of the geometric data')
     parser.add_argument('--data-dir', default=DATA_DIR, type=str, help='data directory')
     parser.add_argument('--normalize-input', default=NORMALIZE_INPUT, type=bool,
                         help='whether we should normalize the input or not')
+    parser.add_argument('--test-ratio', default=TEST_RATIO, type=float, help='the ratio of test case')
+
     # Running specific
     parser.add_argument('--eval-model', default=EVAL_MODEL, type=str,
                         help='the folder name of the model that you want to evaluate')
@@ -53,6 +55,7 @@ def read_flag():
                         help='The boolean flag that indicate use CPU only')
     parser.add_argument('--num-plot-compare', type=int, default=NUM_COM_PLOT_TENSORBOARD,
                         help='#Plots to store in tensorboard during training for spectra compare')
+    parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
     flags = parser.parse_args()  # This is for command line version of the code
     # flags = parser.parse_args(args = [])#This is for jupyter notebook version of the code
     # flagsVar = vars(flags)

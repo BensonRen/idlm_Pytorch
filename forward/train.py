@@ -46,7 +46,8 @@ def training_from_flag(flags):
                                                       geoboundary=flags.geoboundary,
                                                       batch_size=flags.batch_size,
                                                       normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir)
+                                                      data_dir=flags.data_dir,
+                                                      test_ratio=flags.test_ratio)
     # Reset the boundary is normalized
     if flags.normalize_input:
         flags.geoboundary_norm = [-1, 1, -1, 1]

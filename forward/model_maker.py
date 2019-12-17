@@ -36,10 +36,14 @@ class Forward(nn.Module):
             # Create the constant for mapping the frequency w
             w_numpy = np.arange(fre_low, fre_high, (fre_high - fre_low) / self.num_spec_point)
 
+            self.fix_w0 = flags.fix_w0
+            self.w0 = torch.tensor(np.arange(0, 5, 5 / self.num_lorentz))
+
             # Create the tensor from numpy array
             cuda = True if torch.cuda.is_available() else False
             if cuda:
                 self.w = torch.tensor(w_numpy).cuda()
+                self.w0 = self.w0.cuda()
             else:
                 self.w = torch.tensor(w_numpy)
 
@@ -98,7 +102,10 @@ class Forward(nn.Module):
             out = out[:,0:-1].view([-1, int(out.size(1)/3), 3])
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
-            w0 = out[:, :, 0].unsqueeze(2) * 5
+            if self.fix_w0:
+                w0 = self.w0.unsqueeze(0).unsqueeze(2)
+            else:
+                w0 = out[:, :, 0].unsqueeze(2) * 5
             wp = out[:, :, 1].unsqueeze(2) * 5
             g  = out[:, :, 2].unsqueeze(2) * 0.05
 
