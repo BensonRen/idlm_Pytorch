@@ -158,7 +158,8 @@ class Network(object):
                     self.log.add_figure(tag='N&K{}'.format(j), figure=f, global_step=epoch)
                     f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
                                              Ytruth=spectra[j, :].cpu().data.numpy(),
-                                             T=self.model.T_each_lor[j, :])
+                                             T=self.model.T_each_lor[j, :],
+                                             eps_inf = self.model.eps_inf[j])
                     self.log.add_figure(tag='T{}'.format(j), figure=f, global_step=epoch)
                 # For debugging purpose, in model:forward function reocrd the tensor
                 self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
@@ -246,10 +247,10 @@ class Network(object):
             plt.plot(frequency, T, linewidth=1, linestyle='--')
         if E2 is not None:
             for i in range(np.shape(E2)[0]):
-                plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':')
+                plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':', label="E2" + str(i))
         if E1 is not None:
             for i in range(np.shape(E1)[0]):
-                plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-')
+                plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-', label="E1" + str(i))
         if N is not None:
             plt.plot(frequency, N, linewidth=1, linestyle=':', label="N")
         if K is not None:
