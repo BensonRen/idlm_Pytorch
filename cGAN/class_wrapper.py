@@ -147,7 +147,7 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model_d = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+        self.model_d = torch.load(os.path.join(self.ckpt_dir, 'best_model_discriminator.pt'))
         self.model_g = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
 
     def train(self):
