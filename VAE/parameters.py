@@ -4,10 +4,10 @@ The parameter file storing the parameters for VAE Model
 
 # Architectural Params
 DIM_Z = 20
-DIM_SPENC = 15
-LINEAR_D = [DIM_SPENC + DIM_Z, 50, 500, 500, 100, 8]           # Linear units for Decoder
-LINEAR_E = [8 + DIM_SPENC, 50, 500, 500, 150]                   # Linear units for Encoder
-LINEAR_SE = [150, 100,  50, DIM_SPENC]                      # Linear units for spectra encoder
+DIM_SPEC = 15
+LINEAR_D = [DIM_SPEC + DIM_Z, 50, 500, 500, 100, 8]           # Linear units for Decoder
+LINEAR_E = [8 + DIM_SPEC, 50, 500, 500, 150]                   # Linear units for Encoder
+LINEAR_SE = [150, 100,  50, DIM_SPEC]                      # Linear units for spectra encoder
 CONV_OUT_CHANNEL_SE = [8, 4, 1]
 CONV_KERNEL_SIZE_SE = [51, 35, 30]
 CONV_STRIDE_SE = [1, 1, 2]

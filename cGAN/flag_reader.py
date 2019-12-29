@@ -19,18 +19,17 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
-
-
     # Forward model architecture hyper parameters
-    parser.add_argument('--linear-f', type=list, default=LINEAR_F, help='The fc layers units for forward model')
-    parser.add_argument('--conv-out-channel-f', type=list, default=CONV_OUT_CHANNEL_F, help='The output channel of your 1d conv for forward model')
-    parser.add_argument('--conv-kernel-size-f', type=list, default=CONV_KERNEL_SIZE_F, help='The kernel size of your 1d conv for forward model')
-    parser.add_argument('--conv-stride-f', type=list, default=CONV_STRIDE_F, help='The strides of your 1d conv fro forward model')
+    parser.add_argument('--linear-d', type=list, default=LINEAR_D, help='The fc layers units for discriminator model')
+    parser.add_argument('--conv-out-channel-d', type=list, default=CONV_OUT_CHANNEL_D, help='The output channel of your 1d conv for discriminator model')
+    parser.add_argument('--conv-kernel-size-d', type=list, default=CONV_KERNEL_SIZE_D, help='The kernel size of your 1d conv for discriminator model')
+    parser.add_argument('--conv-stride-d', type=list, default=CONV_STRIDE_D, help='The strides of your 1d conv fro discriminator model')
     # Backward model architecture hyper parameters
-    parser.add_argument('--linear-b', type=list, default=LINEAR_B, help='The fc layers units for forward model')
-    parser.add_argument('--conv-out-channel-b', type=list, default=CONV_OUT_CHANNEL_B, help='The output channel of your 1d conv for forward model')
-    parser.add_argument('--conv-kernel-size-b', type=list, default=CONV_KERNEL_SIZE_B, help='The kernel size of your 1d conv for forward model')
-    parser.add_argument('--conv-stride-b', type=list, default=CONV_STRIDE_B, help='The strides of your 1d conv fro forward model')
+    parser.add_argument('--linear-se', type=list, default=LINEAR_SE, help='The fc layer for the spectra encoder in generator model')
+    parser.add_argument('--linear-g', type=list, default=LINEAR_G, help='The fc layers units for generator model')
+    parser.add_argument('--conv-out-channel-g', type=list, default=CONV_OUT_CHANNEL_G, help='The output channel of your 1d conv for generator model')
+    parser.add_argument('--conv-kernel-size-g', type=list, default=CONV_KERNEL_SIZE_G, help='The kernel size of your 1d conv for generator model')
+    parser.add_argument('--conv-stride-g', type=list, default=CONV_STRIDE_G, help='The strides of your 1d conv fro generator model')
     # Optimization Params
     parser.add_argument('--optim', default=OPTIM, type=str, help='the type of optimizer that you want to use')
     parser.add_argument('--reg-scale', type=float, default=REG_SCALE, help='#scale for regularization of dense layers')
