@@ -19,22 +19,27 @@ from math import inf
 
 
 class Network(object):
-    def __init__(self, model_fn_d, model_fn_g, flags, train_loader, test_loader,
+    def __init__(self, model_fn_d, model_fn_g, model_fn_se, model_fn_f,
+                 flags, train_loader, test_loader,
                  ckpt_dir=os.path.join(os.path.abspath(''), 'models'),
                  inference_mode=False, saved_model=None):
         """
         The initializer of the Network class which is the wrapper of our neural network, this is for the Tandem model
-        :param model_fn_d:
-        :param model_fn_g:
-        :param flags:
-        :param train_loader:
-        :param test_loader:
-        :param ckpt_dir:
-        :param inference_mode:
-        :param saved_model:
+        :param model_fn_d: Model maker function for discriminator
+        :param model_fn_g: Model maker function for generator
+        :param model_fn_se: Model maker function for spectra encoder
+        :param model_fn_f: Model maker function for forward model
+        :param flags: The input param flag object
+        :param train_loader: Train loader of data
+        :param test_loader: Test data loader
+        :param ckpt_dir: The directory to save the check point file, default is 'models'
+        :param inference_mode: The boolean flag whether this is a inference mode
+        :param saved_model: Whether to load from the saved model, if not None then load from that model
         """
-        self.model_fn_d = model_fn_d                                # The model maker function for forward
-        self.model_fn_g = model_fn_g                                # The model maker function for backward
+        self.model_fn_d = model_fn_d                                # The model maker function for discriminator
+        self.model_fn_g = model_fn_g                                # The model maker function for generator
+        self.model_fn_se = model_fn_se                              # The model maker function for spectra encoder
+        self.model_fn_f = model_fn_f                                # # The model maker function for forward
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -42,10 +47,12 @@ class Network(object):
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.model_d, self.model_g = self.create_model()                        # The model itself
+        self.model_d, self.model_g, self.model_f, self.model_se = self.create_model()      # The model itself
         self.loss = self.make_loss()                            # The loss function
         self.optm_d = None                                      # The optimizer: Initialized at train() due to GPU
         self.optm_g = None                                      # The eval_optimizer: Initialized at eva() due to GPU
+        self.optm_se = None                                     # The optimizer: Initialized at train() due to GPU
+        self.optm_f = None                                      # The eval_optimizer: Initialized at eva() due to GPU
         self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
         self.train_loader = train_loader                        # The train data loader
         self.test_loader = test_loader                          # The test data loader
@@ -75,9 +82,13 @@ class Network(object):
         """
         model_d = self.model_fn_d(self.flags)
         model_g = self.model_fn_g(self.flags)
-        print("Forward model", model_d)
-        print("Backward model", model_g)
-        return model_d, model_g
+        print("Discriminator model", model_d)
+        print("Generator model", model_g)
+        model_f = self.model_fn_f(self.flags)
+        model_se = self.model_fn_se(self.flags)
+        print("Forward model", model_f)
+        print("Sectral_encoder model", model_se)
+        return model_d, model_g, model_f, model_se
 
     def make_loss(self, logit=None, labels=None, G=None):
         """
@@ -132,14 +143,28 @@ class Network(object):
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model_d, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+        torch.save(self.model_d, os.path.join(self.ckpt_dir, 'best_model_discriminator.pt'))
 
     def save_g(self):
         """
         Saving the model to the current check point folder with name best_model.pt
         :return: None
         """
-        torch.save(self.model_g, os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
+        torch.save(self.model_g, os.path.join(self.ckpt_dir, 'best_model_generator.pt'))
+
+    def save_f(self):
+        """
+        Saving the model to the current check point folder with name best_model.pt
+        :return: None
+        """
+        torch.save(self.model_f, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+
+    def save_se(self):
+        """
+        Saving the model to the current check point folder with name best_model.pt
+        :return: None
+        """
+        torch.save(self.model_se, os.path.join(self.ckpt_dir, 'best_model_spectra_encoder.pt'))
 
     def load(self):
         """
@@ -148,7 +173,9 @@ class Network(object):
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
         self.model_d = torch.load(os.path.join(self.ckpt_dir, 'best_model_discriminator.pt'))
-        self.model_g = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
+        self.model_g = torch.load(os.path.join(self.ckpt_dir, 'best_model_generator.pt'))
+        self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+        self.model_se = torch.load(os.path.join(self.ckpt_dir, 'best_model_spectra_encoder.pt'))
 
     def train(self):
         """
