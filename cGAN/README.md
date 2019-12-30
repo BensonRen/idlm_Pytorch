@@ -28,7 +28,7 @@
 2. This module has both linear and upconv modules
 
 ## 2019.12.30
-
+1. Class_wrapper training part ready. Debugging phase starts.
 
 # To-do list
 1. Finish the overall structure

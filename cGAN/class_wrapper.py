@@ -15,6 +15,8 @@ from torch.optim import lr_scheduler
 # Libs
 import numpy as np
 from math import inf
+
+
 # Own module
 
 
@@ -36,28 +38,28 @@ class Network(object):
         :param inference_mode: The boolean flag whether this is a inference mode
         :param saved_model: Whether to load from the saved model, if not None then load from that model
         """
-        self.model_fn_d = model_fn_d                                # The model maker function for discriminator
-        self.model_fn_g = model_fn_g                                # The model maker function for generator
-        self.model_fn_se = model_fn_se                              # The model maker function for spectra encoder
-        self.model_fn_f = model_fn_f                                # # The model maker function for forward
-        self.flags = flags                                      # The Flags containing the specs
-        if inference_mode:                                      # If inference mode, use saved model
+        self.model_fn_d = model_fn_d  # The model maker function for discriminator
+        self.model_fn_g = model_fn_g  # The model maker function for generator
+        self.model_fn_se = model_fn_se  # The model maker function for spectra encoder
+        self.model_fn_f = model_fn_f  # # The model maker function for forward
+        self.flags = flags  # The Flags containing the specs
+        if inference_mode:  # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
-        else:                                                   # training mode, create a new ckpt folder
+        else:  # training mode, create a new ckpt folder
             self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.model_d, self.model_g, self.model_f, self.model_se = self.create_model()      # The model itself
-        self.loss = self.make_loss()                            # The loss function
-        self.optm_d = None                                      # The optimizer: Initialized at train() due to GPU
-        self.optm_g = None                                      # The eval_optimizer: Initialized at eva() due to GPU
-        self.optm_se = None                                     # The optimizer: Initialized at train() due to GPU
-        self.optm_f = None                                      # The eval_optimizer: Initialized at eva() due to GPU
-        self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
-        self.train_loader = train_loader                        # The train data loader
-        self.test_loader = test_loader                          # The test data loader
-        self.log = SummaryWriter(self.ckpt_dir)                 # Create a summary writer for keeping the summary to the tensor board
-        self.best_validation_loss = float('inf')                # Set the BVL to large number
+        self.model_d, self.model_g, self.model_f, self.model_se = self.create_model()  # The model itself
+        self.loss = self.make_loss()  # The loss function
+        self.optm_d = None  # The optimizer: Initialized at train() due to GPU
+        self.optm_g = None  # The eval_optimizer: Initialized at eva() due to GPU
+        self.optm_se = None  # The optimizer: Initialized at train() due to GPU
+        self.optm_f = None  # The eval_optimizer: Initialized at eva() due to GPU
+        self.lr_scheduler = None  # The lr scheduler: Initialized at train() due to GPU
+        self.train_loader = train_loader  # The train data loader
+        self.test_loader = test_loader  # The test data loader
+        self.log = SummaryWriter(self.ckpt_dir)  # Create a summary writer for keeping the summary to the tensor board
+        self.best_validation_loss = float('inf')  # Set the BVL to large number
 
     def make_optimizer_g(self):
         """
@@ -104,7 +106,7 @@ class Network(object):
         """
         if logit is None:
             return None
-        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+        MSE_loss = nn.functional.mse_loss(logit, labels)  # The MSE Loss
         BDY_loss = torch.zeros(size=[])
         # Boundary loss of the geometry_eval to be less than 1
         if G is not None:
@@ -206,19 +208,19 @@ class Network(object):
             self.model_f.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
-                    geometry = geometry.cuda()                          # Put data onto GPU
-                    spectra = spectra.cuda()                            # Put data onto GPU
-                self.optm_f.zero_grad()                               # Zero the gradient first
-                logit = self.model_f(geometry)                        # Get the output
-                loss = self.make_loss_f(logit, spectra)              # Get the loss tensor
-                loss.backward()                                # Calculate the backward gradients
-                self.optm_f.step()                                    # Move one step the optimizer
-                train_loss += loss                                  # Aggregate the loss
+                    geometry = geometry.cuda()  # Put data onto GPU
+                    spectra = spectra.cuda()  # Put data onto GPU
+                self.optm_f.zero_grad()  # Zero the gradient first
+                logit = self.model_f(geometry)  # Get the output
+                loss = self.make_loss_f(logit, spectra)  # Get the loss tensor
+                loss.backward()  # Calculate the backward gradients
+                self.optm_f.step()  # Move one step the optimizer
+                train_loss += loss  # Aggregate the loss
 
             # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
+            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:  # For eval steps, do the evaluations and tensor board
                 # Set to Evaluation Mode
                 self.model_f.eval()
                 print("Doing Evaluation on the model now")
@@ -228,15 +230,15 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     logit = self.model_f(geometry)
-                    loss = self.make_loss_f(logit, spectra)                   # compute the loss
-                    test_loss += loss                                       # Aggregate the loss
+                    loss = self.make_loss_f(logit, spectra)  # compute the loss
+                    test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
                 self.log.add_scalar('Loss/test', test_avg_loss, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
-                      % (epoch, train_avg_loss, test_avg_loss ))
+                      % (epoch, train_avg_loss, test_avg_loss))
 
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
@@ -248,7 +250,6 @@ class Network(object):
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
                               (epoch, self.best_validation_loss))
                         return None
-
 
     def train(self):
         """
@@ -271,144 +272,85 @@ class Network(object):
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
-            train_loss = 0
+            train_loss_g = 0
+            train_loss_d = 0
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model_d.train()
+            self.model_g.train()
+            self.model_se.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
-                    geometry = geometry.cuda()                          # Put data onto GPU
-                    spectra = spectra.cuda()                            # Put data onto GPU
+                    geometry = geometry.cuda()  # Put data onto GPU
+                    spectra = spectra.cuda()  # Put data onto GPU
                 """
                 Adversarial Training starts, first train the generator part
                 """
-                self.optm_d.zero_grad()                                 # Zero the gradient first
-                S_enc = self.model_se(spectra)                         # Encode the spectra
-                z = Tensor(np.random.normal(0, 1, (geometry.shape[0], self.flags.dim_z)))   # Create the noise
-                geo_fake = self.model_g(S_enc, z)                       # Generate the geometry_fake
-                spec_fake = self.model_f(geo_fake)                      # Get the resulting spectra
-                fake_score = self.make_loss(spec_fake, spectra)                  # Make loss
-                fake_score.backward()                                         # Calculate the backward gradients
-                self.optm_g.step()                                      # Move one step the optimizer
-                train_loss += fake_score                                      # Aggregate the loss
+                self.optm_d.zero_grad()  # Zero the gradient first
+                S_enc = self.model_se(spectra)  # Encode the spectra
+                z = Tensor(np.random.normal(0, 1, (geometry.shape[0], self.flags.dim_z)))  # Create the noise
+                geo_fake = self.model_g(S_enc, z)  # Generate the geometry_fake
+                spec_fake = self.model_f(geo_fake)  # Get the resulting spectra
+                fake_score = self.make_loss(spec_fake, spectra, G=geo_fake)  # Make loss
+                fake_score.backward()  # Calculate the backward gradients
+                self.optm_g.step()  # Move one step the optimizer
+                train_loss_g += fake_score  # Aggregate the loss
 
                 """
                 Training the discriminator part
                 """
                 self.optm_d.zero_grad()
-                valid = torch.Variable(Tensor(geometry.size(0),1).fill_(0.0), requires_grad = False)
+                valid = torch.Variable(Tensor(geometry.size(0), 1).fill_(0.0), requires_grad=False)
                 # The real pairs
                 loss_real = self.make_loss_d(self.model_d(geometry, spectra), valid)
                 # The fake pairs
                 loss_fake = self.make_loss_d(self.model_d(geo_fake, spectra), fake_score)
-                d_loss = (loss_fake + loss_real)
+                d_loss = (loss_fake + loss_real) / 2
+                d_loss.backward()
                 self.optm_d.step()
-
-
+                train_loss_d += d_loss  # Aggregate the loss
 
             # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
-            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
+            train_avg_loss_g = train_loss_g.cpu().data.numpy() / (j + 1)
+            train_avg_loss_d = train_loss_d.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:  # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/forward_train', train_avg_loss, epoch)
-                print("Logging the testing to tb")
-                self.log.add_scalar('Testing', 1, epoch)
+                self.log.add_scalar('Loss/generator_train', train_avg_loss_g, epoch)
+                self.log.add_scalar('Loss/discriminator_train', train_avg_loss_d, epoch)
                 # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
                 # Set to Evaluation Mode
                 self.model_d.eval()
-                print("Doing Evaluation on the forward model now")
+                self.model_g.eval()
+                self.model_se.eval()
+                self.model_f.eval()
+
+                print("Doing Evaluation on the model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    logit = self.model_d(geometry)
-                    loss = self.make_loss(logit, spectra)                   # compute the loss
-                    test_loss += loss                                       # Aggregate the loss
+                    S_enc = self.model_se(spectra)  # Encode the spectra
+                    z = Tensor(np.random.normal(0, 1, (geometry.shape[0], self.flags.dim_z)))  # Create the noise
+                    geo_fake = self.model_g(S_enc, z)  # Generate the geometry_fake
+                    spec_fake = self.model_f(geo_fake)  # Get the resulting spectra
+                    fake_score = self.make_loss(spec_fake, spectra, G=geo_fake)  # Make loss
+                    test_loss += fake_score  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
-                self.log.add_scalar('Loss/forward_test', test_avg_loss, epoch)
+                test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
+                self.log.add_scalar('Loss/generator_test', test_avg_loss, epoch)
 
-                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
-                      % (epoch, train_avg_loss, test_avg_loss ))
+                print("This is Epoch %d, generator training loss %.5f, discriminator training loss %.5f,"\
+                      " validation loss %.5f" % (epoch, train_avg_loss_g, train_avg_loss_d, test_avg_loss))
 
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
                     self.save_d()
-                    print("Saving the model down...")
-
-                    if self.best_validation_loss < self.flags.stop_threshold:
-                        print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
-                              (epoch, self.best_validation_loss))
-                        return None
-
-            # Learning rate decay upon plateau
-            self.lr_scheduler.step(train_avg_loss)
-
-        """
-        Backward Training Part
-        """
-        print("Now, start Backward Training")
-        # Construct optimizer after the model moved to GPU
-        self.optm_g = self.make_optimizer_g()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_g)
-
-        for epoch in range(self.flags.train_step):
-            # Set to Training Mode
-            train_loss = 0
-            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
-            self.model_g.train()
-            for j, (geometry, spectra) in enumerate(self.train_loader):
-                if cuda:
-                    geometry = geometry.cuda()  # Put data onto GPU
-                    spectra = spectra.cuda()    # Put data onto GPU
-                self.optm_g.zero_grad()         # Zero the gradient first
-                G_out = self.model_g(spectra)   # Get the geometry prediction
-                S_out = self.model_d(G_out)     # Get the spectra prediction
-                loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
-                loss.backward()  # Calculate the backward gradients
-                self.optm_g.step()  # Move one step the optimizer
-                train_loss += loss  # Aggregate the loss
-                # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
-
-            # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
-            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
-
-            if epoch % self.flags.eval_step == 0:  # For eval steps, do the evaluations and tensor board
-                # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/backward_train', train_avg_loss, epoch)
-                self.log.add_scalar('Loss/BDY_train', self.Boundary_loss.cpu().data.numpy(), epoch)
-
-                # Set to Evaluation Mode
-                self.model_g.eval()
-                print("Doing Evaluation on the backward model now")
-                test_loss = 0
-                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
-                    if cuda:
-                        geometry = geometry.cuda()
-                        spectra = spectra.cuda()
-                    G_out = self.model_g(spectra)  # Get the geometry prediction
-                    S_out = self.model_d(G_out)  # Get the spectra prediction
-                    loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
-                    test_loss += loss  # Aggregate the loss
-
-                # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
-                self.log.add_scalar('Loss/backward_test', test_avg_loss, epoch)
-                self.log.add_scalar('Loss/BDY_test', self.Boundary_loss.cpu().data.numpy(), epoch)
-
-                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
-                      % (epoch, train_avg_loss, test_avg_loss))
-
-                # Model improving, save the model down
-                if test_avg_loss < self.best_validation_loss:
-                    self.best_validation_loss = test_avg_loss
                     self.save_g()
+                    self.save_se()
                     print("Saving the model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
@@ -417,10 +359,11 @@ class Network(object):
                         return None
 
             # Learning rate decay upon plateau
-            self.lr_scheduler.step(train_avg_loss)
+            self.lr_scheduler.step(train_avg_loss_g)
         self.log.close()
+
     def evaluate(self, save_dir='data/'):
-        self.load()                             # load the model as constructed
+        self.load()  # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
@@ -440,7 +383,7 @@ class Network(object):
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(self.saved_model))
 
         # Open those files to append
-        with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
+        with open(Xtruth_file, 'a') as fxt, open(Ytruth_file, 'a') as fyt, \
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
@@ -463,15 +406,15 @@ class Network(object):
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
         # Start backprop
         for i in range(self.flags.eval_step):
-            logit = self.model(self.model.geometry_eval)                      # Get the output
-            loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
-            loss.backward()                           # Calculate the Gradient
-            self.optm_eval.step()                                       # Move one step the optimizer
+            logit = self.model(self.model.geometry_eval)  # Get the output
+            loss = self.make_loss(logit, target_spectra_expand)  # Get the loss
+            loss.backward()  # Calculate the Gradient
+            self.optm_eval.step()  # Move one step the optimizer
 
             # check periodically to stop and print stuff
             if i % self.flags.verb_step == 0:
-                print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
-                if loss.data < self.flags.stop_threshold:                       # Check if stop
+                print("loss at inference step{} : {}".format(i, loss.data))  # Print loss
+                if loss.data < self.flags.stop_threshold:  # Check if stop
                     print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
                     break
 
@@ -481,4 +424,3 @@ class Network(object):
         Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
 
         return Xpred_best, Ypred_best
-
