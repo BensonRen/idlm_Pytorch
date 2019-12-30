@@ -66,11 +66,14 @@ class Network(object):
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model_g.parameters(), lr=self.flags.lr)
+            op = torch.optim.Adam([self.model_g.parameters(), self.model_se.parameters()],
+                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model_g.parameters(), lr=self.flags.lr)
+            op = torch.optim.RMSprop([self.model_g.parameters(), self.model_se.parameters()],
+                                     lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model_g.parameters(), lr=self.flags.lr)
+            op = torch.optim.SGD([self.model_g.parameters(), self.model_se.parameters()],
+                                 lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -118,11 +121,14 @@ class Network(object):
         :return:
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model_d.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.Adam([self.model_d.parameters(), self.model_se.parameters()],
+                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model_d.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.RMSprop([self.model_d.parameters(), self.model_se.parameters()],
+                                     lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model_d.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.SGD([self.model_d.parameters(), self.model_se.parameters()],
+                                 lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -177,23 +183,91 @@ class Network(object):
         self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
         self.model_se = torch.load(os.path.join(self.ckpt_dir, 'best_model_spectra_encoder.pt'))
 
+    def train_forward(self):
+        """
+        The training block for training the forward module. This is served as the basis of the model since it provides
+        the metric for discriminator that whether this is a "good" example or "bad" example.
+        This function is before you call the train funciton
+        :return:
+        """
+        print("Start Forward Training now")
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model_f.cuda()
+
+        # Construct optimizer after the model moved to GPU
+        self.optm_f = self.make_optimizer_f()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm_f)
+
+        for epoch in range(self.flags.train_step):
+            # print("This is training Epoch {}".format(epoch))
+            # Set to Training Mode
+            train_loss = 0
+            self.model_f.train()
+            for j, (geometry, spectra) in enumerate(self.train_loader):
+                if cuda:
+                    geometry = geometry.cuda()                          # Put data onto GPU
+                    spectra = spectra.cuda()                            # Put data onto GPU
+                self.optm_f.zero_grad()                               # Zero the gradient first
+                logit = self.model_f(geometry)                        # Get the output
+                loss = self.make_loss_f(logit, spectra)              # Get the loss tensor
+                loss.backward()                                # Calculate the backward gradients
+                self.optm_f.step()                                    # Move one step the optimizer
+                train_loss += loss                                  # Aggregate the loss
+
+            # Calculate the avg loss of training
+            train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
+
+            if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
+                # Set to Evaluation Mode
+                self.model_f.eval()
+                print("Doing Evaluation on the model now")
+                test_loss = 0
+                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                    if cuda:
+                        geometry = geometry.cuda()
+                        spectra = spectra.cuda()
+                    logit = self.model_f(geometry)
+                    loss = self.make_loss_f(logit, spectra)                   # compute the loss
+                    test_loss += loss                                       # Aggregate the loss
+
+                # Record the testing loss to the tensorboard
+                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+
+                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
+                      % (epoch, train_avg_loss, test_avg_loss ))
+
+                # Model improving, save the model down
+                if test_avg_loss < self.best_validation_loss:
+                    self.best_validation_loss = test_avg_loss
+                    self.save()
+                    print("Saving the model down...")
+
+                    if self.best_validation_loss < self.flags.stop_threshold:
+                        print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
+                              (epoch, self.best_validation_loss))
+                        return None
+
+
     def train(self):
         """
         The major training function. This would start the training using information given in the flags
         :return: None
         """
-        """
-        Forward Training part
-        """
-        print("Start Forward Training now")
+        print("Start Discriminator and Generator Training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model_d.cuda()
             self.model_g.cuda()
+            self.model_se.cuda()
+        Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
         # Construct optimizer after the model moved to GPU
         self.optm_d = self.make_optimizer_d()
         self.lr_scheduler = self.make_lr_scheduler(self.optm_d)
+        self.optm_g = self.make_optimizer_g()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm_g)
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
@@ -204,13 +278,32 @@ class Network(object):
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
-                self.optm_d.zero_grad()                                   # Zero the gradient first
-                S_out = self.model_d(geometry)     # Get the output
-                loss = self.make_loss(S_out, spectra)                   # Get the loss tensor
-                loss.backward()                                         # Calculate the backward gradients
-                self.optm_d.step()                                      # Move one step the optimizer
-                train_loss += loss                                      # Aggregate the loss
-                # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
+                """
+                Adversarial Training starts, first train the generator part
+                """
+                self.optm_d.zero_grad()                                 # Zero the gradient first
+                S_enc = self.model_se(spectra)                         # Encode the spectra
+                z = Tensor(np.random.normal(0, 1, (geometry.shape[0], self.flags.dim_z)))   # Create the noise
+                geo_fake = self.model_g(S_enc, z)                       # Generate the geometry_fake
+                spec_fake = self.model_f(geo_fake)                      # Get the resulting spectra
+                fake_score = self.make_loss(spec_fake, spectra)                  # Make loss
+                fake_score.backward()                                         # Calculate the backward gradients
+                self.optm_g.step()                                      # Move one step the optimizer
+                train_loss += fake_score                                      # Aggregate the loss
+
+                """
+                Training the discriminator part
+                """
+                self.optm_d.zero_grad()
+                valid = torch.Variable(Tensor(geometry.size(0),1).fill_(0.0), requires_grad = False)
+                # The real pairs
+                loss_real = self.make_loss_d(self.model_d(geometry, spectra), valid)
+                # The fake pairs
+                loss_fake = self.make_loss_d(self.model_d(geo_fake, spectra), fake_score)
+                d_loss = (loss_fake + loss_real)
+                self.optm_d.step()
+
+
 
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)

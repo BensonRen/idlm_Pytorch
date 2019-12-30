@@ -21,9 +21,6 @@ CONV_STRIDE_SE = [1, 1, 2]
 
 # Params for discriminator
 LINEAR_D = [8 + DIM_SPEC, 50, 500, 1000, 1000, 1000, 500, 150]
-CONV_OUT_CHANNEL_D = [4, 4, 4]
-CONV_KERNEL_SIZE_D = [8, 5, 5]
-CONV_STRIDE_D = [2, 1, 1]
 
 # Params for Generator
 LINEAR_G = [DIM_SPEC + DIM_Z, 100, 500, 500, 500, 100, 8]
