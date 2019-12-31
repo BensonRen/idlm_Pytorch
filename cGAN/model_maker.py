@@ -165,7 +165,7 @@ class Generator(nn.Module):
         out = torch.cat((spec_encode, z), dim=-1)
 
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_b, self.bn_linears_b)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_g, self.bn_linears_g)):
             out = F.relu(bn(fc(out)))
         G = out
         return G

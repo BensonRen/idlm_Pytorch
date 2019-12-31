@@ -19,6 +19,8 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
+    parser.add_argument('--dim-spec', default=DIM_SPEC, type=int, help='dimension of the spectra encoded conponent')
     # Forward model architecture hyper parameters
     parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units for forward model')
     parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv')

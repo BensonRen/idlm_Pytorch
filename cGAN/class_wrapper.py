@@ -68,13 +68,13 @@ class Network(object):
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.Adam([*self.model_g.parameters(), *self.model_se.parameters()],
                                   lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.RMSprop([*self.model_g.parameters(), *self.model_se.parameters()],
                                      lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.SGD([*self.model_g.parameters(), *self.model_se.parameters()],
                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -123,13 +123,13 @@ class Network(object):
         :return:
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.Adam([*self.model_d.parameters(), *self.model_se.parameters()],
                                   lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.RMSprop([*self.model_d.parameters(), *self.model_se.parameters()],
                                      lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.SGD([*self.model_d.parameters(), *self.model_se.parameters()],
                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -248,7 +248,7 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     logit = self.model_f(geometry)
-                    loss = self.make_loss_f(logit, spectra)  # compute the loss
+                    loss = self.make_loss(logit, spectra)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
@@ -261,7 +261,7 @@ class Network(object):
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
-                    self.save()
+                    self.save_f()
                     print("Saving the model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
@@ -317,11 +317,11 @@ class Network(object):
                 Training the discriminator part
                 """
                 self.optm_d.zero_grad()
-                valid = torch.Variable(Tensor(geometry.size(0), 1).fill_(0.0), requires_grad=False)
+                valid = torch.zeros(geometry.size(0), 1, requires_grad=False)
                 # The real pairs
-                loss_real = self.make_loss_d(self.model_d(geometry, spectra), valid)
+                loss_real = self.make_loss(self.model_d(geometry, spectra), valid)
                 # The fake pairs
-                loss_fake = self.make_loss_d(self.model_d(geo_fake, spectra), fake_score)
+                loss_fake = self.make_loss(self.model_d(geo_fake, spectra), fake_score)
                 d_loss = (loss_fake + loss_real) / 2
                 d_loss.backward()
                 self.optm_d.step()
