@@ -135,6 +135,24 @@ class Network(object):
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
 
+    def make_optimizer_f(self):
+        """
+        Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
+        :return:
+        """
+        if self.flags.optim == 'Adam':
+            op = torch.optim.Adam(self.model_f.parameters(),
+                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'RMSprop':
+            op = torch.optim.RMSprop(self.model_f.parameters(),
+                                     lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'SGD':
+            op = torch.optim.SGD(self.model_f.parameters(),
+                                 lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        else:
+            raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
+        return op
+
     def make_lr_scheduler(self, optm):
         """
         Make the learning rate scheduler as instructed. More modes can be added to this, current supported ones:
@@ -212,7 +230,7 @@ class Network(object):
                     spectra = spectra.cuda()  # Put data onto GPU
                 self.optm_f.zero_grad()  # Zero the gradient first
                 logit = self.model_f(geometry)  # Get the output
-                loss = self.make_loss_f(logit, spectra)  # Get the loss tensor
+                loss = self.make_loss(logit, spectra)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_f.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss

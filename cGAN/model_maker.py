@@ -127,27 +127,6 @@ class Discriminator(nn.Module):
             self.linears_d.append(nn.Linear(fc_num, flags.linear_d[ind + 1]))
             self.bn_linears_d.append(nn.BatchNorm1d(flags.linear_d[ind + 1]))
 
-        # Conv Layer definitions here
-        self.convs_d = nn.ModuleList([])
-        in_channel = 1                                                  # Initialize the in_channel number
-        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_d,
-                                                                     flags.conv_kernel_size_d,
-                                                                     flags.conv_stride_d)):
-            if stride == 2:     # We want to double the number
-                pad = int(kernel_size/2 - 1)
-            elif stride == 1:   # We want to keep the number unchanged
-                pad = int((kernel_size - 1)/2)
-            else:
-                Exception("Now only support stride = 1 or 2, contact Ben")
-
-            self.convs_d.append(nn.ConvTranspose1d(in_channel, out_channel, kernel_size,
-                                stride=stride, padding=pad)) # To make sure L_out double each time
-            in_channel = out_channel # Update the out_channel
-        # Get the channel number down
-        self.convs_d.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-        # Define forward module for separate training
-        # self.forward_modules = [self.linears_d, self.bn_linears_d, self.convs_d]
-
     def forward(self, G, S):
         """
         The forward function which defines how the network is connected
