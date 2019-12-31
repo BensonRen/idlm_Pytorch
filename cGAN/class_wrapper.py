@@ -297,9 +297,11 @@ class Network(object):
             self.model_g.train()
             self.model_se.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
+                valid = torch.zeros(geometry.size(0), 1, requires_grad=False)
                 if cuda:
                     geometry = geometry.cuda()  # Put data onto GPU
                     spectra = spectra.cuda()  # Put data onto GPU
+                    valid = valid.cuda()
                 """
                 Adversarial Training starts, first train the generator part
                 """
@@ -309,7 +311,7 @@ class Network(object):
                 geo_fake = self.model_g(S_enc, z)  # Generate the geometry_fake
                 spec_fake = self.model_f(geo_fake)  # Get the resulting spectra
                 fake_score = self.make_loss(spec_fake, spectra, G=geo_fake)  # Make loss
-                fake_score.backward()  # Calculate the backward gradients
+                fake_score.backward(retain_graph=True)  # Calculate the backward gradients
                 self.optm_g.step()  # Move one step the optimizer
                 train_loss_g += fake_score  # Aggregate the loss
 
@@ -317,11 +319,10 @@ class Network(object):
                 Training the discriminator part
                 """
                 self.optm_d.zero_grad()
-                valid = torch.zeros(geometry.size(0), 1, requires_grad=False)
                 # The real pairs
-                loss_real = self.make_loss(self.model_d(geometry, spectra), valid)
+                loss_real = self.make_loss(self.model_d(geometry, S_enc), valid)
                 # The fake pairs
-                loss_fake = self.make_loss(self.model_d(geo_fake, spectra), fake_score)
+                loss_fake = self.make_loss(self.model_d(geo_fake, S_enc), fake_score)
                 d_loss = (loss_fake + loss_real) / 2
                 d_loss.backward()
                 self.optm_d.step()
