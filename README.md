@@ -7,12 +7,13 @@
 #### Finished Models:
 1. forward model (The christian's model mapping from geometry to spectra) 
 2. Backpropagation model
-
-#### Models working now:
 3. Tandem model
 4. Variational Auto-Encoder model
 
+#### Models working now:
+1. Convolutional Generative Adverserial Network model
+2. Invertible Neural Network
+
 #### Models to be worked on:
-5. Convolutional Generative Adverserial Network model
 
 Please see into the folder of each model and see the README file for developer log for more details of the progress.

@@ -12,7 +12,7 @@ import shutil
 import flag_reader
 import data_reader
 from class_wrapper import Network
-from model_maker import Forward, Backward
+from model_maker import Forward, Discriminator, Generator, Spectra_encoder
 
 
 def put_param_into_folder():
@@ -52,10 +52,10 @@ def training_from_flag(flags):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Forward, Backward, flags, train_loader, test_loader)
+    ntwk = Network(Discriminator, Generator, Spectra_encoder, Forward, flags, train_loader, test_loader)
 
     # Training process
-    print("Start training now...")
+    ntwk.train_forward()
     ntwk.train()
 
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct

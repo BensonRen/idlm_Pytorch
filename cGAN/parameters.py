@@ -7,18 +7,23 @@ Hyper-parameters of the Tandem model
 DIM_Z = 20
 DIM_SPEC = 20
 
+# Params for Forward Model, conv is actually upconv module
+LINEAR = [8, 50, 500, 500, 500, 500, 500, 150]
+CONV_OUT_CHANNEL = [4, 4, 4]
+CONV_KERNEL_SIZE = [8, 5, 5]
+CONV_STRIDE = [2, 1, 1]
+
+# Params for Spec_encoder Model
+LINEAR_SE = [150, 100, 100, 100, DIM_SPEC]
+CONV_OUT_CHANNEL_SE = [4, 4, 1]
+CONV_KERNEL_SIZE_SE = [51, 35, 30]
+CONV_STRIDE_SE = [1, 1, 2]
+
 # Params for discriminator
-LINEAR_D = [8, 50, 500, 1000, 1000, 1000, 500, 150]
-CONV_OUT_CHANNEL_D = [4, 4, 4]
-CONV_KERNEL_SIZE_D = [8, 5, 5]
-CONV_STRIDE_D = [2, 1, 1]
+LINEAR_D = [8 + DIM_SPEC, 50, 500, 1000, 1000, 1000, 500, 150]
 
 # Params for Generator
-LINEAR_SE = [150, 100, 100, 100, DIM_SPEC]
 LINEAR_G = [DIM_SPEC + DIM_Z, 100, 500, 500, 500, 100, 8]
-CONV_OUT_CHANNEL_G = [4, 4, 1]
-CONV_KERNEL_SIZE_G = [51, 35, 30]
-CONV_STRIDE_G = [1, 1, 2]
 
 # Optimizer parameters
 OPTIM = "Adam"
