@@ -30,6 +30,10 @@
 ## 2019.12.30
 1. Class_wrapper training part ready. Debugging phase starts.
 
+## 2019.12.31
+1. Training module debugged. Training of GAN runs smoothly on GPU now.
+
 # To-do list
-1. Finish the overall structure
-2. Training function 
+1. Evaluation mode (experiment stage)
+2. Plotting function (experiment stage)
+3. Tuning(experiment stage)
