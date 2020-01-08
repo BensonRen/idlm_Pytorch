@@ -31,12 +31,12 @@ REG_SCALE = 5e-5
 BATCH_SIZE = 128
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 1
-TRAIN_STEP = 10
+TRAIN_STEP = 100
 VERB_STEP = 1
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0
-STOP_THRESHOLD = 1e-3
+STOP_THRESHOLD = 1e-5
 
 # Running specific parameter
 USE_CPU_ONLY = False

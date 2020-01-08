@@ -68,13 +68,13 @@ class Network(object):
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.Adam([*self.model_g.parameters(), *self.model_se.parameters()],
                                   lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.RMSprop([*self.model_g.parameters(), *self.model_se.parameters()],
                                      lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model_g.parameters(), self.model_se.parameters()],
+            op = torch.optim.SGD([*self.model_g.parameters(), *self.model_se.parameters()],
                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -123,13 +123,31 @@ class Network(object):
         :return:
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.Adam([*self.model_d.parameters(), *self.model_se.parameters()],
                                   lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.RMSprop([*self.model_d.parameters(), *self.model_se.parameters()],
                                      lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model_d.parameters(), self.model_se.parameters()],
+            op = torch.optim.SGD([*self.model_d.parameters(), *self.model_se.parameters()],
+                                 lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        else:
+            raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
+        return op
+
+    def make_optimizer_f(self):
+        """
+        Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
+        :return:
+        """
+        if self.flags.optim == 'Adam':
+            op = torch.optim.Adam(self.model_f.parameters(),
+                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'RMSprop':
+            op = torch.optim.RMSprop(self.model_f.parameters(),
+                                     lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'SGD':
+            op = torch.optim.SGD(self.model_f.parameters(),
                                  lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -212,7 +230,7 @@ class Network(object):
                     spectra = spectra.cuda()  # Put data onto GPU
                 self.optm_f.zero_grad()  # Zero the gradient first
                 logit = self.model_f(geometry)  # Get the output
-                loss = self.make_loss_f(logit, spectra)  # Get the loss tensor
+                loss = self.make_loss(logit, spectra)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_f.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
@@ -230,7 +248,7 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     logit = self.model_f(geometry)
-                    loss = self.make_loss_f(logit, spectra)  # compute the loss
+                    loss = self.make_loss(logit, spectra)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
@@ -243,7 +261,7 @@ class Network(object):
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
-                    self.save()
+                    self.save_f()
                     print("Saving the model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
@@ -279,9 +297,11 @@ class Network(object):
             self.model_g.train()
             self.model_se.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
+                valid = torch.zeros(geometry.size(0), 1, requires_grad=False)
                 if cuda:
                     geometry = geometry.cuda()  # Put data onto GPU
                     spectra = spectra.cuda()  # Put data onto GPU
+                    valid = valid.cuda()
                 """
                 Adversarial Training starts, first train the generator part
                 """
@@ -291,7 +311,7 @@ class Network(object):
                 geo_fake = self.model_g(S_enc, z)  # Generate the geometry_fake
                 spec_fake = self.model_f(geo_fake)  # Get the resulting spectra
                 fake_score = self.make_loss(spec_fake, spectra, G=geo_fake)  # Make loss
-                fake_score.backward()  # Calculate the backward gradients
+                fake_score.backward(retain_graph=True)  # Calculate the backward gradients
                 self.optm_g.step()  # Move one step the optimizer
                 train_loss_g += fake_score  # Aggregate the loss
 
@@ -299,11 +319,10 @@ class Network(object):
                 Training the discriminator part
                 """
                 self.optm_d.zero_grad()
-                valid = torch.Variable(Tensor(geometry.size(0), 1).fill_(0.0), requires_grad=False)
                 # The real pairs
-                loss_real = self.make_loss_d(self.model_d(geometry, spectra), valid)
+                loss_real = self.make_loss(self.model_d(geometry, S_enc), valid)
                 # The fake pairs
-                loss_fake = self.make_loss_d(self.model_d(geo_fake, spectra), fake_score)
+                loss_fake = self.make_loss(self.model_d(geo_fake, S_enc), fake_score)
                 d_loss = (loss_fake + loss_real) / 2
                 d_loss.backward()
                 self.optm_d.step()
