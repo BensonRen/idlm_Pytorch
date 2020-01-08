@@ -9,10 +9,10 @@
 2. Backpropagation model
 3. Tandem model
 4. Variational Auto-Encoder model
+5. Convolutional Generative Adverserial Network model
 
 #### Models working now:
-1. Convolutional Generative Adverserial Network model
-2. Invertible Neural Network
+1. Invertible Neural Network
 
 #### Models to be worked on:
 
