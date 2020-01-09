@@ -12,15 +12,15 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from torch import pow, add, mul, div, sqrt
+from modules import LogisticDistribution, CouplingLayer, ScalingLayer
+
+#from torch import pow, add, mul, div, sqrt
 
 
-class Backprop(nn.Module):
+class INN(nn.Module):
     def __init__(self, flags):
-        super(Backprop, self).__init__()
-        self.bp = False                                                 # The flag that the model is backpropagating
-        # Initialize the geometry_eval field
-        self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
+        super(INN, self).__init__()
+
         # Linear Layer and Batch_norm Layer definitions here
         self.linears = nn.ModuleList([])
         self.bn_linears = nn.ModuleList([])
