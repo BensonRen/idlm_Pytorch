@@ -1,9 +1,13 @@
 """
-Params for Back propagation model
+Params for INN model
 """
-# Model Architectural Params
-USE_LORENTZ = False
-LINEAR = [8, 50, 500, 1000, 1000, 1000, 500, 150]
+# INN Model Architectural Params
+DIM_Z = 2
+NUM_HIDDEN_UNIT = 200
+NUM_HIDDEN_LAYERS = 5
+NUM_COUPLING_MODULES = 5
+
+# Auto Encoder of the
 CONV_OUT_CHANNEL = [4, 4, 4]
 CONV_KERNEL_SIZE = [8, 5, 5]
 CONV_STRIDE = [2, 1, 1]

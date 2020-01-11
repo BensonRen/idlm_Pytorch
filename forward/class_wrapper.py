@@ -144,27 +144,28 @@ class Network(object):
                 # Record the training loss to the tensorboard
                 #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                for j in range(self.flags.num_plot_compare):
-                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
-                                             Ytruth=spectra[j, :].cpu().data.numpy(),
-                                             E2=self.model.e2[j, :, :],
-                                             E1=self.model.e1[j, :, :],
-                                             eps_inf=self.model.eps_inf[j])
-                    self.log.add_figure(tag='E1&E2{}'.format(j), figure=f, global_step=epoch)
-                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
-                                            Ytruth=spectra[j, :].cpu().data.numpy(),
-                                            N=self.model.N[j, :],
-                                            K=self.model.K[j, :])
-                    self.log.add_figure(tag='N&K{}'.format(j), figure=f, global_step=epoch)
-                    f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
-                                             Ytruth=spectra[j, :].cpu().data.numpy(),
-                                             T=self.model.T_each_lor[j, :],
-                                             eps_inf = self.model.eps_inf[j])
-                    self.log.add_figure(tag='T{}'.format(j), figure=f, global_step=epoch)
-                # For debugging purpose, in model:forward function reocrd the tensor
-                self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
-                self.log.add_histogram("wp_histogram", self.model.wps, epoch)
-                self.log.add_histogram("g_histogram", self.model.gs, epoch)
+                if self.flags.use_lorentz:
+                    for j in range(self.flags.num_plot_compare):
+                        f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                                 Ytruth=spectra[j, :].cpu().data.numpy(),
+                                                 E2=self.model.e2[j, :, :],
+                                                 E1=self.model.e1[j, :, :],
+                                                 eps_inf=self.model.eps_inf[j])
+                        self.log.add_figure(tag='E1&E2{}'.format(j), figure=f, global_step=epoch)
+                        f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                                Ytruth=spectra[j, :].cpu().data.numpy(),
+                                                N=self.model.N[j, :],
+                                                K=self.model.K[j, :])
+                        self.log.add_figure(tag='N&K{}'.format(j), figure=f, global_step=epoch)
+                        f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
+                                                 Ytruth=spectra[j, :].cpu().data.numpy(),
+                                                 T=self.model.T_each_lor[j, :],
+                                                 eps_inf = self.model.eps_inf[j])
+                        self.log.add_figure(tag='T{}'.format(j), figure=f, global_step=epoch)
+                    # For debugging purpose, in model:forward function reocrd the tensor
+                    self.log.add_histogram("w0_histogram", self.model.w0s, epoch)
+                    self.log.add_histogram("wp_histogram", self.model.wps, epoch)
+                    self.log.add_histogram("g_histogram", self.model.gs, epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()
