@@ -12,10 +12,68 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from modules import LogisticDistribution, CouplingLayer, ScalingLayer
+from torch import  add, mul, exp
 
-#from torch import pow, add, mul, div, sqrt
 
+class CouplingLayer(nn.Module):
+    """
+    The Coupling Layer of the INN, additive
+    """
+    def __init__(self, flags, orientation=True):
+        super(CouplingLayer, self).__init__()
+        self.orientation = orientation                  # The orientation of this, True means positive and false means inversed
+        self.leakyrelu = nn.LeakyReLU(flags.leakyrelu_slope)
+        self.halflen = flags.linear[0]//2                      # where we split
+        self.linear_layers_s12t12 = []                # Define the list for s12t12
+        """
+        There would be 4 lists inside this linear_layers_s12t12, indicating 
+        s1,s2,t1,t2 4 complicated functions which can be modelled using fc nn with leakyrelu
+        each list has 2 components: linears, bn_linears
+        """
+        for i in range(4):
+            # Linear layer and batch norm layer for s1,s2,t1,t2 function
+            linears = nn.ModuleList([])
+            bn_linears = nn.ModuleList([])
+
+            for ind, fc_num in enumerate(flags.linear[0:-1]):               # Excluding the last one as we need intervals
+                linears.append(nn.Linear(fc_num, flags.linear[ind + 1]))
+                bn_linears.append(nn.BatchNorm1d(flags.linear[ind + 1]))
+            self.linear_layers_s12t12.append([linears, bn_linears])
+
+    def f(self, x, fname):
+        out = x
+        lb_pair = None                              # Initialize linear batch norm pair
+        if fname == 's1':
+            lb_pair = self.linear_layers_s12t12[0]
+        elif fname == 's2':
+            lb_pair = self.linear_layers_s12t12[1]
+        elif fname == 't1':
+            lb_pair = self.linear_layers_s12t12[2]
+        elif fname == 't2':
+            lb_pair = self.linear_layers_s12t12[3]
+        else:
+            raise ValueError('Please specify your f function to be either one of the '
+                             'followings: s1, s2, t1, t2 as illustrated in the original paper')
+        for ind, (fc, bn) in enumerate(zip(*lb_pair)):
+            out = self.leakyrelu(bn(fc(out)))  # ReLU + BN + Linear
+
+    def forward(self, x, logdet, invert=False):
+        if invert:
+            if self.orientation:
+                v1, v2 = x[:self.halflen], x[self.halflen:]
+            else:
+                v1, v2 = x[self.halflen:], x[:self.halflen]
+            u2 = mul(add(v2, -self.f(v1, 't1')), exp(-self.f(v1, 's1')))
+            u1 = mul(add(v1, -self.f(v2, 't2')), exp(-self.f(u2, 's2')))
+            return torch.cat((u1, u2), axis=1), logdet              # return the concated one
+        else:
+            if self.orientation:
+                u1, u2 = x[:self.halflen], x[self.halflen:]
+            else:
+                u1, u2 = x[self.halflen:], x[:self.halflen]
+            v1 = add(mul(u1, exp(self.f(u2, 's2'))), self.f(u2, 't2'))
+            v2 = add(mul(u2, exp(self.f(v1, 's1'))), self.f(v1, 't1'))
+            return torch.cat((v1, v2), axis=1), logdet              # return the concatenated one
 
 class INN(nn.Module):
     def __init__(self, flags):
