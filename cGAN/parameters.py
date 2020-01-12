@@ -29,10 +29,17 @@ LINEAR_G = [DIM_SPEC + DIM_Z, 100, 500, 500, 500, 100, 8]
 OPTIM = "Adam"
 REG_SCALE = 5e-4
 BATCH_SIZE = 128
+<<<<<<< HEAD
 EVAL_BATCH_SIZE = 128
 EVAL_STEP = 5
 TRAIN_STEP = 100
 VERB_STEP = 10
+=======
+EVAL_BATCH_SIZE = 4096
+EVAL_STEP = 1
+TRAIN_STEP = 10
+VERB_STEP = 1
+>>>>>>> 7748195ddf4709013658bba920510f1b7d9f150f
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
