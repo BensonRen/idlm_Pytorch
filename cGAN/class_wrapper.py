@@ -48,7 +48,10 @@ class Network(object):
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:  # training mode, create a new ckpt folder
-            self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+            if flags.model_name is None:
+                self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+            else:
+                self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
         self.model_d, self.model_g, self.model_f, self.model_se = self.create_model()  # The model itself
         self.loss = self.make_loss()  # The loss function
         self.optm_d = None  # The optimizer: Initialized at train() due to GPU

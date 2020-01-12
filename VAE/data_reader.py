@@ -8,7 +8,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
 from sklearn.model_selection import KFold
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 import torch
 

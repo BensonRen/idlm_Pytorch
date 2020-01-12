@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --output output.err                                                   # output log file
 #SBATCH -e error.err                                                   # error log file
-#SBATCH --mem=20G                                                      # request 20G memory
+#SBATCH --mem=10G                                                      # request 20G memory
 #SBATCH -c 1                                                           # request 6 gpu cores                                    
 #SBATCH -p collinslab                                     # request 1 gpu for this job
 module load Anaconda3/3.5.2                                            # load conda to make sure use GPU version of tf

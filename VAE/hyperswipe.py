@@ -14,7 +14,17 @@ if __name__ == '__main__':
         # linear[-1] = 150                # The end of linear
         # flags.linear = linear
         flags.dim_z = z
+        """
+        Calculation based hyper-parameter, no need to change
+        """
+        flags.linear_d[0] = flags.dim_spec + flags.dim_z
+        flags.linear_e[0] = flags.dim_spec + 8
+        flags.linear_se[-1] = flags.dim_spec
+        """
+        Calculation based hyper-parameter block end
+        """
+
         for j in range(3):
-            flags.model_name = "trail_"+str(j)+"_dim_z_swipe" + str(i)
+            flags.model_name = "trail_"+str(j)+"_dim_z_swipe" + str(z)
             train.training_from_flag(flags)
 
