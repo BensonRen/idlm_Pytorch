@@ -1,4 +1,6 @@
 dataIn
+*/*.err
+*/slurm*
 */models
 */data
 */.*
