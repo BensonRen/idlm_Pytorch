@@ -163,7 +163,7 @@ class Generator(nn.Module):
         """
         # Concatenate the random noise dimension to together with the convoluted spectrum
         out = torch.cat((spec_encode, z), dim=-1)
-
+        
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_g, self.bn_linears_g)):
             out = F.relu(bn(fc(out)))

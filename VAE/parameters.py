@@ -18,19 +18,19 @@ REG_SCALE = 5e-5
 BATCH_SIZE = 128
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 2
-TRAIN_STEP = 10
+TRAIN_STEP = 100
 VERB_STEP = 1
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
-STOP_THRESHOLD = 1e-3
+STOP_THRESHOLD = 1e-4
 
 # Data specific params
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
 MODEL_NAME  = ''
-DATA_DIR = '../'
+DATA_DIR = '/work/sr365/'
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 

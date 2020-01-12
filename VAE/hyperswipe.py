@@ -7,13 +7,14 @@ import  numpy as np
 import flag_reader
 if __name__ == '__main__':
     # Setting the loop for setting the parameter
-    for i in range(4,9):
+    for z in range(10,50,5):
         flags = flag_reader.read_flag()  	#setting the base case
-        linear = [500 for j in range(i)]        #Set the linear units
-        linear[0] = 8                   # The start of linear
-        linear[-1] = 150                # The end of linear
-        flags.linear = linear
+        # linear = [500 for j in range(i)]        #Set the linear units
+        # linear[0] = 8                   # The start of linear
+        # linear[-1] = 150                # The end of linear
+        # flags.linear = linear
+        flags.dim_z = z
         for j in range(3):
-            flags.model_name = "trail_"+str(j)+"_complexity_swipe_layer_num" + str(i)
+            flags.model_name = "trail_"+str(j)+"_dim_z_swipe" + str(i)
             train.training_from_flag(flags)
 

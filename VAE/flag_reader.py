@@ -21,7 +21,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # VAE model architecture hyper parameters
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
-    parser.add_argument('--dim-spenc', default=DIM_SPENC, type=int, help='dimension of the spectra encoded conponent')
+    parser.add_argument('--dim-spec', default=DIM_SPEC, type=int, help='dimension of the spectra encoded conponent')
     parser.add_argument('--linear-D', type=list, default=LINEAR_D, help='The fc layers units for decoder')
     parser.add_argument('--linear-E', type=list, default=LINEAR_E, help='The fc layers units for encoder  model')
     parser.add_argument('--linear-SE', type=list, default=LINEAR_SE, help='The fc layers units for spectra encoder model')
