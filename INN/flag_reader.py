@@ -26,8 +26,21 @@ def read_flag():
     parser.add_argument('--num-coupling-modules', type=int, default=NUM_COUPLING_MODULES, help='the number of coupling modules there are')
 
     # Auto Encoder Architectural Params
+    parser.add_argument('--encoder-linear', type=list, default=LINEAR_ENCODER, help='The fc layers units for encoder part')
+    parser.add_argument('--encoder-conv-out-channel', type=list, default=CONV_OUT_CHANNEL_ENCODER,
+                        help='The output channel of your 1d conv for encoder model')
+    parser.add_argument('--encoder-conv-kernel-size', type=list, default=CONV_KERNEL_SIZE_ENCODER,
+                        help='The kernel size of your 1d conv for encoder model')
+    parser.add_argument('--encoder-conv-stride', type=list, default=CONV_STRIDE_ENCODER,
+                        help='The strides of your 1d conv fro encoder model')
 
-
+    parser.add_argument('--decoder-linear', type=list, default=LINEAR_DECODER, help='The fc layers units for decoder part')
+    parser.add_argument('--decoder-conv-out-channel', type=list, default=CONV_OUT_CHANNEL_DECODER,
+                        help='The output channel of your 1d conv for decoder model')
+    parser.add_argument('--decoder-conv-kernel-size', type=list, default=CONV_KERNEL_SIZE_DECODER,
+                        help='The kernel size of your 1d conv for decoder model')
+    parser.add_argument('--decoder-conv-stride', type=list, default=CONV_STRIDE_DECODER,
+                        help='The strides of your 1d conv fro decoder model')
 
     # Optimizer Params
     parser.add_argument('--optim', default=OPTIM, type=str, help='the type of optimizer that you want to use')

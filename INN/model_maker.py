@@ -12,7 +12,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from torch import  add, mul, exp
+from torch import add, mul, exp
 
 
 class CouplingLayer(nn.Module):
@@ -75,10 +75,12 @@ class CouplingLayer(nn.Module):
             v2 = add(mul(u2, exp(self.f(v1, 's1'))), self.f(v1, 't1'))
             return torch.cat((v1, v2), axis=1), logdet              # return the concatenated one
 
+
 class INN(nn.Module):
     def __init__(self, flags):
         super(INN, self).__init__()
-
+    """ #For this stage we are not construting the INN model itself
+    
         # Linear Layer and Batch_norm Layer definitions here
         self.linears = nn.ModuleList([])
         self.bn_linears = nn.ModuleList([])
@@ -104,7 +106,7 @@ class INN(nn.Module):
             in_channel = out_channel # Update the out_channel
 
         self.convs.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-
+    """
     def randomize_geometry_eval(self):
         self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True)       # Randomize
 

@@ -19,18 +19,21 @@ from math import inf
 
 
 class Network(object):
-    def __init__(self, model_fn, flags, train_loader, test_loader,
+    def __init__(self, model_fn_AE, model_fn_INN, flags, train_loader, test_loader,
                  ckpt_dir=os.path.join(os.path.abspath(''), 'models'),
                  inference_mode=False, saved_model=None):
-        self.model_fn = model_fn                                # The model maker function
+        self.model_fn_AE, self.model_fn_INN = model_fn_AE, model_fn_INN     # The model maker function
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
-            self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-        self.model = self.create_model()                        # The model itself
+            if flags.model_name is None:                    # leave custume name if possible
+                self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+            else:
+                self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
+        self.AE, self.INN = self.create_model()                        # The model itself
         self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
@@ -61,10 +64,10 @@ class Network(object):
         Function to create the network module from provided model fn and flags
         :return: the created nn module
         """
-        model = self.model_fn(self.flags)
+        model_AE, model_INN = self.model_fn_AE(self.flags), self.model_fn_INN(self.flags)
         # summary(model, input_size=(128, 8))
-        print(model)
-        return model
+        print(model_AE, model_INN)
+        return model_AE, model_INN
 
     def make_loss(self, logit=None, labels=None):
         """
@@ -83,6 +86,21 @@ class Network(object):
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
+
+    def make_optimizer_ae(self):
+        """
+        Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
+        :return:
+        """
+        if self.flags.optim == 'Adam':
+            op = torch.optim.Adam(self.model_AE.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'RMSprop':
+            op = torch.optim.RMSprop(self.model_AE.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        elif self.flags.optim == 'SGD':
+            op = torch.optim.SGD(self.model_AE.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+        else:
+            raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
+        return op
 
     def make_optimizer(self):
         """
@@ -109,21 +127,106 @@ class Network(object):
                                               factor=self.flags.lr_decay_rate,
                                               patience=10, verbose=True, threshold=1e-4)
 
-    def save(self):
+    def save_autoencoder(self):
         """
         Saving the model to the current check point folder with name best_model.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        torch.save(self.model_AE, os.path.join(self.ckpt_dir, 'best_model_ae.pt'))
+
+    def save(self):
+        """
+        Saving the model to the current check point folder with name best_model.pt
+        :return: None
+        """
+        torch.save(self.model_INN, os.path.join(self.ckpt_dir, 'best_model_inn.pt'))
+
+    def load_autoencoder(self):
+        """
+        Loading the model from the check point folder with name best_model.pt
+        :return:
+        """
+        # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
+        self.model_AE = torch.load(os.path.join(self.ckpt_dir, 'best_model_ae.pt'))
 
     def load(self):
         """
         Loading the model from the check point folder with name best_model.pt
         :return:
         """
-        # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        self.model_INN = torch.load(os.path.join(self.ckpt_dir, 'best_model_inn.pt'))
+
+    def train_autoencoder(self):
+        """
+        The training function for training the auto encoder
+        :return: None
+        """
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model_AE.cuda()
+        # Construct optimizer after the model moved to GPU
+        self.optm = self.make_optimizer_ae()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm)
+
+        for epoch in range(self.flags.train_step):
+            # Set to Training Mode
+            train_loss = 0
+            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
+            self.model_AE.train()
+            for j, (geometry, spectra) in enumerate(self.train_loader):
+                if cuda:
+                    geometry = geometry.cuda()  # Put data onto GPU
+                    spectra = spectra.cuda()  # Put data onto GPU
+                self.optm.zero_grad()  # Zero the gradient first
+                logit = self.model_AE(geometry)  # Get the output
+                loss = self.make_loss(logit, spectra)  # Get the loss tensor
+                loss.backward()  # Calculate the backward gradients
+                self.optm.step()  # Move one step the optimizer
+                train_loss += loss  # Aggregate the loss
+                # boundary_loss += self.Boundary_loss                 # Aggregate the BDY loss
+
+            # Calculate the avg loss of training
+            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
+
+            if epoch % self.flags.eval_step:  # For eval steps, do the evaluations and tensor board
+                # Record the training loss to the tensorboard
+                self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
+
+                # Set to Evaluation Mode
+                self.model_AE.eval()
+                print("Doing Evaluation on the model now")
+                test_loss = 0
+                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                    if cuda:
+                        geometry = geometry.cuda()
+                        spectra = spectra.cuda()
+                    logit = self.model_AE(geometry)
+                    loss = self.make_loss(logit, spectra)  # compute the loss
+                    test_loss += loss  # Aggregate the loss
+
+                # Record the testing loss to the tensorboard
+                test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
+                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+
+                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
+                      % (epoch, train_avg_loss, test_avg_loss))
+
+                # Model improving, save the model down
+                if test_avg_loss < self.best_validation_loss:
+                    self.best_validation_loss = test_avg_loss
+                    self.save_autoencoder()
+                    print("Saving the model down...")
+
+                    if self.best_validation_loss < self.flags.stop_threshold:
+                        print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
+                              (epoch, self.best_validation_loss))
+                        return None
+
+            # Learning rate decay upon plateau
+            self.lr_scheduler.step(train_avg_loss)
 
     def train(self):
         """
@@ -133,7 +236,6 @@ class Network(object):
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
-
         # Construct optimizer after the model moved to GPU
         self.optm = self.make_optimizer()
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
