@@ -23,7 +23,7 @@
 1. Auto Encoder structure finished
 2. Auto Encoder trianing module finihsed
 3. Auto Encoder tunning on GPU machine
-
+4. Debugging minor details about AE training (dim_z to dim_code)
 ## To-do list
 1. Implement the maximum mean discrepancy for loss
 2. INN model connection using coupling layer

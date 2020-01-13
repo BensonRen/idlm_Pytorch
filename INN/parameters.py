@@ -2,13 +2,13 @@
 Params for INN model
 """
 # INN Model Architectural Params
-DIM_Z = 2
+DIM_CODE = 2
 NUM_HIDDEN_UNIT = 200
 NUM_HIDDEN_LAYERS = 5
 NUM_COUPLING_MODULES = 5
 
 # Auto Encoder model architectural Params
-LINEAR_ENCODER = [150, 100, 50, 30, 10, 8 - DIM_Z]
+LINEAR_ENCODER = [150, 100, 50, 30, 10, DIM_CODE]
 CONV_OUT_CHANNEL_ENCODER = [4, 4, 5]
 CONV_KERNEL_SIZE_ENCODER = [8, 5, 5]
 CONV_STRIDE_ENCODER = [2, 1, 1]

@@ -20,7 +20,7 @@ def read_flag():
     """
     parser = argparse.ArgumentParser()
     # INN Model Architectural Params
-    parser.add_argument('--dim-z', type=int, default=DIM_Z, help='The dimension of the latent variable to supplement the dimension of spectra')
+    parser.add_argument('--dim-code', type=int, default=DIM_CODE, help='The dimension of the latent variable to supplement the dimension of spectra')
     parser.add_argument('--num-hidden-unit', type=int, default=NUM_HIDDEN_UNIT, help='the number of hidden unit in each coupling layers')
     parser.add_argument('--num-hidden-layers', type=int, default=NUM_HIDDEN_LAYERS, help='the number of layers in each coupling layers')
     parser.add_argument('--num-coupling-modules', type=int, default=NUM_COUPLING_MODULES, help='the number of coupling modules there are')
