@@ -12,5 +12,19 @@
 ## 2020.01.07
 1. Directory created and code infrastructure copied from Back propagation
 
-## To-do list
+## 2020.01.09
+1. Coupling layer finished
+2. parameter flags and flag reader updated
 
+## 2020.01.10
+1. INN training structure outline finished. Loss left undefined
+
+## 2020.01.13
+1. Auto Encoder structure finished
+2. Auto Encoder trianing module finihsed
+3. Auto Encoder tunning on GPU machine
+
+## To-do list
+1. Implement the maximum mean discrepancy for loss
+2. INN model connection using coupling layer
+3. Dealing with convolution w.r.t. coupling layer
