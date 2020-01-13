@@ -33,7 +33,7 @@ class Network(object):
                 self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
             else:
                 self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
-        self.AE, self.INN = self.create_model()                        # The model itself
+        self.model_AE, self.model_INN = self.create_model()                        # The model itself
         self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
@@ -82,7 +82,8 @@ class Network(object):
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
 
         # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
+        # BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
+        BDY_loss = 0                        # For training the auto encoder purpose
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
@@ -176,10 +177,10 @@ class Network(object):
             self.model_AE.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
-                    geometry = geometry.cuda()  # Put data onto GPU
+                    # geometry = geometry.cuda()  # Put data onto GPU
                     spectra = spectra.cuda()  # Put data onto GPU
                 self.optm.zero_grad()  # Zero the gradient first
-                logit = self.model_AE(geometry)  # Get the output
+                logit = self.model_AE(spectra)  # Get the output
                 loss = self.make_loss(logit, spectra)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm.step()  # Move one step the optimizer
@@ -201,9 +202,9 @@ class Network(object):
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
-                        geometry = geometry.cuda()
+                        # geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    logit = self.model_AE(geometry)
+                    logit = self.model_AE(spectra)
                     loss = self.make_loss(logit, spectra)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
