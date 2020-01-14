@@ -77,9 +77,10 @@ class Network(object):
         if logit is None:
             return None
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-
-        # Boundary loss of the geometry_eval to be less than 1
-        BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
+        BDY_loss = 0
+        if self.model.bp:
+            # Boundary loss of the geometry_eval to be less than 1
+            BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)

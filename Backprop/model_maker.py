@@ -58,7 +58,7 @@ class Backprop(nn.Module):
         """
         out = G                                                         # initialize the out
         if self.bp:                                               # If the evaluation mode
-            out = self.geometry_eval
+           out = self.geometry_eval
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             # print(out.size())
