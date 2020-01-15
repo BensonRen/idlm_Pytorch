@@ -21,6 +21,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # Model Architectural Params
     parser.add_argument('--use-lorentz', type=bool, default=USE_LORENTZ, help='The boolean flag that indicate whether we use lorentz oscillator')
+    parser.add_argument('--use-conv', type=bool, default=USE_CONV, help='The boolean flag that indicate whether we use upconv layer if not using lorentz')
     parser.add_argument('--fix-w0', type=bool, default=FIX_W0, help='The boolean flag that indicate whether fix the lorentzian frequencis')
     parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units')
     parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv')

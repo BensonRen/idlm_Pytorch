@@ -21,6 +21,7 @@ class Forward(nn.Module):
 
         # Set up whether this uses a Lorentzian oscillator, this is a boolean value
         self.use_lorentz = flags.use_lorentz
+        self.use_conv = flags.use_conv
 
         # Assert the last entry of the fc_num is a multiple of 3 (This is for Lorentzian part)
         if flags.use_lorentz:
@@ -180,16 +181,16 @@ class Forward(nn.Module):
             return T
 
         # The normal mode to train without Lorentz
-        out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
-        # For the conv part
-        for ind, conv in enumerate(self.convs):
-            out = conv(out)
+        if self.use_conv:
+            out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
+            # For the conv part
+            for ind, conv in enumerate(self.convs):
+                out = conv(out)
 
-        # Final touch, because the input is normalized to [-1,1]
-        # S = tanh(out.squeeze())
-        # print(S.size())
-        S = out.squeeze()
-        return S
+            # Final touch, because the input is normalized to [-1,1]
+            # S = tanh(out.squeeze())
+            out = out.squeeze()
+        return out
 
     def lorentz_layer(self, S):
         """

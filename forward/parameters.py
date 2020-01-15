@@ -3,7 +3,8 @@ Parameter file for specifying the running parameters for forward model
 """
 # Model Architectural Parameters
 USE_LORENTZ = False
-LINEAR = [8, 100, 150]
+USE_CONV = False                         # Whether use upconv layer when not using lorentz @Omar
+LINEAR = [8, 100, 300]
 FIX_W0 = False
 # If the Lorentzian is Flase
 CONV_OUT_CHANNEL = [4, 4, 4]
@@ -25,7 +26,8 @@ STOP_THRESHOLD = 1e-5
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
-DATA_DIR = '/work/sr365/'
+#DATA_DIR = '/work/sr365/'      # For server usage
+DATA_DIR = '../'                # For local useage
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 TEST_RATIO = 0.2
