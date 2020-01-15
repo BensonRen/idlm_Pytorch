@@ -30,7 +30,8 @@ X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
 MODEL_NAME  = ''
-DATA_DIR = '/work/sr365/'
+# DATA_DIR = '/work/sr365/'             # This is for cluster
+DATA_DIR = '..'                         # This is for home debugging
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
