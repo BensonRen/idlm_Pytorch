@@ -205,6 +205,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
     :param feature_1_name: The name of the first feature that you would like to plot on the feature map
     :param feature_2_name: If you only want to draw the heatmap using 1 single dimension, just leave it as None
     """
+    from flag_reader import load_flags
     one_dimension_flag = False          #indication flag of whether it is a 1d or 2d plot to plot
     #Check the data integrity 
     if (feature_1_name == None):
@@ -221,10 +222,13 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
         for file_name in files:
              if (file_name == 'parameters.txt'):
                 file_path = os.path.join(subdir, file_name) #Get the file relative path from 
-                df = pd.read_csv(file_path, index_col = 0)
-                #df = df.reset_index()                           #reset the index to get ride of 
+                # df = pd.read_csv(file_path, index_col=0)
+                flag = load_flags(subdir)
+                flag_dict = vars(flag)
+                df = pd.DataFrame()
+                for k in flag_dict:
+                    df[k] = pd.Series(str(flag_dict[k]), index=[0])
                 print(df)
-                print(df[feature_1_name])
                 if (one_dimension_flag):
                     #print(df[[heat_value_name, feature_1_name]])
                     #print(df[heat_value_name][0])
@@ -234,7 +238,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                                                 f1_name = feature_1_name))
                 else:
                     if feature_2_name == 'linear_unit':                         # If comparing different linear units
-                        df['linear_unit'] = df[feature_1_name][1]
+                        df['linear_unit'] = eval(df[feature_1_name][0])[1]
                     df_list.append(df[[heat_value_name, feature_1_name, feature_2_name]])
                     HMpoint_list.append(HMpoint(float(df[heat_value_name][0]),eval(str(df[feature_1_name][0])),
                                                 eval(str(df[feature_2_name][0])), feature_1_name, feature_2_name))
