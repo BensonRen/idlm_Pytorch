@@ -200,8 +200,9 @@ def read_data( x_range, y_range, geoboundary,  batch_size=128,
     print('downsampling output curves')
     # resample the output curves so that there are not so many output points
     # drop the beginning of the curve so that we have a multiple of 300 points
-    lblTrain = lblTrain[::, len(lblTest[0])-1800::6]
-    lblTest = lblTest[::, len(lblTest[0])-1800::6]
+    if len(lblTest[0]) > 300:                                           # For Omar using dimension of 300
+        lblTrain = lblTrain[::, len(lblTest[0])-1800::6]
+        lblTest = lblTest[::, len(lblTest[0])-1800::6]
 
     print('length of downsampled train spectra is {} for first, {} for final, '.format(len(lblTrain[0]),
                                                                                        len(lblTrain[-1])),

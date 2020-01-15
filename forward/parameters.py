@@ -28,6 +28,7 @@ Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
 #DATA_DIR = '/work/sr365/'      # For server usage
 DATA_DIR = '../'                # For local useage
+DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'                # For Omar useage
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 TEST_RATIO = 0.2
