@@ -1,4 +1,6 @@
 dataIn
+*/*.png
+*/*.jpg
 */__*
 */*.err
 */slurm*

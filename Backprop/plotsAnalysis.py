@@ -223,7 +223,8 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                 file_path = os.path.join(subdir, file_name) #Get the file relative path from 
                 df = pd.read_csv(file_path, index_col = 0)
                 #df = df.reset_index()                           #reset the index to get ride of 
-                print(df.T)
+                print(df)
+                print(df[feature_1_name])
                 if (one_dimension_flag):
                     #print(df[[heat_value_name, feature_1_name]])
                     #print(df[heat_value_name][0])
@@ -232,10 +233,13 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                     HMpoint_list.append(HMpoint(float(df[heat_value_name][0]), eval(str(df[feature_1_name][0])), 
                                                 f1_name = feature_1_name))
                 else:
+                    if feature_2_name == 'linear_unit':                         # If comparing different linear units
+                        df['linear_unit'] = df[feature_1_name][1]
                     df_list.append(df[[heat_value_name, feature_1_name, feature_2_name]])
                     HMpoint_list.append(HMpoint(float(df[heat_value_name][0]),eval(str(df[feature_1_name][0])),
                                                 eval(str(df[feature_2_name][0])), feature_1_name, feature_2_name))
-   
+    
+    print(df_list)
     #Concatenate all the dfs into a single aggregate one for 2 dimensional usee
     df_aggregate = pd.concat(df_list, ignore_index = True, sort = False)
     #print(df_aggregate[heat_value_name])

@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --output output.err                                                   # output log file
-#SBATCH -e error.err                                                   # error log file
+#SBATCH --output output04.err                                                   # output log file
+#SBATCH -e error04.err                                                   # error log file
 #SBATCH --mem=20G                                                      # request 20G memory
 #SBATCH -c 1                                                           # request 6 gpu cores                                    
 #SBATCH -p collinslab                                     # request 1 gpu for this job
-#SBATCH --exclude=dcc-collinslab-gpu-[01,03]
+#SBATCH --exclude=dcc-collinslab-gpu-[01,02,03]
 module load Anaconda3/3.5.2                                            # load conda to make sure use GPU version of tf
 # add cuda and cudnn path
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
