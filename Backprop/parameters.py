@@ -19,7 +19,7 @@ VERB_STEP = 1
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
-STOP_THRESHOLD = 1e-3
+STOP_THRESHOLD = 1e-4
 
 # Data specific Params
 X_RANGE = [i for i in range(2, 10 )]

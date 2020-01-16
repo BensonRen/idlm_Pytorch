@@ -228,7 +228,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                 df = pd.DataFrame()
                 for k in flag_dict:
                     df[k] = pd.Series(str(flag_dict[k]), index=[0])
-                print(df)
+                #print(df)
                 if (one_dimension_flag):
                     #print(df[[heat_value_name, feature_1_name]])
                     #print(df[heat_value_name][0])
@@ -255,10 +255,9 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
     [h, w] = df_aggregate.shape
     for i in range(h):
         for j in range(w):
-            #print(i,j, df_aggregate.iloc[i,j])
-            if (isinstance(df_aggregate.iloc[i,j],str)):
-                ij_tuple = eval(df_aggregate.iloc[i,j])
-                df_aggregate.iloc[i,j] = len(ij_tuple)
+            if isinstance(df_aggregate.iloc[i,j], str) and (isinstance(eval(df_aggregate.iloc[i,j]), list)):
+                # print("This is a list!")
+                df_aggregate.iloc[i,j] = len(eval(df_aggregate.iloc[i,j]))
 
     print("after transoformation:",df_aggregate)
     
@@ -294,9 +293,15 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
         df_aggregate = df_aggregate.reset_index()
         df_aggregate.sort_values(feature_1_name, axis = 0, inplace = True)
         df_aggregate.sort_values(feature_2_name, axis = 0, inplace = True)
-        print(df_aggregate)
-        point_df_pivot = df_aggregate.reset_index().pivot(feature_1_name, feature_2_name, heat_value_name)
-        sns.heatmap(point_df_pivot, vmin = 1.24e-3,cmap = "YlGnBu")
+        df_aggregate.sort_values(heat_value_name, axis=0, inplace=True)
+        print("before dropping", df_aggregate)
+        df_aggregate = df_aggregate.drop_duplicates(subset=[feature_1_name, feature_2_name], keep='first')
+        print("after dropping", df_aggregate)
+        point_df_pivot = df_aggregate.reset_index().pivot(index=feature_1_name, columns=feature_2_name, values=heat_value_name).astype(float)
+        print("pivot=")
+        point_df_pivot.to_csv("pivoted.csv")
+        print(point_df_pivot)
+        sns.heatmap(point_df_pivot)#,cmap = "YlGnBu")
     plt.xlabel(plot_x_name)
     plt.ylabel(plot_y_name)
     plt.title(title)

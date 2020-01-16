@@ -3,13 +3,15 @@ This file serves as a evaluation interface for the network
 """
 # Built in
 import os
+import sys
+sys.path.append('../utils/')
 # Torch
 
 # Own
 import flag_reader
 from class_wrapper import Network
 from model_maker import Backprop
-import data_reader
+from utils import data_reader
 
 # Libs
 import numpy as np

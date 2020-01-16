@@ -4,6 +4,8 @@ The class wrapper for the networks
 # Built-in
 import os
 import time
+import sys
+sys.path.append('../utils/')
 
 # Torch
 import torch
