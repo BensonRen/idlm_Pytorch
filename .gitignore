@@ -1,6 +1,7 @@
 dataIn
 */*.png
 */*.jpg
+*/*.sh
 */__*
 */*.err
 */slurm*

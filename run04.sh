@@ -10,6 +10,6 @@ module load Anaconda3/3.5.2                                            # load co
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/opt/apps/rhel7/cudnn/lib64:$LD_LIBRARY_PATH
 # add my library path
-# export PYTHONPATH=$PYTHONPATH:/dscrhome/bh163/code/uab
+export PYTHONPATH=$PYTHONPATH:/hpc/home/sr365/Pytorch
 # execute my file
-python hyperswipe.py
+python hyperswipe04.py

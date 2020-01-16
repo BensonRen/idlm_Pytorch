@@ -26,7 +26,9 @@ X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
 MODEL_NAME  = ''
-DATA_DIR = '../'
+# DATA_DIR = '../'
+DATA_DIR = '/work/sr365/'
+# DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
