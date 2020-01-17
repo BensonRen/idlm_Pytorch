@@ -129,7 +129,10 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        if torch.cuda.is_available():
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        else:
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'), map_location=torch.device('cpu'))
 
     def train(self):
         """
@@ -210,6 +213,7 @@ class Network(object):
             self.model.cuda()
 
         # Set to evaluation mode for batch_norm layers
+        self.model.init_geometry_eval(self.flags)
         self.model.eval()
         self.model.bp = True
 
@@ -245,8 +249,10 @@ class Network(object):
     def evaluate_one(self, target_spectra):
         # expand the target spectra to eval batch size
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
+        print(target_spectra_expand.size())
+        print(self.model.geometry_eval.size())
         # Start backprop
-        for i in range(self.flags.eval_step):
+        for i in range(self.flags.train_step):
             logit = self.model(self.model.geometry_eval)                      # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                           # Calculate the Gradient

@@ -47,6 +47,16 @@ class Backprop(nn.Module):
 
         self.convs.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
+    def init_geometry_eval(self, flags):
+        """
+        The initialization function during inference time
+        :param flags: The flag carrying new informaiton about evaluation time
+        :return: Randomly initialized geometry
+        """
+        # Initialize the geometry_eval field
+        print("Eval Geometry Re-initialized")
+        self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
+
     def randomize_geometry_eval(self):
         self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True)       # Randomize
 
@@ -58,7 +68,7 @@ class Backprop(nn.Module):
         """
         out = G                                                         # initialize the out
         if self.bp:                                               # If the evaluation mode
-           out = self.geometry_eval
+            out = self.geometry_eval
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             # print(out.size())

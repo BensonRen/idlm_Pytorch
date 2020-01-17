@@ -46,7 +46,7 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
     plt.show()
     print('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
 
-def evaluate_from_model(model_dir):
+def evaluate_from_model(eval_flags):
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -54,9 +54,12 @@ def evaluate_from_model(model_dir):
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
-    flags = flag_reader.load_flags(os.path.join("models", model_dir))
-    flags.eval_model = model_dir                    # Reset the eval mode
+    flags = flag_reader.load_flags(os.path.join("models", eval_flags.eval_model))
+    flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
+    flags.eval_batch_size = eval_flags.eval_batch_size
+    flags.train_step = eval_flags.train_step
+    flags.verb_step = eval_flags.verb_step
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
@@ -69,7 +72,6 @@ def evaluate_from_model(model_dir):
 
     # Make Network
     ntwk = Network(Backprop, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
-
     # Evaluation process
     print("Start eval now:")
     pred_file, truth_file = ntwk.evaluate()
@@ -82,9 +84,9 @@ def evaluate_from_model(model_dir):
 
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
-    useless_flags = flag_reader.read_flag()
+    eval_flags = flag_reader.read_flag()
 
-    print(useless_flags.eval_model)
+    print(eval_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(useless_flags.eval_model)
+    evaluate_from_model(eval_flags)
 
