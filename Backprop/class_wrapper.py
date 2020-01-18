@@ -17,6 +17,7 @@ from torch.optim import lr_scheduler
 # Libs
 import numpy as np
 from math import inf
+import matplotlib.pyplot as plt
 # Own module
 
 
@@ -156,6 +157,8 @@ class Network(object):
                 self.optm.zero_grad()                               # Zero the gradient first
                 logit = self.model(geometry)                        # Get the output
                 loss = self.make_loss(logit, spectra)               # Get the loss tensor
+                # print("size of logit", logit.size())
+                # print("size of spectra", spectra.size())
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
@@ -188,6 +191,9 @@ class Network(object):
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))
+                # Plotting the first spectra prediction for validation
+                # f = self.compare_spectra(Ypred=logit[0,:].cpu().data.numpy(), Ytruth=spectra[0,:].cpu().data.numpy())
+                # self.log.add_figure(tag='spectra compare',figure=f,global_step=epoch)
 
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
@@ -202,6 +208,7 @@ class Network(object):
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
+        self.log.close()
 
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
@@ -266,3 +273,42 @@ class Network(object):
 
         return Xpred_best, Ypred_best
 
+    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5],
+                        T_num=10, E1=None, E2=None, N=None, K=None, eps_inf=None):
+        """
+        Function to plot the comparison for predicted spectra and truth spectra
+        :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
+        :param Ytruth:  Truth spectra, this should be a list of number of dimension 300, numpy
+        :param title: The title of the plot, usually it comes with the time
+        :param figsize: The figure size of the plot
+        :return: The identifier of the figure
+        """
+        # Make the frequency into real frequency in THz
+        fre_low = 0.8
+        fre_high = 1.5
+        frequency = fre_low + (fre_high - fre_low) / len(Ytruth) * np.arange(300)
+        f = plt.figure(figsize=figsize)
+        plt.plot(frequency, Ypred, label='Pred')
+        plt.plot(frequency, Ytruth, label='Truth')
+        if T is not None:
+            plt.plot(frequency, T, linewidth=1, linestyle='--')
+        if E2 is not None:
+            for i in range(np.shape(E2)[0]):
+                plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':', label="E2" + str(i))
+        if E1 is not None:
+            for i in range(np.shape(E1)[0]):
+                plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-', label="E1" + str(i))
+        if N is not None:
+            plt.plot(frequency, N, linewidth=1, linestyle=':', label="N")
+        if K is not None:
+            plt.plot(frequency, K, linewidth=1, linestyle='-', label="K")
+        if eps_inf is not None:
+            plt.plot(frequency, np.ones(np.shape(frequency)) * eps_inf, label="eps_inf")
+        # plt.ylim([0, 1])
+        plt.legend()
+        #plt.xlim([fre_low, fre_high])
+        plt.xlabel("Frequency (THz)")
+        plt.ylabel("Transmittance")
+        if title is not None:
+            plt.title(title)
+        return f

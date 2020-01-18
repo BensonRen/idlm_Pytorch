@@ -6,6 +6,7 @@ all the parameters during training and inference
 import argparse
 import pickle
 import os
+from copy import deepcopy
 # Libs
 
 # Own module
@@ -96,9 +97,10 @@ def write_flags_and_BVE(flags, best_validation_loss):
     yrange = flags.y_range
     # yrange_str = str(yrange[0]) + ' to ' + str(yrange[-1])
     yrange_str = [yrange[0], yrange[-1]]
-    flags.y_range = yrange_str                          # in order to not corrupt the original data strucutre
-    flags.best_validation_loss = best_validation_loss   # Change the y range to be acceptable long string
-    flags_dict = vars(flags)
+    copy_flags = deepcopy(flags)
+    copy_flags.y_range = yrange_str                          # in order to not corrupt the original data strucutre
+    copy_flags.best_validation_loss = best_validation_loss   # Change the y range to be acceptable long string
+    flags_dict = vars(copy_flags)
     # Convert the dictionary into pandas data frame which is easier to handle with and write read
     with open('parameters.txt','w') as f:
         print(flags_dict, file=f)
