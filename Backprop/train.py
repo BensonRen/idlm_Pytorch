@@ -63,7 +63,7 @@ def training_from_flag(flags):
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct
     flag_reader.write_flags_and_BVE(flags, ntwk.best_validation_loss)
     put_param_into_folder()
-
+    del ntwk                              # Make sure the object is destructed after training has been done for hyperswipe
 
 if __name__ == '__main__':
     # Read the parameters to be set
