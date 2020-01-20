@@ -8,7 +8,7 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import Tandem
+from model_maker import Forward, Backward
 from utils import data_reader
 
 # Libs
@@ -66,7 +66,7 @@ def evaluate_from_model(model_dir):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Tandem, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(Forward, Backward, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")
