@@ -4,9 +4,6 @@ all the parameters during training and inference
 """
 # Built-in
 import argparse
-import pickle
-import os
-from copy import deepcopy
 # Libs
 
 # Own module
@@ -60,50 +57,3 @@ def read_flag():
     # flags = parser.parse_args(args = [])#This is for jupyter notebook version of the code
     # flagsVar = vars(flags)
     return flags
-
-
-def save_flags(flags, save_file="flags.obj"):
-    """
-    This function serialize the flag object and save it for further retrieval during inference time
-    :param flags: The flags object to save
-    :param save_file: The place to save the file
-    :return: None
-    """
-    with open(save_file,'wb') as f:          # Open the file
-        pickle.dump(flags, f)               # Use Pickle to serialize the object
-
-
-def load_flags(save_dir, save_file="flags.obj"):
-    """
-    This function inflate the pickled object to flags object for reuse, typically during evaluation (after training)
-    :param save_dir: The place where the obj is located
-    :param save_file: The file name of the file, usually flags.obj
-    :return: flags
-    """
-    with open(os.path.join(save_dir, save_file), 'rb') as f:     # Open the file
-        flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
-    return flags
-
-def write_flags_and_BVE(flags, best_validation_loss):
-    """
-    The function that is usually executed at the end of the training where the flags and the best validation loss are recorded
-    They are put in the folder that called this function and save as "parameters.txt"
-    This parameter.txt is also attached to the generated email
-    :param flags: The flags struct containing all the parameters
-    :param best_validation_loss: The best_validation_loss recorded in a training
-    :return: None
-    """
-    flags.best_validation_loss = best_validation_loss   # Change the y range to be acceptable long string
-    #To avoid terrible looking shape of y_range
-    yrange = flags.y_range
-    # yrange_str = str(yrange[0]) + ' to ' + str(yrange[-1])
-    yrange_str = [yrange[0], yrange[-1]]
-    copy_flags = deepcopy(flags)
-    copy_flags.y_range = yrange_str                          # in order to not corrupt the original data strucutre
-    flags_dict = vars(copy_flags)
-    # Convert the dictionary into pandas data frame which is easier to handle with and write read
-    with open('parameters.txt','w') as f:
-        print(flags_dict, file=f)
-    # Pickle the obj
-    save_flags(flags)
-

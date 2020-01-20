@@ -13,7 +13,7 @@ import flag_reader
 import data_reader
 from class_wrapper import Network
 from model_maker import Forward, Discriminator, Generator, Spectra_encoder
-from utils.helper_functions import put_param_into_folder
+from utils.helper_functions import put_param_into_folder, write_flags_and_BVE
 
 def training_from_flag(flags):
     """
@@ -43,8 +43,8 @@ def training_from_flag(flags):
     ntwk.train()
 
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct
-    flag_reader.write_flags_and_BVE(flags, ntwk.best_validation_loss)
-    put_param_into_folder(ntwk.ckpt_dir)
+    write_flags_and_BVE(flags, ntwk.best_validation_loss, ntwk.ckpt_dir)
+    # put_param_into_folder(ntwk.ckpt_dir)
 
 
 if __name__ == '__main__':
