@@ -15,23 +15,7 @@ import flag_reader
 from utils import data_reader
 from class_wrapper import Network
 from model_maker import Backprop
-
-
-def put_param_into_folder():
-    """
-    Put the parameter.txt into the folder and the flags.obj as well
-    :return: None
-    """
-    list_of_files = glob.glob('models/*')                           # Use glob to list the dirs in models/
-    latest_file = max(list_of_files, key=os.path.getctime)          # Find the latest file (just trained)
-    print("The parameter.txt is put into folder " + latest_file)    # Print to confirm the filename
-    # Move the parameters.txt
-    destination = os.path.join(latest_file, "parameters.txt");
-    shutil.move("parameters.txt", destination)
-    # Move the flags.obj
-    destination = os.path.join(latest_file, "flags.obj");
-    shutil.move("flags.obj", destination)
-
+from utils.helper_functions import put_param_into_folder
 
 def training_from_flag(flags):
     """
@@ -62,8 +46,7 @@ def training_from_flag(flags):
 
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct
     flag_reader.write_flags_and_BVE(flags, ntwk.best_validation_loss)
-    put_param_into_folder()
-    del ntwk                              # Make sure the object is destructed after training has been done for hyperswipe
+    put_param_into_folder(ntwk.ckpt_dir)
 
 if __name__ == '__main__':
     # Read the parameters to be set

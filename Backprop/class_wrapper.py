@@ -272,6 +272,9 @@ class Network(object):
                     print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
                     break
 
+        # Learning rate decay upon plateau
+        self.lr_scheduler.step(loss.data)
+
         # Get the best performing one
         best_estimate_index = np.argmin(loss.cpu().data.numpy())
         Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]

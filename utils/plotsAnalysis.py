@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import evaluate
 import seaborn as sns; sns.set()
-import get_pred_truth_file
+import helper_functions
 from sklearn.neighbors import NearestNeighbors
 from pandas.plotting import table
 from scipy.spatial import distance_matrix
@@ -318,10 +318,10 @@ def PlotPossibleGeoSpace(figname, Xpred_dir, compare_original = False,calculate_
     :params Xpred_dir: The directory to look for Xpred file which is the source of plotting
     :output A plot containing 4 subplots showing the 8 geomoetry dimensions
     """
-    Xpredfile = get_pred_truth_file.get_Xpred(Xpred_dir)
+    Xpredfile = helper_functions.get_Xpred(Xpred_dir)
     Xpred = pd.read_csv(Xpredfile, header=None, delimiter=' ').values
     
-    Xtruthfile = get_pred_truth_file.get_Xtruth(Xpred_dir)
+    Xtruthfile = helper_functions.get_Xtruth(Xpred_dir)
     Xtruth = pd.read_csv(Xtruthfile, header=None, delimiter=' ').values
 
     f = plt.figure()
@@ -355,7 +355,7 @@ def PlotPairwiseGeometry(figname, Xpred_dir):
     the correlation between the geometry that the network learns
     """
     
-    Xpredfile = get_pred_truth_file.get_Xpred(Xpred_dir)
+    Xpredfile = helper_functions.get_Xpred(Xpred_dir)
     Xpred = pd.read_csv(Xpredfile, header=None, delimiter=' ')
     f=plt.figure()
     axes = pd.plotting.scatter_matrix(Xpred, alpha = 0.2)
