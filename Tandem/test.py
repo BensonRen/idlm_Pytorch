@@ -1,14 +1,10 @@
 import torch
-
+import sys
+sys.path.append('../utils/')
+from utils import plotsAnalysis
 if __name__ == '__main__':
-
-    a = torch.rand(4, 0, requires_grad=True)
-    print(a)
-
-    b = torch.rand(4, requires_grad=True)
-
-    loss = (a + b.unsqueeze(1)).sum()
-
-    loss.backward()
-
-    print(loss)
+    #pathnamelist = ['reg0.0001','reg0.0005','reg0.005','reg0.001','reg1e-5','reg5e-5']
+    pathnamelist = ['']
+    for pathname in pathnamelist:
+        plotsAnalysis.HeatMapBVL('num_layers','num_unit','layer vs unit Heat Map',save_name=pathname + '_heatmap.png',
+                                HeatMap_dir='models/'+pathname,feature_1_name='linear',feature_2_name='linear_unit')

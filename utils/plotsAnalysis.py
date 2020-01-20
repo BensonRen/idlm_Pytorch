@@ -228,7 +228,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                 df = pd.DataFrame()
                 for k in flag_dict:
                     df[k] = pd.Series(str(flag_dict[k]), index=[0])
-                #print(df)
+                print(df)
                 if (one_dimension_flag):
                     #print(df[[heat_value_name, feature_1_name]])
                     #print(df[heat_value_name][0])
@@ -239,6 +239,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                 else:
                     if feature_2_name == 'linear_unit':                         # If comparing different linear units
                         df['linear_unit'] = eval(df[feature_1_name][0])[1]
+                        df['best_validation_loss'] = get_bvl(file_path)
                     df_list.append(df[[heat_value_name, feature_1_name, feature_2_name]])
                     HMpoint_list.append(HMpoint(float(df[heat_value_name][0]),eval(str(df[feature_1_name][0])),
                                                 eval(str(df[feature_2_name][0])), feature_1_name, feature_2_name))
@@ -299,9 +300,10 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
         print("after dropping", df_aggregate)
         point_df_pivot = df_aggregate.reset_index().pivot(index=feature_1_name, columns=feature_2_name, values=heat_value_name).astype(float)
         print("pivot=")
-        point_df_pivot.to_csv("pivoted.csv")
+        csvname = HeatMap_dir + 'pivoted.csv'
+        point_df_pivot.to_csv(csvname)
         print(point_df_pivot)
-        sns.heatmap(point_df_pivot)#,cmap = "YlGnBu")
+        sns.heatmap(point_df_pivot,cmap = "YlGnBu")
     plt.xlabel(plot_x_name)
     plt.ylabel(plot_y_name)
     plt.title(title)
@@ -393,4 +395,20 @@ def calculate_MST(Xpred, Xtruth):
     X_MST = np.mean(MST_list, axis = 1)
     return X_MST[0], X_MST[1]
 
+
+def get_bvl(file_path):
+    """
+    This is a helper function for 0119 usage where the bvl is not recorded in the pickled object but in .txt file and needs this funciton to retrieve it
+    """
+    df = pd.read_csv(file_path, delimiter=',')
+    bvl = 0
+    for col in df:
+        if 'best_validation_loss' in col:
+            print(col)
+            strlist = col.split(':')
+            bvl = eval(strlist[1][1:-2])
+    if bvl == 0:
+        print("Error! We did not found a bvl in .txt.file")
+    else:
+        return float(bvl)
 
