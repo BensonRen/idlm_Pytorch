@@ -5,12 +5,14 @@ This file serves as a training interface for training the network
 import glob
 import os
 import shutil
+import sys
+sys.path.append('../utils/')
 
 # Torch
 
 # Own
 import flag_reader
-import data_reader
+from utils import data_reader
 from class_wrapper import Network
 from model_maker import Forward, Backward
 
