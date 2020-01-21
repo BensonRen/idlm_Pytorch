@@ -109,4 +109,4 @@ def write_flags_and_BVE(flags, best_validation_loss, save_dir):
     with open(os.path.join(save_dir, 'parameters.txt'), 'w') as f:
         print(flags_dict, file=f)
     # Pickle the obj
-    save_flags(flags)
+    save_flags(flags, save_dir=save_dir)

@@ -57,6 +57,7 @@ class VAE(nn.Module):
             self.convs_SE.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                            stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
+        self.convs_SE.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def encoder(self, G, S_enc):
         """

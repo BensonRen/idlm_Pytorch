@@ -7,9 +7,9 @@ DIM_Z = 20
 DIM_SPEC = 15
 LINEAR_D = [DIM_SPEC + DIM_Z, 50, 500, 500, 100, 8]           # Linear units for Decoder
 LINEAR_E = [8 + DIM_SPEC, 50, 500, 500, 150]                   # Linear units for Encoder
-LINEAR_SE = [150, 100,  50, DIM_SPEC]                      # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = [8, 4, 1]
-CONV_KERNEL_SIZE_SE = [51, 35, 30]
+LINEAR_SE = [150, 150, 150, 150, DIM_SPEC]                      # Linear units for spectra encoder
+CONV_OUT_CHANNEL_SE = [4, 4, 4]
+CONV_KERNEL_SIZE_SE = [5, 5, 8]
 CONV_STRIDE_SE = [1, 1, 2]
 
 # Optimization params
@@ -29,9 +29,10 @@ STOP_THRESHOLD = 1e-4
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
-MODEL_NAME  = ''
-# DATA_DIR = '/work/sr365/'             # This is for cluster
-DATA_DIR = '..'                         # This is for home debugging
+MODEL_NAME  = None
+DATA_DIR = '/work/sr365/'      # For server usage
+#DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'                # For Omar useage
+#DATA_DIR = '../'                # For local useage
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
