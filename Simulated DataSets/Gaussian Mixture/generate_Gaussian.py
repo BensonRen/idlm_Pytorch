@@ -16,11 +16,12 @@ cluster_distance_to_center = 10
 in_class_variance = 1
 
 
-def plotData(data_x, data_y, save_dir='data_scatter.png'):
+def plotData(data_x, data_y, save_dir='generated_gaussian_scatter.png'):
     """
     Plot the scatter plot of the data to show the overview of the data points
     :param data_x: The 2 dimension x values of the data points
     :param data_y: The class of the data points
+    :param save_dir: The save name of the plot
     :return: None
     """
     f = plt.figure()
