@@ -35,6 +35,7 @@ class Network(object):
         """
         self.model_fn_f = model_fn_f                                # The model maker function for forward
         self.model_fn_b = model_fn_b                                # The model maker function for backward
+        self.load_forward_ckpt_dir = flags.load_forward_ckpt_dir    # The pre-trained forward model ckpt dir
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -144,6 +145,13 @@ class Network(object):
         """
         torch.save(self.model_b, os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
 
+    def load_f(self):
+        """
+        Only loading the forward model to using the check point folder with name best_model_forward.pt
+        :return: None
+        """
+        self.model_f = torch.load(os.path.join(self.load_forward_ckpt_dir, 'best_model_forward.pt'))
+
     def load(self):
         """
         Loading the model from the check point folder with name best_model.pt
@@ -161,76 +169,79 @@ class Network(object):
         """
         Forward Training part
         """
-        print("Start Forward Training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model_f.cuda()
             self.model_b.cuda()
+        if self.load_forward_ckpt_dir is None:
+            print("Start Forward Training now")
 
-        # Construct optimizer after the model moved to GPU
-        self.optm_f = self.make_optimizer_f()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_f)
+            # Construct optimizer after the model moved to GPU
+            self.optm_f = self.make_optimizer_f()
+            self.lr_scheduler = self.make_lr_scheduler(self.optm_f)
 
-        for epoch in range(self.flags.train_step):
-            # Set to Training Mode
-            train_loss = 0
-            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
-            self.model_f.train()
-            for j, (geometry, spectra) in enumerate(self.train_loader):
-                if cuda:
-                    geometry = geometry.cuda()                          # Put data onto GPU
-                    spectra = spectra.cuda()                            # Put data onto GPU
-                self.optm_f.zero_grad()                                   # Zero the gradient first
-                S_out = self.model_f(geometry)     # Get the output
-                loss = self.make_loss(S_out, spectra)                   # Get the loss tensor
-                loss.backward()                                         # Calculate the backward gradients
-                self.optm_f.step()                                      # Move one step the optimizer
-                train_loss += loss                                      # Aggregate the loss
-                # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
-
-            # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
-            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
-
-            if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
-                # Record the training loss to the tensorboard
-                self.log.add_scalar('Loss/forward_train', train_avg_loss, epoch)
-                print("Logging the testing to tb")
-                self.log.add_scalar('Testing', 1, epoch)
-                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
-
-                # Set to Evaluation Mode
-                self.model_f.eval()
-                print("Doing Evaluation on the forward model now")
-                test_loss = 0
-                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+            for epoch in range(self.flags.train_step):
+                # Set to Training Mode
+                train_loss = 0
+                # boundary_loss = 0                 # Unnecessary during training since we provide geometries
+                self.model_f.train()
+                for j, (geometry, spectra) in enumerate(self.train_loader):
                     if cuda:
-                        geometry = geometry.cuda()
-                        spectra = spectra.cuda()
-                    logit = self.model_f(geometry)
-                    loss = self.make_loss(logit, spectra)                   # compute the loss
-                    test_loss += loss                                       # Aggregate the loss
+                        geometry = geometry.cuda()                          # Put data onto GPU
+                        spectra = spectra.cuda()                            # Put data onto GPU
+                    self.optm_f.zero_grad()                                   # Zero the gradient first
+                    S_out = self.model_f(geometry)     # Get the output
+                    loss = self.make_loss(S_out, spectra)                   # Get the loss tensor
+                    loss.backward()                                         # Calculate the backward gradients
+                    self.optm_f.step()                                      # Move one step the optimizer
+                    train_loss += loss                                      # Aggregate the loss
+                    # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
 
-                # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
-                self.log.add_scalar('Loss/forward_test', test_avg_loss, epoch)
+                # Calculate the avg loss of training
+                train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+                # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
-                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
-                      % (epoch, train_avg_loss, test_avg_loss ))
+                if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
+                    # Record the training loss to the tensorboard
+                    self.log.add_scalar('Loss/forward_train', train_avg_loss, epoch)
+                    print("Logging the testing to tb")
+                    self.log.add_scalar('Testing', 1, epoch)
+                    # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
-                # Model improving, save the model down
-                if test_avg_loss < self.best_validation_loss:
-                    self.best_validation_loss = test_avg_loss
-                    self.save_f()
-                    print("Saving the model down...")
+                    # Set to Evaluation Mode
+                    self.model_f.eval()
+                    print("Doing Evaluation on the forward model now")
+                    test_loss = 0
+                    for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                        if cuda:
+                            geometry = geometry.cuda()
+                            spectra = spectra.cuda()
+                        logit = self.model_f(geometry)
+                        loss = self.make_loss(logit, spectra)                   # compute the loss
+                        test_loss += loss                                       # Aggregate the loss
 
-                    if self.best_validation_loss < self.flags.stop_threshold:
-                        print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
-                              (epoch, self.best_validation_loss))
-                        return None
+                    # Record the testing loss to the tensorboard
+                    test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                    self.log.add_scalar('Loss/forward_test', test_avg_loss, epoch)
 
-            # Learning rate decay upon plateau
-            self.lr_scheduler.step(train_avg_loss)
+                    print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
+                          % (epoch, train_avg_loss, test_avg_loss ))
+
+                    # Model improving, save the model down
+                    if test_avg_loss < self.best_validation_loss:
+                        self.best_validation_loss = test_avg_loss
+                        self.save_f()
+                        print("Saving the model down...")
+
+                        if self.best_validation_loss < self.flags.stop_threshold:
+                            print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
+                                  (epoch, self.best_validation_loss))
+                            return None
+
+                # Learning rate decay upon plateau
+                self.lr_scheduler.step(train_avg_loss)
+            else:
+                self.load_f()
 
         """
         Backward Training Part

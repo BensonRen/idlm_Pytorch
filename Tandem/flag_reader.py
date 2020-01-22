@@ -22,6 +22,7 @@ def read_flag():
 
 
     # Forward model architecture hyper parameters
+    parser.add_argument('--load-forward-ckpt-dir', type=str, default=LOAD_FORWARD_CKPT_DIR, help='To load the forward training result and provide the directory')
     parser.add_argument('--linear-f', type=list, default=LINEAR_F, help='The fc layers units for forward model')
     parser.add_argument('--conv-out-channel-f', type=list, default=CONV_OUT_CHANNEL_F, help='The output channel of your 1d conv for forward model')
     parser.add_argument('--conv-kernel-size-f', type=list, default=CONV_KERNEL_SIZE_F, help='The kernel size of your 1d conv for forward model')

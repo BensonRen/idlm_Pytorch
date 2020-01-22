@@ -2,6 +2,7 @@
 Hyper-parameters of the Tandem model
 """
 # Model Architecture parameters
+LOAD_FORWARD_CKPT_DIR = '../dataIn/'
 LINEAR_F = [8, 150, 150, 150, 150, 150]
 CONV_OUT_CHANNEL_F = [4, 4, 4]
 CONV_KERNEL_SIZE_F = [8, 5, 5]
@@ -35,8 +36,8 @@ X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
 MODEL_NAME = None
 
-# DATA_DIR = '../'
-DATA_DIR = '/work/sr365/'
+DATA_DIR = '../'
+#DATA_DIR = '/work/sr365/'
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
 GEOBOUNDARY = [30, 52, 42, 52]
 NORMALIZE_INPUT = True
