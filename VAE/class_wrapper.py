@@ -111,22 +111,22 @@ class Network(object):
 
     def save(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
         # torch.save(self.encoder, os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
         # torch.save(self.decoder, os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
         # torch.save(self.spec_enc, os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
 
     def load(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
         # self.encoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
         # self.decoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
         # self.spec_enc = torch.load(os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))

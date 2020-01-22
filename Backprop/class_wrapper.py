@@ -118,22 +118,22 @@ class Network(object):
 
     def save(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model.pt'))
+        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
 
     def load(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
         if torch.cuda.is_available():
-            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'))
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
         else:
-            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model.pt'), map_location=torch.device('cpu'))
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'), map_location=torch.device('cpu'))
 
     def train(self):
         """
