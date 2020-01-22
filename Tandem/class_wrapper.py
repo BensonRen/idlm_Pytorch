@@ -241,6 +241,7 @@ class Network(object):
                 # Learning rate decay upon plateau
                 self.lr_scheduler.step(train_avg_loss)
             else:
+                print("Loading the pre-trained forward model instead of training it")
                 self.load_f()
 
         """
