@@ -19,6 +19,8 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
+    # Data_Set parameter
+    parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
     # VAE model architecture hyper parameters
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
     parser.add_argument('--dim-spec', default=DIM_SPEC, type=int, help='dimension of the spectra encoded conponent')
