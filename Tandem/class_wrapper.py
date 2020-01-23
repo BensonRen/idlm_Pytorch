@@ -36,6 +36,7 @@ class Network(object):
         self.model_fn_f = model_fn_f                                # The model maker function for forward
         self.model_fn_b = model_fn_b                                # The model maker function for backward
         self.load_forward_ckpt_dir = flags.load_forward_ckpt_dir    # The pre-trained forward model ckpt dir
+        print("The pretrian model to load is:", self.load_forward_ckpt_dir)
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
@@ -132,7 +133,7 @@ class Network(object):
 
     def save_f(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
@@ -140,7 +141,7 @@ class Network(object):
 
     def save_b(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         torch.save(self.model_b, os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
@@ -154,7 +155,7 @@ class Network(object):
 
     def load(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
@@ -175,7 +176,6 @@ class Network(object):
             self.model_b.cuda()
         if self.load_forward_ckpt_dir is None:
             print("Start Forward Training now")
-
             # Construct optimizer after the model moved to GPU
             self.optm_f = self.make_optimizer_f()
             self.lr_scheduler = self.make_lr_scheduler(self.optm_f)
@@ -204,8 +204,6 @@ class Network(object):
                 if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
                     # Record the training loss to the tensorboard
                     self.log.add_scalar('Loss/forward_train', train_avg_loss, epoch)
-                    print("Logging the testing to tb")
-                    self.log.add_scalar('Testing', 1, epoch)
                     # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
                     # Set to Evaluation Mode
@@ -240,8 +238,24 @@ class Network(object):
 
                 # Learning rate decay upon plateau
                 self.lr_scheduler.step(train_avg_loss)
-            else:
-                self.load_f()
+        else:
+            print("Loading the pre-trained forward model instead of training it")
+            self.load_f()
+            # Set to Evaluation Mode
+            self.model_f.eval()
+            print("Doing Evaluation on the forward model now")
+            test_loss = 0
+            for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                if cuda:
+                    geometry = geometry.cuda()
+                    spectra = spectra.cuda()
+                logit = self.model_f(geometry)
+                loss = self.make_loss(logit, spectra)  # compute the loss
+                test_loss += loss  # Aggregate the loss
+
+            # Record the testing loss to the tensorboard
+            test_avg_loss = test_loss.cpu().data.numpy() / (j + 1)
+            print("Test loss of forward model loaded is", test_avg_loss)
 
         """
         Backward Training Part
@@ -256,6 +270,7 @@ class Network(object):
             train_loss = 0
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model_b.train()
+            self.model_f.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
                     geometry = geometry.cuda()  # Put data onto GPU
@@ -280,6 +295,7 @@ class Network(object):
 
                 # Set to Evaluation Mode
                 self.model_b.eval()
+                self.model_f.eval()
                 print("Doing Evaluation on the backward model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set

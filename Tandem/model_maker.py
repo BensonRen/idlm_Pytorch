@@ -13,7 +13,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-
 class Forward(nn.Module):
     def __init__(self, flags):
         super(Forward, self).__init__()
@@ -97,6 +96,8 @@ class Backward(nn.Module):
             self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                           stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
+        self.convs_b.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
+
         # Define forward module for separate training
         self.backward_modules = [self.linears_b, self.bn_linears_b, self.convs_b]
 

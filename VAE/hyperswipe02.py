@@ -30,6 +30,6 @@ if __name__ == '__main__':
             #for reg_scale in reg_scale_list:
                 #flags.reg_scale = reg_scale
             for j in range(3):
-                flags.model_name = "trail_"+str(j)+"_VAE_dim_z_" + str(dim_z) + "_dim_spec_" + str(dim_spec)
+                flags.model_name = "reg_scale_"+str(flags.reg_scale)+"trail_"+str(j)+"_VAE_dim_z_" + str(dim_z) + "_dim_spec_" + str(dim_spec)
                 train.training_from_flag(flags)
 
