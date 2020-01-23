@@ -168,7 +168,7 @@ class Network(object):
 
     def save_d(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
@@ -176,28 +176,28 @@ class Network(object):
 
     def save_g(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         torch.save(self.model_g, os.path.join(self.ckpt_dir, 'best_model_generator.pt'))
 
     def save_f(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         torch.save(self.model_f, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
 
     def save_se(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         torch.save(self.model_se, os.path.join(self.ckpt_dir, 'best_model_spectra_encoder.pt'))
 
     def load(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
