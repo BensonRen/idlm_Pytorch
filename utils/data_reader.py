@@ -230,37 +230,65 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     return train_loader, test_loader
 
 
-def read_data_gaussian_mixture(flags):
+def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the gaussian mixture data set
     :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
+    # Read the data
+    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('int').values
+    one_hot_y = np.eye(np.max(data_y) + 1)[data_y]
+
+    # Normalize the input
+    x_train, x_test, y_train, y_test = train_test_split(data_x, one_hot_y, test_size=test_ratio,
+                                                        random_state=rand_seed)
+    print('total number of training sample is {}, the dimension of the feature is'.format(len(x_train), len(x_train[0])))
+    print('total number of test sample is {}, the dimension of the label is'.format(len(y_test), len(y_test[0])))
+
+    # Construct the dataset using a outside class
+    train_data = SimulatedDataSet(x_train, y_train)
+    test_data = SimulatedDataSet(x_test, y_test)
+
+    # Construct train_loader and test_loader
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=flags.batch_size)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=flags.batch_size)
+
     return train_loader, test_loader
 
 
-def read_data_sine_wave(flgas):
+def read_data_sine_wave(flgas, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the sine function data set
     :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     return train_loader, test_loader
 
 
-def read_data_naval_propulsion(flgas):
+def read_data_naval_propulsion(flgas, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the naval propulsion data set
     :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     return train_loader, test_loader
 
 
-def read_data_robotic_arm(flags):
+def read_data_robotic_arm(flags, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the robotic arm data set
-    :param flags: Input flags
+    :param flas: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     return train_loader, test_loader
@@ -320,3 +348,16 @@ class MetaMaterialDataSet(Dataset):
     def __getitem__(self, ind):
         return self.ftr[ind, :], self.lbl[ind, :]
 
+
+class SimulatedDataSet(Dataset):
+    """ The simulated Dataset Class"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.len = len(x)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, ind):
+        return self.x[ind, :], self.y[ind, :]
