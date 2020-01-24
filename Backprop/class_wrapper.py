@@ -80,9 +80,10 @@ class Network(object):
         :param labels: The ground truth labels
         :return: the total loss
         """
+        if logit is None:
+            return None
         if self.flags.data_set != 'gaussian_mixture':
-            if logit is None:
-                return None
+
             MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
             BDY_loss = 0
             if self.model.bp:
@@ -92,6 +93,8 @@ class Network(object):
             self.Boundary_loss = BDY_loss
             return torch.add(MSE_loss, BDY_loss)
         else:                           # This is cross entropy loss where data is categorical
+            print("logit:", logit.size())
+            print("labels:", labels.size())
             return nn.CrossEntropyLoss(logit, labels)
 
     def make_optimizer(self):

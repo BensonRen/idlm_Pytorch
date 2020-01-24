@@ -240,15 +240,18 @@ def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     """
     # Read the data
     data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
-    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).values
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('int').values
-    one_hot_y = np.eye(np.max(data_y) + 1)[data_y]
+    data_y = np.squeeze(data_y)
+    #print("size y", np.shape(data_y))
+    #one_hot_y = np.squeeze(np.eye(np.max(data_y) + 1)[data_y])
+    #print("size of one-hot-y is:", np.shape(one_hot_y))
 
     # Normalize the input
-    x_train, x_test, y_train, y_test = train_test_split(data_x, one_hot_y, test_size=test_ratio,
+    x_train, x_test, y_train, y_test = train_test_split(data_x, data_y, test_size=test_ratio,
                                                         random_state=rand_seed)
     print('total number of training sample is {}, the dimension of the feature is'.format(len(x_train), len(x_train[0])))
-    print('total number of test sample is {}, the dimension of the label is'.format(len(y_test), len(y_test[0])))
+    print('total number of test sample is {}'.format(len(y_test)))
 
     # Construct the dataset using a outside class
     train_data = SimulatedDataSet(x_train, y_train)
@@ -360,4 +363,4 @@ class SimulatedDataSet(Dataset):
         return self.len
 
     def __getitem__(self, ind):
-        return self.x[ind, :], self.y[ind, :]
+        return self.x[ind, :], self.y[ind]
