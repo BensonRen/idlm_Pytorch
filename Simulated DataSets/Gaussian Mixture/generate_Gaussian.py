@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # Define the free parameters
 dimension = 2
 num_cluster = 8
-num_points_per_cluster = 100
+num_points_per_cluster = 1000
 num_class = 4
 cluster_distance_to_center = 10
 in_class_variance = 1

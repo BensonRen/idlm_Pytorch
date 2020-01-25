@@ -205,7 +205,6 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
     :param feature_1_name: The name of the first feature that you would like to plot on the feature map
     :param feature_2_name: If you only want to draw the heatmap using 1 single dimension, just leave it as None
     """
-    from flag_reader import load_flags
     one_dimension_flag = False          #indication flag of whether it is a 1d or 2d plot to plot
     #Check the data integrity 
     if (feature_1_name == None):
@@ -223,7 +222,7 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
              if (file_name == 'parameters.txt'):
                 file_path = os.path.join(subdir, file_name) #Get the file relative path from 
                 # df = pd.read_csv(file_path, index_col=0)
-                flag = load_flags(subdir)
+                flag = helper_functions.load_flags(subdir)
                 flag_dict = vars(flag)
                 df = pd.DataFrame()
                 for k in flag_dict:

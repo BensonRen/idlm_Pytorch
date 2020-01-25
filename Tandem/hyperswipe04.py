@@ -9,10 +9,10 @@ if __name__ == '__main__':
     #linear_unit_list = [150, 300]
     linear_unit_list = [500, 1000]
     #linear_unit_list = [1000, 500, 300, 150]
-    reg_scale_list = [5e-3, 1e-3, 5e-4]
+    reg_scale_list = [5e-3]
     for linear_unit in linear_unit_list:
         # Setting the loop for setting the parameter
-        for i in range(4,7):
+        for i in range(7,10):
             flags = flag_reader.read_flag()  	#setting the base case
             linear = [linear_unit for j in range(i)]        #Set the linear units
             linear[0] = 150                   # The start of linear
