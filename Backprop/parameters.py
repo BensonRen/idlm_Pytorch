@@ -16,7 +16,7 @@ USE_LORENTZ = False
 # CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [2, 10, 10, 10, 4]                 # Dimension of data set cross check with data generator
+LINEAR = [2, 10, 10, 5, 4]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
