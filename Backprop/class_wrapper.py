@@ -93,9 +93,8 @@ class Network(object):
             self.Boundary_loss = BDY_loss
             return torch.add(MSE_loss, BDY_loss)
         else:                           # This is cross entropy loss where data is categorical
-            print("logit:", logit.size())
-            print("labels:", labels.size())
-            return nn.CrossEntropyLoss(logit, labels)
+            criterion = nn.CrossEntropyLoss()
+            return criterion(logit, labels.long())
 
     def make_optimizer(self):
         """

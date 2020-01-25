@@ -241,7 +241,7 @@ def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     # Read the data
     data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
-    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('int').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('long').values
     data_y = np.squeeze(data_y)
     #print("size y", np.shape(data_y))
     #one_hot_y = np.squeeze(np.eye(np.max(data_y) + 1)[data_y])
