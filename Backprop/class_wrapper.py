@@ -82,14 +82,19 @@ class Network(object):
         """
         if logit is None:
             return None
-        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-        BDY_loss = 0
-        if self.model.bp:
-            # Boundary loss of the geometry_eval to be less than 1
-            BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
-        self.MSE_loss = MSE_loss
-        self.Boundary_loss = BDY_loss
-        return torch.add(MSE_loss, BDY_loss)
+        if self.flags.data_set != 'gaussian_mixture':
+
+            MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+            BDY_loss = 0
+            if self.model.bp:
+                # Boundary loss of the geometry_eval to be less than 1
+                BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
+            self.MSE_loss = MSE_loss
+            self.Boundary_loss = BDY_loss
+            return torch.add(MSE_loss, BDY_loss)
+        else:                           # This is cross entropy loss where data is categorical
+            criterion = nn.CrossEntropyLoss()
+            return criterion(logit, labels.long())
 
     def make_optimizer(self):
         """

@@ -19,8 +19,8 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
-
-
+    # Data_Set parameter
+    parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
     # Forward model architecture hyper parameters
     parser.add_argument('--load-forward-ckpt-dir', type=str, default=LOAD_FORWARD_CKPT_DIR, help='To load the forward training result and provide the directory')
     parser.add_argument('--linear-f', type=list, default=LINEAR_F, help='The fc layers units for forward model')

@@ -19,6 +19,8 @@ def read_flag():
     :return: flags: a struct where all the input params are stored
     """
     parser = argparse.ArgumentParser()
+    # Data_Set parameter
+    parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
     # INN Model Architectural Params
     parser.add_argument('--dim-code', type=int, default=DIM_CODE, help='The dimension of the latent variable to supplement the dimension of spectra')
     parser.add_argument('--num-hidden-unit', type=int, default=NUM_HIDDEN_UNIT, help='the number of hidden unit in each coupling layers')

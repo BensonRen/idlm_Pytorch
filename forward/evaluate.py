@@ -8,7 +8,7 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import Forward
+from model_maker import VAE
 import data_reader
 # Libs
 import numpy as np

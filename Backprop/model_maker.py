@@ -44,8 +44,8 @@ class Backprop(nn.Module):
             self.convs.append(nn.ConvTranspose1d(in_channel, out_channel, kernel_size,
                                 stride=stride, padding=pad)) # To make sure L_out double each time
             in_channel = out_channel # Update the out_channel
-
-        self.convs.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
+        if len(self.convs):                     # Make sure there is not en empty one
+            self.convs.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def init_geometry_eval(self, flags):
         """
@@ -71,7 +71,6 @@ class Backprop(nn.Module):
             out = self.geometry_eval
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
-            # print(out.size())
             out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
 
         # The normal mode to train without Lorentz

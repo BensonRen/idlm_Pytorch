@@ -1,6 +1,13 @@
 """
 Params for INN model
 """
+# Define which data set you are using
+DATA_SET = 'meta_material'
+# DATA_SET = 'gaussian_mixture'
+# DATA_SET = 'sine_ave'
+# DATA_SET = 'naval_propulsion'
+# DATA_SET = 'robotic_arm'
+
 # INN Model Architectural Params
 DIM_CODE = 2
 NUM_HIDDEN_UNIT = 200

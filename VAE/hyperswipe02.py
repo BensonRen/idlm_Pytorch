@@ -8,8 +8,9 @@ import flag_reader
 if __name__ == '__main__':
     # linear_unit_list = [150, 300]
     # linear_unit_list = [1000, 500]
-    dim_z_list = [20, 25]
-    dim_spec_list = [15, 20, 30, 35] 
+    dim_z_list = [40]
+    dim_spec_list = [5, 10, 15, 20, 25, 30, 35, 40]
+    #dim_spec_list = [15, 20, 30, 35]
     # reg_scale_list = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
     for dim_z in dim_z_list:
     #for linear_unit in linear_unit_list:

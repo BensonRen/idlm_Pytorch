@@ -1,14 +1,11 @@
 import os
-import scipy.signal
-import sklearn.utils
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
-from sklearn.model_selection import KFold
-import seaborn as sns
 from sklearn.model_selection import train_test_split
 import torch
 
@@ -160,7 +157,7 @@ def gridShape(input_dir, output_dir, shapeType, r_bounds, h_bounds):
                                                                               ))
 
 
-def read_data( x_range, y_range, geoboundary,  batch_size=128,
+def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
                  data_dir=os.path.abspath(''), rand_seed=1234, normalize_input = True, test_ratio = 0.2 ):
     """
       :param input_size: input size of the arrays
@@ -230,11 +227,109 @@ def read_data( x_range, y_range, geoboundary,  batch_size=128,
     test_data = MetaMaterialDataSet(ftrTest, lblTest, bool_train= False)
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size)
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+    return train_loader, test_loader
 
 
+def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
+    """
+    Data reader function for the gaussian mixture data set
+    :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
+    :return: train_loader and test_loader in pytorch data set format (normalized)
+    """
+    # Read the data
+    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('long').values
+    data_y = np.squeeze(data_y)
+    #print("size y", np.shape(data_y))
+    #one_hot_y = np.squeeze(np.eye(np.max(data_y) + 1)[data_y])
+    #print("size of one-hot-y is:", np.shape(one_hot_y))
+
+    # Normalize the input
+    x_train, x_test, y_train, y_test = train_test_split(data_x, data_y, test_size=test_ratio,
+                                                        random_state=rand_seed)
+    print('total number of training sample is {}, the dimension of the feature is'.format(len(x_train), len(x_train[0])))
+    print('total number of test sample is {}'.format(len(y_test)))
+
+    # Construct the dataset using a outside class
+    train_data = SimulatedDataSet(x_train, y_train)
+    test_data = SimulatedDataSet(x_test, y_test)
+
+    # Construct train_loader and test_loader
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=flags.batch_size)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=flags.batch_size)
 
     return train_loader, test_loader
 
+
+def read_data_sine_wave(flgas, rand_seed=1234, test_ratio=0.2):
+    """
+    Data reader function for the sine function data set
+    :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
+    :return: train_loader and test_loader in pytorch data set format (normalized)
+    """
+    return train_loader, test_loader
+
+
+def read_data_naval_propulsion(flgas, rand_seed=1234, test_ratio=0.2):
+    """
+    Data reader function for the naval propulsion data set
+    :param flags: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
+    :return: train_loader and test_loader in pytorch data set format (normalized)
+    """
+    return train_loader, test_loader
+
+
+def read_data_robotic_arm(flags, rand_seed=1234, test_ratio=0.2):
+    """
+    Data reader function for the robotic arm data set
+    :param flas: Input flags
+    :param rand_seed: Random seed for the test/train split
+    :param test_ratio: Ratio of test data in all data
+    :return: train_loader and test_loader in pytorch data set format (normalized)
+    """
+    return train_loader, test_loader
+
+
+def read_data(flags):
+    """
+    The data reader allocator function
+    The input is categorized into couple of different possibilities
+    0. meta_material
+    1. gaussian_mixture
+    2. sine_wave
+    3. naval_propulsion
+    4. robotic_arm
+    :param flags: The input flag of the input data set
+    :return:
+    """
+    if flags.data_set == 'meta_material':
+        train_loader, test_loader = read_data_meta_material(x_range=flags.x_range,
+                                                            y_range=flags.y_range,
+                                                            geoboundary=flags.geoboundary,
+                                                            batch_size=flags.batch_size,
+                                                            normalize_input=flags.normalize_input,
+                                                            data_dir=flags.data_dir)
+        # Reset the boundary is normalized
+        if flags.normalize_input:
+            flags.geoboundary_norm = [-1, 1, -1, 1]
+    elif flags.data_set == 'gaussian_mixture':
+        train_loader, test_loader = read_data_gaussian_mixture(flags)
+    elif flags.data_set == 'sine_wave':
+        train_loader, test_loader = read_data_sine_wave(flags)
+    elif flags.data_set == 'naval_propulsion':
+        train_loader, test_loader = read_data_naval_propulsion(flags)
+    elif flags.data_set == 'robotic_arm':
+        train_loader, test_loader = read_data_robotic_arm(flags)
+    else:
+        sys.exit("Your flags.data_set entry is not correct, check again!")
+    return train_loader, test_loader
 
 class MetaMaterialDataSet(Dataset):
     """ The Meta Material Dataset Class """
@@ -255,3 +350,17 @@ class MetaMaterialDataSet(Dataset):
 
     def __getitem__(self, ind):
         return self.ftr[ind, :], self.lbl[ind, :]
+
+
+class SimulatedDataSet(Dataset):
+    """ The simulated Dataset Class"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.len = len(x)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, ind):
+        return self.x[ind, :], self.y[ind]

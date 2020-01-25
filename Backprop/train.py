@@ -24,17 +24,7 @@ def training_from_flag(flags):
     :return: None
     """
     # Get the data
-    train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
-                                                      y_range=flags.y_range,
-                                                      geoboundary=flags.geoboundary,
-                                                      batch_size=flags.batch_size,
-                                                      normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir)
-    # Reset the boundary is normalized
-    if flags.normalize_input:
-        flags.geoboundary_norm = [-1, 1, -1, 1]
-
-    print("Boundary is set at:", flags.geoboundary)
+    train_loader, test_loader = data_reader.read_data(flags)
     print("Making network now")
 
     # Make Network
@@ -48,12 +38,11 @@ def training_from_flag(flags):
     write_flags_and_BVE(flags, ntwk.best_validation_loss, ntwk.ckpt_dir)
     #put_param_into_folder(ntwk.ckpt_dir)
 
+
 if __name__ == '__main__':
     # Read the parameters to be set
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
     training_from_flag(flags)
-
-
 

@@ -130,7 +130,7 @@ class Network(object):
 
     def save_autoencoder(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
@@ -138,14 +138,14 @@ class Network(object):
 
     def save(self):
         """
-        Saving the model to the current check point folder with name best_model.pt
+        Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
         torch.save(self.model_INN, os.path.join(self.ckpt_dir, 'best_model_inn.pt'))
 
     def load_autoencoder(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
@@ -153,7 +153,7 @@ class Network(object):
 
     def load(self):
         """
-        Loading the model from the check point folder with name best_model.pt
+        Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
         self.model_INN = torch.load(os.path.join(self.ckpt_dir, 'best_model_inn.pt'))
