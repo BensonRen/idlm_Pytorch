@@ -110,7 +110,7 @@ class Backward(nn.Module):
         for ind, conv in enumerate(self.convs_b):
             out = conv(out)
 
-        out = out.squeeze()
+        out = out.squeeze(1)
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_b, self.bn_linears_b)):
             out = F.relu(bn(fc(out)))

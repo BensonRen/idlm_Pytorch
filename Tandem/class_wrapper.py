@@ -95,9 +95,11 @@ class Network(object):
         """
         if logit is None:
             return None
+        BDY_loss = torch.zeros(size=[])
+        self.Boundary_loss = BDY_loss
         if self.flags.data_set != 'gaussian_mixture':
             MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-            BDY_loss = torch.zeros(size=[])
+
             # Boundary loss of the geometry_eval to be less than 1
             if G is not None:
                 relu = torch.nn.ReLU()
@@ -280,7 +282,10 @@ class Network(object):
                     geometry = geometry.cuda()  # Put data onto GPU
                     spectra = spectra.cuda()    # Put data onto GPU
                 self.optm_b.zero_grad()         # Zero the gradient first
-                G_out = self.model_b(spectra)   # Get the geometry prediction
+                if self.flags.data_set == 'gaussian_mixture':
+                    G_out = self.model_b(spectra.unsqueeze(1))   # Get the geometry prediction
+                else:
+                    G_out = self.model_b(spectra)  # Get the geometry prediction
                 S_out = self.model_f(G_out)     # Get the spectra prediction
                 loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
@@ -306,7 +311,10 @@ class Network(object):
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    G_out = self.model_b(spectra)  # Get the geometry prediction
+                    if self.flags.data_set == 'gaussian_mixture':
+                        G_out = self.model_b(spectra.unsqueeze(1))  # Get the geometry prediction
+                    else:
+                        G_out = self.model_b(spectra)  # Get the geometry prediction
                     S_out = self.model_f(G_out)  # Get the spectra prediction
                     loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
                     test_loss += loss  # Aggregate the loss
