@@ -96,10 +96,8 @@ class Backward(nn.Module):
             self.convs_b.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                           stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
-        self.convs_b.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-
-        # Define forward module for separate training
-        self.backward_modules = [self.linears_b, self.bn_linears_b, self.convs_b]
+        if len(self.convs_b):  # Make sure there is not en empty one
+            self.convs_b.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def forward(self, S):
         """
