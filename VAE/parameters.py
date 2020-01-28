@@ -5,7 +5,7 @@ The parameter file storing the parameters for VAE Model
 # Define which data set you are using
 DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_ave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 

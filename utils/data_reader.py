@@ -230,6 +230,32 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     return train_loader, test_loader
 
 
+def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=1234, test_ratio=0.2):
+    """
+    Helper function that takes structured data_x and data_y into dataloaders
+    :param data_x: the structured x data
+    :param data_y: the structured y data
+    :param rand_seed: the random seed
+    :param test_ratio: The testing ratio
+    :return: train_loader, test_loader: The pytorch data loader file
+    """
+    # Normalize the input
+    x_train, x_test, y_train, y_test = train_test_split(data_x, data_y, test_size=test_ratio,
+                                                        random_state=rand_seed)
+    print('total number of training sample is {}, the dimension of the feature is {}'.format(len(x_train), len(x_train[0])))
+    print('total number of test sample is {}'.format(len(y_test)))
+
+    # Construct the dataset using a outside class
+    train_data = DataSetClass(x_train, y_train)
+    test_data = DataSetClass(x_test, y_test)
+
+    # Construct train_loader and test_loader
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=batch_size)
+    test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size)
+
+    return train_loader, test_loader
+
+
 def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the gaussian mixture data set
@@ -242,29 +268,11 @@ def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
-    data_y = np.squeeze(data_y)
-    #print("size y", np.shape(data_y))
-    #one_hot_y = np.squeeze(np.eye(np.max(data_y) + 1)[data_y])
-    #print("size of one-hot-y is:", np.shape(one_hot_y))
-
-    # Normalize the input
-    x_train, x_test, y_train, y_test = train_test_split(data_x, data_y, test_size=test_ratio,
-                                                        random_state=rand_seed)
-    print('total number of training sample is {}, the dimension of the feature is'.format(len(x_train), len(x_train[0])))
-    print('total number of test sample is {}'.format(len(y_test)))
-
-    # Construct the dataset using a outside class
-    train_data = SimulatedDataSet(x_train, y_train)
-    test_data = SimulatedDataSet(x_test, y_test)
-
-    # Construct train_loader and test_loader
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=flags.batch_size)
-    test_loader = torch.utils.data.DataLoader(test_data, batch_size=flags.batch_size)
-
-    return train_loader, test_loader
+    data_y = np.squeeze(data_y)                             # Squeeze since this is a 1 column label
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
 
 
-def read_data_sine_wave(flgas, rand_seed=1234, test_ratio=0.2):
+def read_data_sine_wave(flags, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the sine function data set
     :param flags: Input flags
@@ -272,7 +280,10 @@ def read_data_sine_wave(flgas, rand_seed=1234, test_ratio=0.2):
     :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    return train_loader, test_loader
+    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Sinusoidal Wave/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
 def read_data_naval_propulsion(flgas, rand_seed=1234, test_ratio=0.2):
@@ -352,8 +363,8 @@ class MetaMaterialDataSet(Dataset):
         return self.ftr[ind, :], self.lbl[ind, :]
 
 
-class SimulatedDataSet(Dataset):
-    """ The simulated Dataset Class"""
+class SimulatedDataSet_class(Dataset):
+    """ The simulated Dataset Class for classification purposes"""
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -364,3 +375,18 @@ class SimulatedDataSet(Dataset):
 
     def __getitem__(self, ind):
         return self.x[ind, :], self.y[ind]
+
+
+class SimulatedDataSet_regress(Dataset):
+    """ The simulated Dataset Class for regression purposes"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.len = len(x)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, ind):
+        return self.x[ind, :], self.y[ind, :]
+

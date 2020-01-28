@@ -3,8 +3,8 @@ Params for Back propagation model
 """
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_ave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
@@ -16,7 +16,7 @@ USE_LORENTZ = False
 # CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [2, 10, 10, 5, 4]                 # Dimension of data set cross check with data generator
+LINEAR = [3, 10, 10, 10, 2]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
@@ -25,7 +25,7 @@ CONV_STRIDE = []
 # Optimizer Params
 OPTIM = "Adam"
 REG_SCALE = 1e-3
-BATCH_SIZE = 10
+BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 128
 EVAL_STEP = 20
 TRAIN_STEP = 200
