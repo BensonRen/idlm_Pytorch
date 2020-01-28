@@ -3,8 +3,8 @@ Hyper-parameters of the Tandem model
 """
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
@@ -24,12 +24,12 @@ LOAD_FORWARD_CKPT_DIR = None
 # CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [2, 10, 10, 10, 10, 4]
+LINEAR_F = [3, 10, 10, 10, 10, 2]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
 
-LINEAR_B = [1, 10, 10, 10, 10, 2]
+LINEAR_B = [2, 10, 10, 10, 10, 3]
 CONV_OUT_CHANNEL_B = []
 CONV_KERNEL_SIZE_B = []
 CONV_STRIDE_B = []
