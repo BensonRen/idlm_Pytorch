@@ -256,6 +256,22 @@ def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=12
     return train_loader, test_loader
 
 
+def normalize_np(x):
+    """
+    Normalize the x into [-1, 1] range in each dimension [:, i]
+    :param x: np array to be normalized
+    :return: normalized np array
+    """
+    for i in range(len(x[0])):
+        x_max = np.max(x[:, i])
+        x_min = np.min(x[:, i])
+        x_range = (x_max - x_min ) /2.
+        x_avg = (x_max + x_min) / 2.
+        x[:, i] = (x[:, i] - x_avg) / x_range
+        assert np.max(x[:, i]) == 1, 'your normalization is wrong'
+        assert np.min(x[:, i]) == -1, 'your normalization is wrong'
+    return x
+
 def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     """
     Data reader function for the gaussian mixture data set
@@ -269,6 +285,7 @@ def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_y = np.squeeze(data_y)                             # Squeeze since this is a 1 column label
+    data_x = normalize_np(data_x)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
 
 
@@ -283,6 +300,8 @@ def read_data_sine_wave(flags, rand_seed=1234, test_ratio=0.2):
     data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Sinusoidal Wave/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    data_x = normalize_np(data_x)
+    data_y = normalize_np(data_y)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
