@@ -99,8 +99,8 @@ class Forward(nn.Module):
             #out = F.relu(out) + 0.00001
 
             # Get the out into (batch_size, num_lorentz, 3) and the last epsilon_inf baseline
-            epsilon_inf = out[:,-1]  # For debugging purpose now
-            out = out[:,0:-1].view([-1, int(out.size(1)/3), 3])
+            epsilon_inf = out[:, -1]
+            out = out[:, 0:-1].view([-1, int(out.size(1)/3), 3])
 
             # Get the list of params for lorentz, also add one extra dimension at 3rd one to
             if self.fix_w0:
@@ -127,6 +127,10 @@ class Forward(nn.Module):
             #print("w0 size", w0.size())
             End of testing module
             """
+
+            """
+            # This is version that easier to understand by human, but memory intensive
+            # Therefore we implement the less memory aggressive one below, make sure you use only one
             # Get the powers first
             w02 = pow(w0, 2)
             wp2 = pow(wp, 2)
@@ -141,6 +145,11 @@ class Forward(nn.Module):
             denom = add(s12, mul(w2, g2))
             e1 = div(n1, denom)
             e2 = div(n2, denom)
+            """
+            # This is the version of more "machine" code that hard to understand but much more memory efficient
+            e1 = div(mul(pow(wp, 2), add(pow(w0, 2), -pow(w_expand, 2))), add(pow(add(pow(w0, 2), -pow(w_expand, 2)), 2), mul(pow(w_expand, 2), pow(g, 2))))
+            e2 = div(mul(pow(wp, 2), mul(w_expand, pow(g, 2))), add(pow(add(pow(w0, 2), -pow(w_expand, 2)), 2), mul(pow(w_expand, 2), pow(g, 2))))
+            # End line for the 2 versions of code that do the same thing, 1 for memory efficient but ugly
 
             self.e2 = e2.data.cpu().numpy()                 # This is for plotting the imaginary part
             self.e1 = e1.data.cpu().numpy()                 # This is for plotting the imaginary part
@@ -149,6 +158,10 @@ class Forward(nn.Module):
             print("size of e1", e1.size())
             print("size pf epsilon_inf", epsilon_inf.size())
             """
+
+            """
+            # This is version that easier to understand by human, but memory intensive
+            # Therefore we implement the less memory aggressive one below, make sure you use only one
             # the correct calculation should be adding up the es
             e1 = torch.sum(e1, 1)
             e2 = torch.sum(e2, 1)
@@ -166,8 +179,14 @@ class Forward(nn.Module):
             k = sqrt(0.5 * add(sqrt(add(e12, e22)), -e1))
             n_12 = pow(n+1, 2)
             k2 = pow(k, 2)
-
             T = div(4*n, add(n_12, k2)).float()
+            """
+            # This is the memory efficient version of code
+            n = sqrt(0.5 * add(sqrt(add(pow(torch.sum(e1, 1), 2), pow(torch.sum(e2, 1), 2))), torch.sum(e1, 1)))
+            k = sqrt(0.5 * add(sqrt(add(pow(torch.sum(e1, 1), 2), pow(torch.sum(e2, 1), 2))), -torch.sum(e1, 1)))
+            T = div(4*n, add(pow(n+1, 2), pow(k, 2))).float()
+            # End line for 2 versions of code that do the same thing, 1 for memory efficient but ugly
+
             """
             Debugging and plotting (This is very slow, comment to boost)
             """
