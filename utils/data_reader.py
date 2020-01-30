@@ -272,12 +272,11 @@ def normalize_np(x):
         assert np.min(x[:, i]) == -1, 'your normalization is wrong'
     return x
 
-def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
+
+def read_data_gaussian_mixture(flags):
     """
     Data reader function for the gaussian mixture data set
     :param flags: Input flags
-    :param rand_seed: Random seed for the test/train split
-    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     # Read the data
@@ -289,12 +288,10 @@ def read_data_gaussian_mixture(flags, rand_seed=1234, test_ratio=0.2):
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
 
 
-def read_data_sine_wave(flags, rand_seed=1234, test_ratio=0.2):
+def read_data_sine_wave(flags):
     """
     Data reader function for the sine function data set
     :param flags: Input flags
-    :param rand_seed: Random seed for the test/train split
-    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Sinusoidal Wave/')
@@ -305,26 +302,32 @@ def read_data_sine_wave(flags, rand_seed=1234, test_ratio=0.2):
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
-def read_data_naval_propulsion(flgas, rand_seed=1234, test_ratio=0.2):
+def read_data_naval_propulsion(flags):
     """
     Data reader function for the naval propulsion data set
     :param flags: Input flags
-    :param rand_seed: Random seed for the test/train split
-    :param test_ratio: Ratio of test data in all data
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    return train_loader, test_loader
+    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Naval Propulsion/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    data_x = normalize_np(data_x)
+    data_y = normalize_np(data_y)
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
-def read_data_robotic_arm(flags, rand_seed=1234, test_ratio=0.2):
+def read_data_robotic_arm(flags):
     """
     Data reader function for the robotic arm data set
-    :param flas: Input flags
-    :param rand_seed: Random seed for the test/train split
-    :param test_ratio: Ratio of test data in all data
+    :param flags: Input flags
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    return train_loader, test_loader
+    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Robotic Arm/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    data_x = normalize_np(data_x)
+    data_y = normalize_np(data_y)
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
 def read_data(flags):
