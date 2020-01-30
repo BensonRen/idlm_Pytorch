@@ -13,8 +13,8 @@ x_dimension = 3         # Current version only support 2 dimension due to visual
 y_dimension = 2         # Current version only support 2 dimension due to visualization issue
 x_low = -1
 x_high = 1
-num_sample_dimension = 30
-f = 5
+num_sample_dimension = 40
+f = 2
 
 def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):
     """
@@ -53,6 +53,8 @@ if __name__ == '__main__':
     for i in range(len(x)):
         data_y[0, :] += sin(f*np.pi*x[i, ::])
         data_y[1, :] += cos(f*np.pi*x[i, ::])
+        # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
+        # data_y[1, :] -= x[i, ::]              # Easy case for validation of architecture
     print('shape x', np.shape(x))
     print('shape y', np.shape(data_y))
     # Plot the data

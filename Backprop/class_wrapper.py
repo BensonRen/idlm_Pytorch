@@ -83,7 +83,6 @@ class Network(object):
         if logit is None:
             return None
         if self.flags.data_set != 'gaussian_mixture':
-
             MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
             BDY_loss = 0
             if self.model.bp:

@@ -50,7 +50,7 @@ STOP_THRESHOLD = 1e-4
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = "20191204_211327"
+EVAL_MODEL = "sine_wave"
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
@@ -59,7 +59,7 @@ MODEL_NAME = None
 
 # DATA_DIR = '../'
 DATA_DIR = '../'
-#DATA_DIR = '/work/sr365/'
+# DATA_DIR = '/work/sr365/'
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
 GEOBOUNDARY = [30, 52, 42, 52]
 NORMALIZE_INPUT = True

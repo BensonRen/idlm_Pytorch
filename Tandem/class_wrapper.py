@@ -157,16 +157,27 @@ class Network(object):
         Only loading the forward model to using the check point folder with name best_model_forward.pt
         :return: None
         """
-        self.model_f = torch.load(os.path.join(self.load_forward_ckpt_dir, 'best_model_forward.pt'))
+        if torch.cuda.is_available():           # If load to a CUDA device
+            self.model_f = torch.load(os.path.join(self.load_forward_ckpt_dir, 'best_model_forward.pt'))
+        else:                                   # If this is a CPU machine
+            self.model_f = torch.load(os.path.join(self.load_forward_ckpt_dir, 'best_model_forward.pt'),
+                                      map_location=torch.device('cpu'))
 
     def load(self):
         """
         Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
-        # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
-        self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
+        if torch.cuda.is_available():           # If load to a CUDA device
+            # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
+            self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+            self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
+        else:                                   # If this is a CPU machine
+            self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'),
+                                      map_location=torch.device('cpu'))
+            self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'),
+                                      map_location=torch.device('cpu'))
+
 
     def train(self):
         """
@@ -345,15 +356,12 @@ class Network(object):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
         if cuda:
-            self.model.cuda()
+            self.model_b.cuda()
+            self.model_f.cuda()
 
         # Set to evaluation mode for batch_norm layers
-        self.model.eval()
-        self.model.bp = True
-
-        # Construct optimizer after the model moved to GPU
-        self.optm_eval = self.make_optimizer_eval()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
+        self.model_f.eval()
+        self.model_b.eval()
 
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
@@ -369,38 +377,11 @@ class Network(object):
                 if cuda:
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
-                # Initialize the geometry first
-                self.model.randomize_geometry_eval()
-                self.optm_eval = self.make_optimizer_eval()
-                self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
-                Xpred, Ypred = self.evaluate_one(spectra)
+                Xpred = self.model_b(spectra)
+                Ypred = self.model_f(Xpred)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, Ypred, fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fyp, Ypred.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fxp, Xpred.cpu().data.numpy(), fmt='%.3f')
         return Ypred_file, Ytruth_file
-
-    def evaluate_one(self, target_spectra):
-        # expand the target spectra to eval batch size
-        target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
-        # Start backprop
-        for i in range(self.flags.eval_step):
-            logit = self.model(self.model.geometry_eval)                      # Get the output
-            loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
-            loss.backward()                           # Calculate the Gradient
-            self.optm_eval.step()                                       # Move one step the optimizer
-
-            # check periodically to stop and print stuff
-            if i % self.flags.verb_step == 0:
-                print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
-                if loss.data < self.flags.stop_threshold:                       # Check if stop
-                    print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
-                    break
-
-        # Get the best performing one
-        best_estimate_index = np.argmin(loss.cpu().data.numpy())
-        Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
-        Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
-
-        return Xpred_best, Ypred_best
 

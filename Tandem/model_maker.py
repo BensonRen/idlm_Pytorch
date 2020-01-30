@@ -44,8 +44,6 @@ class Forward(nn.Module):
             in_channel = out_channel # Update the out_channel
         # Get the channel number down
         self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-        # Define forward module for separate training
-        self.forward_modules = [self.linears_f, self.bn_linears_f, self.convs_f]
 
     def forward(self, G):
         """
@@ -58,14 +56,14 @@ class Forward(nn.Module):
         for ind, (fc, bn) in enumerate(zip(self.linears_f, self.bn_linears_f)):
             # print(out.size())
             out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
-
-        # The normal mode to train without Lorentz
-        out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
-        # For the conv part
-        for ind, conv in enumerate(self.convs_f):
-            out = conv(out)
-        S = out.squeeze()
-        return S
+        if self.convs_f:
+            # The normal mode to train without Lorentz
+            out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
+            # For the conv part
+            for ind, conv in enumerate(self.convs_f):
+                out = conv(out)
+            out = out.squeeze()
+        return out
 
 
 class Backward(nn.Module):
@@ -105,15 +103,20 @@ class Backward(nn.Module):
         :param S: The 300-d input spectrum
         :return: G: The 8-d geometry
         """
-        out = S.unsqueeze(1)
-        # For the Conv Layers
-        for ind, conv in enumerate(self.convs_b):
-            out = conv(out)
+        out = S
+        if self.convs_b:
+            out = out.unsqueeze(1)
+            # For the Conv Layers
+            for ind, conv in enumerate(self.convs_b):
+                out = conv(out)
 
-        out = out.squeeze(1)
+            out = out.squeeze(1)
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_b, self.bn_linears_b)):
-            out = F.relu(bn(fc(out)))
+            if ind != len(self.linears) - 1:
+                out = F.relu(bn(fc(out)))
+            else:
+                out = fc(out)
         G = out
         return G
 

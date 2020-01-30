@@ -71,7 +71,10 @@ class Backprop(nn.Module):
             out = self.geometry_eval
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
-            out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            if ind != len(self.linears) - 1:
+                out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            else:
+                out = fc(out)
 
         # The normal mode to train without Lorentz
         out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H
@@ -79,6 +82,6 @@ class Backprop(nn.Module):
         for ind, conv in enumerate(self.convs):
             #print(out.size())
             out = conv(out)
-        S = out.squeeze()
+        S = out.squeeze(1)
         return S
 

@@ -16,7 +16,7 @@ USE_LORENTZ = False
 # CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [3, 10, 10, 10, 2]                 # Dimension of data set cross check with data generator
+LINEAR = [3, 100, 100, 100, 100, 100, 2]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
@@ -27,10 +27,10 @@ OPTIM = "Adam"
 REG_SCALE = 1e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 128
-EVAL_STEP = 20
+EVAL_STEP = 2
 TRAIN_STEP = 200
 VERB_STEP = 1
-LEARN_RATE = 1e-2
+LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
 STOP_THRESHOLD = 1e-4
@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "20191204_211327"
+EVAL_MODEL = "sine_wave"

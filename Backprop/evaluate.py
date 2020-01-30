@@ -12,7 +12,7 @@ import flag_reader
 from class_wrapper import Network
 from model_maker import Backprop
 from utils import data_reader
-
+from utils.helper_functions import load_flags
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -54,7 +54,7 @@ def evaluate_from_model(eval_flags):
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
-    flags = flag_reader.load_flags(os.path.join("models", eval_flags.eval_model))
+    flags = load_flags(os.path.join("models", eval_flags.eval_model))
     flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.eval_batch_size = eval_flags.eval_batch_size
@@ -62,12 +62,7 @@ def evaluate_from_model(eval_flags):
     flags.verb_step = eval_flags.verb_step
 
     # Get the data
-    train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
-                                                      y_range=flags.y_range,
-                                                      geoboundary=flags.geoboundary,
-                                                      batch_size=flags.batch_size,
-                                                      normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir)
+    train_loader, test_loader = data_reader.read_data(flags)
     print("Making network now")
 
     # Make Network
