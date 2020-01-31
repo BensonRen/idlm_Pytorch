@@ -5,6 +5,8 @@ dataIn
 */*.png
 */*.jpg
 */*.sh
+*/*/*.sh
+*/*/*.err
 
 */__*
 */*.err
