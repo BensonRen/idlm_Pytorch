@@ -42,8 +42,9 @@ class Forward(nn.Module):
             self.convs_f.append(nn.ConvTranspose1d(in_channel, out_channel, kernel_size,
                                 stride=stride, padding=pad)) # To make sure L_out double each time
             in_channel = out_channel # Update the out_channel
-        # Get the channel number down
-        self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
+        if self.convs_f:
+            # Get the channel number down
+            self.convs_f.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def forward(self, G):
         """
@@ -113,7 +114,7 @@ class Backward(nn.Module):
             out = out.squeeze(1)
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_b, self.bn_linears_b)):
-            if ind != len(self.linears) - 1:
+            if ind != len(self.linears_b) - 1:
                 out = F.relu(bn(fc(out)))
             else:
                 out = fc(out)

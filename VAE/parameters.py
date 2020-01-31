@@ -4,16 +4,18 @@ The parameter file storing the parameters for VAE Model
 
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
 # Architectural Params
 DIM_Z = 5
+DIM_X = 3
+DIM_Y = 2
 DIM_SPEC = None
-LINEAR_D = [1 + DIM_Z, 50, 50, 50, 50, 2]           # Linear units for Decoder
-LINEAR_E = [3, 50, 50, 50, DIM_Z]                   # Linear units for Encoder
+LINEAR_D = [DIM_Y + DIM_Z, 50, 50, 50, 50, DIM_X]           # Linear units for Decoder
+LINEAR_E = [DIM_X + DIM_Y, 50, 50, 50, DIM_Z]                   # Linear units for Encoder
 LINEAR_SE = []                      # Linear units for spectra encoder
 CONV_OUT_CHANNEL_SE = []
 CONV_KERNEL_SIZE_SE = []

@@ -1,4 +1,6 @@
 dataIn
+*temp
+*tmp
 */*.csv
 */*.png
 */*.jpg

@@ -70,7 +70,7 @@ def plot_arms(positions, save_dir='.', save_name='robotic_arms_plot.png', margin
         #print("i =",i)
         #print("position0:", positions[:, i, 0])
         #print("position1:", positions[:, i, 1])
-        plt.plot(positions[:, i, 0], positions[:, i, 1], lw=2, ls='-', c='k', alpha=0.05)
+        plt.plot(positions[:, i, 0], positions[:, i, 1], lw=2, ls='-', c='b', alpha=0.01)
         #plt.scatter(positions[:, i, 0], positions[:, i, 1], c='b', s=30, marker='o')
         #plt.scatter(positions[:, i, 0], positions[:, i, 1], c='w', s=20, marker='o')
     #plt.ylim([-arm_max_length, arm_max_length])

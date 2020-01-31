@@ -6,31 +6,26 @@ import train
 import  numpy as np
 import flag_reader
 if __name__ == '__main__':
-    # linear_unit_list = [150, 300]
-    # linear_unit_list = [1000, 500]
-    dim_z_list = [40]
-    dim_spec_list = [5, 10, 15, 20, 25, 30, 35, 40]
-    #dim_spec_list = [15, 20, 30, 35]
+    linear_unit_list = [20, 30, 40, 50]
+    dim_z_list = [2, 3, 4, 5, 6, 7]
+    #linear_unit_list = [1000, 500]
+    #linear_unit_list = [1000, 500, 300, 150]
     # reg_scale_list = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
-    for dim_z in dim_z_list:
-    #for linear_unit in linear_unit_list:
+    reg_scale_list = [5e-4]
+    for linear_unit in linear_unit_list:
         # Setting the loop for setting the parameter
-        for dim_spec in dim_spec_list:
-        #for i in range(7,10):
+        for i in range(4, 10):
             flags = flag_reader.read_flag()  	#setting the base case
-            #linear = [linear_unit for j in range(i)]        #Set the linear units
-            #linear[0] = 150                   # The start of linear
-            #linear[-1] = 8                # The end of linear
-            #flags.linear_b = linear
-            flags.dim_z = dim_z
-            flags.dim_spec = dim_spec
-            # FOR MODIFY THE DEPENDENT PARAMS
-            flags.linear_D[0] = dim_spec + dim_z
-            flags.linear_E[0] = 8 + dim_spec
-            flags.linear_SE[-1] = dim_spec
-            #for reg_scale in reg_scale_list:
-                #flags.reg_scale = reg_scale
-            for j in range(3):
-                flags.model_name = "reg_scale_"+str(flags.reg_scale)+"trail_"+str(j)+"_VAE_dim_z_" + str(dim_z) + "_dim_spec_" + str(dim_spec)
-                train.training_from_flag(flags)
+            linear = [linear_unit for j in range(i)]        #Set the linear units
+            linear[0] = 2                   # The start of linear
+            linear[-1] = 4                # The end of linear
+            flags.linear = linear
+            for reg_scale in reg_scale_list:
+                flags.reg_scale = reg_scale
+                for dim_z in dim_z_list:
+                    flags.dim_z = dim_z
+                    flags.
+                for j in range(3):
+                        flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
+                        train.training_from_flag(flags)
 
