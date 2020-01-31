@@ -151,6 +151,8 @@ class Network(object):
             loss_aggregate_list = np.array([0., 0., 0.])       # kl_loss, mse_loss, bdy_loss
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
+                if self.flags.data_set == 'gaussian_mixture':
+                    spectra = spectra.unsqueeze(1)
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
@@ -182,6 +184,8 @@ class Network(object):
                 test_loss = 0
                 loss_aggregate_list = np.array([0., 0., 0.])  # kl_loss, mse_loss, bdy_loss
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                    if self.flags.data_set == 'gaussian_mixture':
+                        spectra = spectra.unsqueeze(1)
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()

@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
+
 class VAE(nn.Module):
     def __init__(self, flags):
         """
@@ -57,7 +58,8 @@ class VAE(nn.Module):
             self.convs_SE.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                            stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
-        self.convs_SE.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
+        if self.convs_SE:                       # In case that there is no conv layers
+            self.convs_SE.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def encoder(self, G, S_enc):
         """
@@ -70,7 +72,10 @@ class VAE(nn.Module):
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_E, self.bn_linears_E)):
             # print(out.size())
-            out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+            if ind != len(self.linears_E):
+                out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+            else:
+                out = fc(out)
         z_mean = self.zmean_layer(out)
         z_log_var = self.z_log_var_layer(out)
         return z_mean, z_log_var
@@ -105,6 +110,8 @@ class VAE(nn.Module):
         :param S: The 300-d input spectrum
         :return: S_enc: The n-d output encoded spectrum
         """
+        if not self.convs_SE:                # If there is no conv_SE layer, there is no SE then
+            return S
         out = S.unsqueeze(1)
         # For the Conv Layers
         for ind, conv in enumerate(self.convs_SE):

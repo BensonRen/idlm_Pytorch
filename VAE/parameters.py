@@ -3,21 +3,21 @@ The parameter file storing the parameters for VAE Model
 """
 
 # Define which data set you are using
-DATA_SET = 'meta_material'
-# DATA_SET = 'gaussian_mixture'
+# DATA_SET = 'meta_material'
+DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
 # Architectural Params
-DIM_Z = 20
-DIM_SPEC = 15
-LINEAR_D = [DIM_SPEC + DIM_Z, 50, 500, 500, 100, 8]           # Linear units for Decoder
-LINEAR_E = [8 + DIM_SPEC, 50, 500, 500, 150]                   # Linear units for Encoder
-LINEAR_SE = [150, 150, 150, 150, DIM_SPEC]                      # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = [4, 4, 4]
-CONV_KERNEL_SIZE_SE = [5, 5, 8]
-CONV_STRIDE_SE = [1, 1, 2]
+DIM_Z = 5
+DIM_SPEC = None
+LINEAR_D = [1 + DIM_Z, 50, 50, 50, 50, 2]           # Linear units for Decoder
+LINEAR_E = [3, 50, 50, 50, DIM_Z]                   # Linear units for Encoder
+LINEAR_SE = []                      # Linear units for spectra encoder
+CONV_OUT_CHANNEL_SE = []
+CONV_KERNEL_SIZE_SE = []
+CONV_STRIDE_SE = []
 
 # Optimization params
 OPTIM = "Adam"
