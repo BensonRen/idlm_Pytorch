@@ -297,6 +297,7 @@ class Network(object):
                     G_out = self.model_b(spectra.unsqueeze(1))   # Get the geometry prediction
                 else:
                     G_out = self.model_b(spectra)  # Get the geometry prediction
+                print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
                 loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients

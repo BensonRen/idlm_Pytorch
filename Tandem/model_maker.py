@@ -134,7 +134,12 @@ class Backward(nn.Module):
         :return: [N, int] one hot encoding of the labels
         """
         one_hot = torch.zeros([labels.size(0), num_class])
-        one_hot.scatter_(dim=1, index=labels.type(dtype=torch.long), value=1)
+        if torch.cuda.is_available():
+            one_hot = one_hot.cuda()
+            print(one_hot.type())
+            one_hot.scatter_(dim=1, index=labels.type(dtype=torch.cuda.LongTensor), value=1)
+        else:
+            one_hot.scatter_(dim=1, index=labels.type(dtype=torch.long), value=1)
         return one_hot
 
 """

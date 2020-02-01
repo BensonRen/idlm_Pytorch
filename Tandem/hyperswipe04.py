@@ -16,12 +16,12 @@ if __name__ == '__main__':
         for i in range(4, 10):
             flags = flag_reader.read_flag()  	#setting the base case
             linear = [linear_unit for j in range(i)]        #Set the linear units
-            linear[0] = 2                   # The start of linear
-            linear[-1] = 4                # The end of linear
+            linear[0] = 4                   # The start of linear
+            linear[-1] = 2                # The end of linear
             flags.linear_b = linear
             for reg_scale in reg_scale_list:
                 flags.reg_scale = reg_scale
                 for j in range(3):
-                        flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
+                        flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
                         train.training_from_flag(flags)
 
