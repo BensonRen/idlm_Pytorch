@@ -10,10 +10,10 @@ import shutil
 
 # Own
 import flag_reader
-import data_reader
+from utils import data_reader
 from class_wrapper import Network
 from model_maker import Forward, Discriminator, Generator, Spectra_encoder
-from utils.helper_functions import put_param_into_folder, write_flags_and_BVE
+from utils.helper_functions import  write_flags_and_BVE
 
 def training_from_flag(flags):
     """
