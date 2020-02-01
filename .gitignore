@@ -7,10 +7,10 @@ dataIn
 */*.sh
 */*/*.sh
 */*/*.err
-
+*/*/*.csv
+*/*/*.png
 */__*
 */*.err
 */slurm*
 */models
 */data
-*/.*

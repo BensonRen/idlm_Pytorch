@@ -20,6 +20,7 @@ class Forward(nn.Module):
         This part is the forward model layers definition:
         """
         # Linear Layer and Batch_norm Layer definitions here
+        self.flags = flags
         self.linears_f = nn.ModuleList([])
         self.bn_linears_f = nn.ModuleList([])
         for ind, fc_num in enumerate(flags.linear_f[0:-1]):               # Excluding the last one as we need intervals
@@ -74,6 +75,7 @@ class Backward(nn.Module):
         This part if the backward model layers definition:
         """
         # Linear Layer and Batch_norm Layer definitions here
+        self.flags = flags
         self.linears_b = nn.ModuleList([])
         self.bn_linears_b = nn.ModuleList([])
         for ind, fc_num in enumerate(flags.linear_b[0:-1]):               # Excluding the last one as we need intervals
@@ -105,6 +107,9 @@ class Backward(nn.Module):
         :return: G: The 8-d geometry
         """
         out = S
+        if (len(S[0]) == 1) and (self.flags.linear_b[0] != 1):
+            # This is when gaussian_mixture data comes in
+            out = self.one_hot(out, self.flags.linear_b[0])
         if self.convs_b:
             out = out.unsqueeze(1)
             # For the Conv Layers
@@ -120,6 +125,17 @@ class Backward(nn.Module):
                 out = fc(out)
         G = out
         return G
+
+    def one_hot(self, labels, num_class):
+        """
+        Change the gaussian mixture 1d label into ont hot encoding
+        :param labels: [N, 1], the labels input
+        :param num_class: int, number of classes
+        :return: [N, int] one hot encoding of the labels
+        """
+        one_hot = torch.zeros([labels.size(0), num_class])
+        one_hot.scatter_(dim=1, index=labels.type(dtype=torch.long), value=1)
+        return one_hot
 
 """
     def forward(self, G_in=None, S_in=None, forward_model=False):
