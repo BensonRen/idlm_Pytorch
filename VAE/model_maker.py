@@ -22,44 +22,45 @@ class VAE(nn.Module):
         """
         super(VAE, self).__init__()
         self.z_dim = flags.dim_z
+        # print("self.z_dim = ", self.z_dim)
         # For Decoder
-        self.linears_D = nn.ModuleList([])
-        self.bn_linears_D = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_D[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_D.append(nn.Linear(fc_num, flags.linear_D[ind + 1]))
-            self.bn_linears_D.append(nn.BatchNorm1d(flags.linear_D[ind + 1]))
+        self.linears_d = nn.ModuleList([])
+        self.bn_linears_d = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_d[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_d.append(nn.Linear(fc_num, flags.linear_d[ind + 1]))
+            self.bn_linears_d.append(nn.BatchNorm1d(flags.linear_d[ind + 1]))
         # For Encoder
-        self.linears_E = nn.ModuleList([])
-        self.bn_linears_E = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_E[0:-1]):  # Excluding the last one as we need intervals
-            self.linears_E.append(nn.Linear(fc_num, flags.linear_E[ind + 1]))
-            self.bn_linears_E.append(nn.BatchNorm1d(flags.linear_E[ind + 1]))
+        self.linears_e = nn.ModuleList([])
+        self.bn_linears_e = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_e[0:-1]):  # Excluding the last one as we need intervals
+            self.linears_e.append(nn.Linear(fc_num, flags.linear_e[ind + 1]))
+            self.bn_linears_e.append(nn.BatchNorm1d(flags.linear_e[ind + 1]))
         # Re-parameterization
-        self.zmean_layer = nn.Linear(flags.linear_E[-1], self.z_dim)
-        self.z_log_var_layer = nn.Linear(flags.linear_E[-1], self.z_dim)
+        self.zmean_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
+        self.z_log_var_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
         # For Spectra Encoder
-        self.linears_SE = nn.ModuleList([])
-        self.bn_linears_SE = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_SE[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_SE.append(nn.Linear(fc_num, flags.linear_SE[ind + 1]))
-            self.bn_linears_SE.append(nn.BatchNorm1d(flags.linear_SE[ind + 1]))
+        self.linears_se = nn.ModuleList([])
+        self.bn_linears_se = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_se[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_se.append(nn.Linear(fc_num, flags.linear_se[ind + 1]))
+            self.bn_linears_se.append(nn.BatchNorm1d(flags.linear_se[ind + 1]))
         # Conv Layer definitions here
-        self.convs_SE = nn.ModuleList([])
+        self.convs_se = nn.ModuleList([])
         in_channel = 1                                                  # Initialize the in_channel number
-        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_SE,
-                                                                     flags.conv_kernel_size_SE,
-                                                                     flags.conv_stride_SE)):
+        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_se,
+                                                                     flags.conv_kernel_size_se,
+                                                                     flags.conv_stride_se)):
             if stride == 2:     # We want to double the number
                 pad = int(kernel_size/2 - 1)
             elif stride == 1:   # We want to keep the number unchanged
                 pad = int((kernel_size - 1)/2)
             else:
                 Exception("Now only support stride = 1 or 2, contact Ben")
-            self.convs_SE.append(nn.Conv1d(in_channel, out_channel, kernel_size,
+            self.convs_se.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                            stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
-        if self.convs_SE:                       # In case that there is no conv layers
-            self.convs_SE.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
+        if self.convs_se:                       # In case that there is no conv layers
+            self.convs_se.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
 
     def encoder(self, G, S_enc):
         """
@@ -70,9 +71,9 @@ class VAE(nn.Module):
         """
         out = torch.cat((G, S_enc), dim=1)  # initialize the out
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_E, self.bn_linears_E)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_e, self.bn_linears_e)):
             # print(out.size())
-            if ind != len(self.linears_E):
+            if ind != len(self.linears_e):
                 out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
             else:
                 out = fc(out)
@@ -97,9 +98,11 @@ class VAE(nn.Module):
         :param S_enc:  The encoded spectra input
         :return: G: Geometry output
         """
+        # print("size of z:", z.size())
+        # print("size of S_enc", S_enc.size())
         out = torch.cat((z, S_enc), dim=1)                                                         # initialize the out
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_D, self.bn_linears_D)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_d, self.bn_linears_d)):
             # print(out.size())
             out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
         return out
@@ -110,16 +113,16 @@ class VAE(nn.Module):
         :param S: The 300-d input spectrum
         :return: S_enc: The n-d output encoded spectrum
         """
-        if not self.convs_SE:                # If there is no conv_SE layer, there is no SE then
+        if not self.convs_se:                # If there is no conv_se layer, there is no SE then
             return S
         out = S.unsqueeze(1)
         # For the Conv Layers
-        for ind, conv in enumerate(self.convs_SE):
+        for ind, conv in enumerate(self.convs_se):
             out = conv(out)
 
         out = out.squeeze()
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_SE, self.bn_linears_SE)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_se, self.bn_linears_se)):
             out = F.relu(bn(fc(out)))
         S_enc = out
         return S_enc
@@ -162,11 +165,11 @@ class Decoder(nn.Module):
         This part is the Decoder model layers definition:
         ""
         # Linear Layer and Batch_norm Layer definitions here
-        self.linears_D = nn.ModuleList([])
-        self.bn_linears_D = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_D[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_D.append(nn.Linear(fc_num, flags.linear_D[ind + 1]))
-            self.bn_linears_D.append(nn.BatchNorm1d(flags.linear_D[ind + 1]))
+        self.linears_d = nn.ModuleList([])
+        self.bn_linears_d = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_d[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_d.append(nn.Linear(fc_num, flags.linear_d[ind + 1]))
+            self.bn_linears_d.append(nn.BatchNorm1d(flags.linear_d[ind + 1]))
 
     def forward(self, z, S_enc):
         ""
@@ -176,7 +179,7 @@ class Decoder(nn.Module):
         ""
         out = torch.concatenate(z, S_enc)                                                         # initialize the out
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_D, self.bn_linears_D)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_d, self.bn_linears_d)):
             # print(out.size())
             out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
         return out
@@ -189,15 +192,15 @@ class Encoder(nn.Module):
         This part is the Decoder model layers definition:
         ""
         # Linear Layer and Batch_norm Layer definitions here
-        self.linears_E = nn.ModuleList([])
-        self.bn_linears_E = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_E[0:-1]):  # Excluding the last one as we need intervals
-            self.linears_E.append(nn.Linear(fc_num, flags.linear_E[ind + 1]))
-            self.bn_linears_E.append(nn.BatchNorm1d(flags.linear_E[ind + 1]))
+        self.linears_e = nn.ModuleList([])
+        self.bn_linears_e = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_e[0:-1]):  # Excluding the last one as we need intervals
+            self.linears_e.append(nn.Linear(fc_num, flags.linear_e[ind + 1]))
+            self.bn_linears_e.append(nn.BatchNorm1d(flags.linear_e[ind + 1]))
 
         # Re-parameterization
-        self.zmean_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
-        self.z_log_var_layer = nn.Linear(flags.linear_E[-1], flags.dim_latent_z)
+        self.zmean_layer = nn.Linear(flags.linear_e[-1], flags.dim_latent_z)
+        self.z_log_var_layer = nn.Linear(flags.linear_e[-1], flags.dim_latent_z)
 
     def forward(self, G, S_enc):
         ""
@@ -208,7 +211,7 @@ class Encoder(nn.Module):
         ""
         out = torch.concatenate(G, S_enc)  # initialize the out
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_E, self.bn_linears_E)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_e, self.bn_linears_e)):
             # print(out.size())
             out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
         z_mean = self.zmean_layer(out)
@@ -222,25 +225,25 @@ class SpectraEncoder(nn.Module):
         This part if the backward model layers definition:
         ""
         # Linear Layer and Batch_norm Layer definitions here
-        self.linears_SE = nn.ModuleList([])
-        self.bn_linears_SE = nn.ModuleList([])
-        for ind, fc_num in enumerate(flags.linear_SE[0:-1]):               # Excluding the last one as we need intervals
-            self.linears_SE.append(nn.Linear(fc_num, flags.linear_SE[ind + 1]))
-            self.bn_linears_SE.append(nn.BatchNorm1d(flags.linear_SE[ind + 1]))
+        self.linears_se = nn.ModuleList([])
+        self.bn_linears_se = nn.ModuleList([])
+        for ind, fc_num in enumerate(flags.linear_se[0:-1]):               # Excluding the last one as we need intervals
+            self.linears_se.append(nn.Linear(fc_num, flags.linear_se[ind + 1]))
+            self.bn_linears_se.append(nn.BatchNorm1d(flags.linear_se[ind + 1]))
 
         # Conv Layer definitions here
-        self.convs_SE = nn.ModuleList([])
+        self.convs_se = nn.ModuleList([])
         in_channel = 1                                                  # Initialize the in_channel number
-        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_SE,
-                                                                     flags.conv_kernel_size_SE,
-                                                                     flags.conv_stride_SE)):
+        for ind, (out_channel, kernel_size, stride) in enumerate(zip(flags.conv_out_channel_se,
+                                                                     flags.conv_kernel_size_se,
+                                                                     flags.conv_stride_se)):
             if stride == 2:     # We want to double the number
                 pad = int(kernel_size/2 - 1)
             elif stride == 1:   # We want to keep the number unchanged
                 pad = int((kernel_size - 1)/2)
             else:
                 Exception("Now only support stride = 1 or 2, contact Ben")
-            self.convs_SE.append(nn.Conv1d(in_channel, out_channel, kernel_size,
+            self.convs_se.append(nn.Conv1d(in_channel, out_channel, kernel_size,
                                           stride=stride, padding=pad))
             in_channel = out_channel  # Update the out_channel
 
@@ -252,12 +255,12 @@ class SpectraEncoder(nn.Module):
         ""
         out = S.unsqueeze(1)
         # For the Conv Layers
-        for ind, conv in enumerate(self.convs_SE):
+        for ind, conv in enumerate(self.convs_se):
             out = conv(out)
 
         out = out.squeeze()
         # For the linear part
-        for ind, (fc, bn) in enumerate(zip(self.linears_SE, self.bn_linears_SE)):
+        for ind, (fc, bn) in enumerate(zip(self.linears_se, self.bn_linears_se)):
             out = F.relu(bn(fc(out)))
         S_enc = out
         return S_enc

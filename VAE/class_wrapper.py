@@ -157,6 +157,8 @@ class Network(object):
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
+                # print("size of geometry:", geometry.size())
+                # print("size of spectra:", spectra.size())
                 G_pred, z_mean, z_log_var = self.model(geometry, spectra)              # Get G_pred
                 # print("size of G_pred", G_pred.size())
                 loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,

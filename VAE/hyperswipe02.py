@@ -15,17 +15,19 @@ if __name__ == '__main__':
     for linear_unit in linear_unit_list:
         # Setting the loop for setting the parameter
         for i in range(4, 10):
-            flags = flag_reader.read_flag()  	#setting the base case
-            linear = [linear_unit for j in range(i)]        #Set the linear units
-            linear[0] = 2                   # The start of linear
-            linear[-1] = 4                # The end of linear
-            flags.linear = linear
+            flags = flag_reader.read_flag()  	            # setting the base case
+            linear = [linear_unit for j in range(i)]        # Set the linear units
+            linear[0] = flags.dim_y + flags.dim_z           # The start of linear
+            linear[-1] = flags.dim_x                        # The end of linear
+            flags.linear_d = linear
             for reg_scale in reg_scale_list:
                 flags.reg_scale = reg_scale
                 for dim_z in dim_z_list:
                     flags.dim_z = dim_z
-                    flags.
-                for j in range(3):
+                    flags.linear_d[0] = flags.dim_y + flags.dim_z
+                    # print("flags.linear_d", flags.linear_d)
+                    # print("flags.linear_e", flags.linear_e)
+                    for j in range(3):
                         flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
                         train.training_from_flag(flags)
 
