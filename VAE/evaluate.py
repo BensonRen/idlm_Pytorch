@@ -8,8 +8,8 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import Backprop
-import data_reader
+from model_maker import VAE
+from utils import data_reader
 
 # Libs
 import numpy as np

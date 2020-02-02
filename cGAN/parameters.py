@@ -9,6 +9,10 @@ DATA_SET = 'meta_material'
 # DATA_SET = 'robotic_arm'
 # Model Architecture parameters
 
+# Params for the dataset
+DIM_X = 8
+DIM_Y = None
+
 # Params for the Random Noise
 DIM_Z = 20
 DIM_SPEC = 20
@@ -20,7 +24,7 @@ CONV_KERNEL_SIZE = [8, 5, 5]
 CONV_STRIDE = [2, 1, 1]
 
 # Params for Spec_encoder Model
-LINEAR_SE = [150, 100, 100, 100, DIM_SPEC]
+LINEAR_SE = [150, 500, 500, 500, 500, DIM_SPEC]
 CONV_OUT_CHANNEL_SE = [4, 4, 4]
 CONV_KERNEL_SIZE_SE = [5, 5, 8]
 CONV_STRIDE_SE = [1, 1, 2]
@@ -42,7 +46,7 @@ VERB_STEP = 10
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
-STOP_THRESHOLD = 1e-5
+STOP_THRESHOLD = 8e-4
 
 # Running specific parameter
 USE_CPU_ONLY = False
