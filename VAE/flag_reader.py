@@ -33,6 +33,7 @@ def read_flag():
     parser.add_argument('--conv-kernel-size-se', type=list, default=CONV_KERNEL_SIZE_SE, help='The kernel size of your 1d conv for spectra encoder model')
     parser.add_argument('--conv-stride-se', type=list, default=CONV_STRIDE_SE, help='The strides of your 1d conv fro spectra encoder model')
     # Optimization Params
+    parser.add_argument('--kl-coeff', default=KL_COEFF, type=float, help='The Coefficient of KL loss')
     parser.add_argument('--optim', default=OPTIM, type=str, help='the type of optimizer that you want to use')
     parser.add_argument('--reg-scale', type=float, default=REG_SCALE, help='#scale for regularization of dense layers')
     parser.add_argument('--x-range', type=list, default=X_RANGE, help='columns of input parameters')

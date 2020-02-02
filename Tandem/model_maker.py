@@ -56,8 +56,11 @@ class Forward(nn.Module):
         out = G                                                         # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_f, self.bn_linears_f)):
-            # print(out.size())
-            out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            if ind != len(self.linears_b) - 1:
+                # print(out.size())
+                out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            else:
+                out = fc(out)
         if self.convs_f:
             # The normal mode to train without Lorentz
             out = out.unsqueeze(1)                                          # Add 1 dimension to get N,L_in, H

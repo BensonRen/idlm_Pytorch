@@ -11,7 +11,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 # from torchsummary import summary
 from torch.optim import lr_scheduler
-
+from utils.helper_functions import simulator
 # Libs
 import numpy as np
 from math import inf
@@ -23,6 +23,7 @@ class Network(object):
                  inference_mode=False, saved_model=None):
         self.model_fn = model_fn                                # The model maker function
         self.flags = flags                                      # The Flags containing the specs
+        self.kl_coeff = flags.kl_coeff
         if inference_mode:                                      # If inference mode, use saved model
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
@@ -68,15 +69,18 @@ class Network(object):
         """
         # print("Size of logit", logit.size())
         # print("Size of labels", labels.size())
-        mse_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+        #print("logit", logit.cpu().data)
+        #print("label", labels.cpu().data)
+        mse_loss = nn.functional.mse_loss(logit, labels, reduction='sum')          # The MSE Loss
+        #print("loss", mse_loss.cpu().data)
         # BDY_loss
         if boundary:
             relu = torch.nn.ReLU()
             bdy_loss_all = relu(torch.abs(logit) - 1)
-            bdy_loss = torch.mean(bdy_loss_all)
+            bdy_loss = torch.sum(bdy_loss_all)
         kl_loss = 1 + z_log_var - torch.pow(z_mean, 2) - torch.exp(z_log_var)
-        kl_loss = torch.mean(kl_loss)
-        kl_loss *= -0.5
+        kl_loss = torch.sum(kl_loss)
+        kl_loss *= -0.5*self.kl_coeff
         total_loss = kl_loss + mse_loss + bdy_loss
         # print("size of kl_loss",kl_loss.size())
         # print("size of mse_loss",mse_loss.size())
@@ -160,6 +164,7 @@ class Network(object):
                 # print("size of geometry:", geometry.size())
                 # print("size of spectra:", spectra.size())
                 G_pred, z_mean, z_log_var = self.model(geometry, spectra)              # Get G_pred
+                # print("For epoch ", epoch, " the z_mu = ", z_mean.cpu().data, "the z_log_var = ", z_log_var.cpu().data)
                 # print("size of G_pred", G_pred.size())
                 loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
                                                                    z_mean=z_mean, z_log_var=z_log_var)
@@ -227,15 +232,8 @@ class Network(object):
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
-
         # Set to evaluation mode for batch_norm layers
         self.model.eval()
-        self.model.bp = True
-
-        # Construct optimizer after the model moved to GPU
-        self.optm_eval = self.make_optimizer_eval()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
-
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
@@ -251,37 +249,15 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                self.model.randomize_geometry_eval()
-                self.optm_eval = self.make_optimizer_eval()
-                self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
-                Xpred, Ypred = self.evaluate_one(spectra)
+                if self.flags.data_set == 'gaussian_mixture':
+                    spectra = spectra.unsqueeze(1)
+                if cuda:
+                    geometry = geometry.cuda()
+                    spectra = spectra.cuda()
+                Xpred = self.model.inference(spectra).cpu().data.numpy()
+                Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred, fmt='%.3f')
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
-
-    def evaluate_one(self, target_spectra):
-        # expand the target spectra to eval batch size
-        target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
-        # Start backprop
-        for i in range(self.flags.eval_step):
-            logit = self.model(self.model.geometry_eval)                      # Get the output
-            loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
-            loss.backward()                           # Calculate the Gradient
-            self.optm_eval.step()                                       # Move one step the optimizer
-
-            # check periodically to stop and print stuff
-            if i % self.flags.verb_step == 0:
-                print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
-                if loss.data < self.flags.stop_threshold:                       # Check if stop
-                    print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
-                    break
-
-        # Get the best performing one
-        best_estimate_index = np.argmin(loss.cpu().data.numpy())
-        Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
-        Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
-
-        return Xpred_best, Ypred_best
-

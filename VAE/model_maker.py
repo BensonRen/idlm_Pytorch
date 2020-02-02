@@ -36,8 +36,8 @@ class VAE(nn.Module):
             self.linears_e.append(nn.Linear(fc_num, flags.linear_e[ind + 1]))
             self.bn_linears_e.append(nn.BatchNorm1d(flags.linear_e[ind + 1]))
         # Re-parameterization
-        self.zmean_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
-        self.z_log_var_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
+        # self.zmean_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
+        # self.z_log_var_layer = nn.Linear(flags.linear_e[-1], self.z_dim)
         # For Spectra Encoder
         self.linears_se = nn.ModuleList([])
         self.bn_linears_se = nn.ModuleList([])
@@ -69,16 +69,18 @@ class VAE(nn.Module):
         :param G: Geometry output
         :return: Z_mean, Z_log_var: the re-parameterized mean and variance of the
         """
-        out = torch.cat((G, S_enc), dim=1)  # initialize the out
+        out = torch.cat((G, S_enc), dim=-1)  # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_e, self.bn_linears_e)):
-            # print(out.size())
-            if ind != len(self.linears_e):
-                out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+            if ind != len(self.linears_d) - 1:
+                # print("decoder layer", ind)
+                out = F.relu(bn(fc(out)))
+                # out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
             else:
                 out = fc(out)
-        z_mean = self.zmean_layer(out)
-        z_log_var = self.z_log_var_layer(out)
+        z_mean, z_log_var = torch.chunk(out, 2, dim=1)
+        # z_mean = self.zmean_layer(out)
+        # z_log_var = self.z_log_var_layer(out)
         return z_mean, z_log_var
 
     def reparameterize(self, mu, logvar):
@@ -98,14 +100,21 @@ class VAE(nn.Module):
         :param S_enc:  The encoded spectra input
         :return: G: Geometry output
         """
-        # print("size of z:", z.size())
-        # print("size of S_enc", S_enc.size())
-        out = torch.cat((z, S_enc), dim=1)                                                         # initialize the out
+        #print("size of z:", z.size())
+        #print("size of S_enc", S_enc.size())
+        out = torch.cat((z, S_enc), dim=-1)                                                         # initialize the out
+        #print("size of cated out:", out.size())
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_d, self.bn_linears_d)):
             # print(out.size())
-            out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+            if ind != len(self.linears_d) - 1:
+                #print("decoder layer", ind)
+                out = F.relu(fc(out))
+                # out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+            else:
+                out = fc(out)
         return out
+        #return torch.sigmoid(out)
 
     def spectra_encoder(self, S):
         """

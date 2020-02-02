@@ -3,11 +3,15 @@ This is the helper functions for various functions
 1-4: retrieving the prediction or truth files in data/
 5: Put flags.obj and parameters.txt into the folder
 6-8: Functions handling flags
+9-12: Simulator functions
+13: Meta-simulator function
 """
 import os
 import shutil
 from copy import deepcopy
+import sys
 import pickle
+from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
 
 # 1
 def get_Xpred(path):
@@ -18,6 +22,7 @@ def get_Xpred(path):
             break
     return os.path.join(path,out_file)
 
+
 # 2
 def get_Ypred(path):
     for filename in os.listdir(path):
@@ -26,6 +31,7 @@ def get_Ypred(path):
             print("Ypred File found", filename)
             break;
     return os.path.join(path,out_file)
+
 
 # 3
 def get_Xtruth(path):
@@ -44,6 +50,7 @@ def get_Ytruth(path):
             print("Ytruth File found", filename)
             break;
     return os.path.join(path,out_file)
+
 
 # 5
 def put_param_into_folder(ckpt_dir):
@@ -64,6 +71,7 @@ def put_param_into_folder(ckpt_dir):
     destination = os.path.join(ckpt_dir, "flags.obj");
     shutil.move("flags.obj", destination)
 
+
 # 6
 def save_flags(flags, save_dir, save_file="flags.obj"):
     """
@@ -74,6 +82,7 @@ def save_flags(flags, save_dir, save_file="flags.obj"):
     """
     with open(os.path.join(save_dir, save_file),'wb') as f:          # Open the file
         pickle.dump(flags, f)               # Use Pickle to serialize the object
+
 
 # 7
 def load_flags(save_dir, save_file="flags.obj"):
@@ -86,6 +95,7 @@ def load_flags(save_dir, save_file="flags.obj"):
     with open(os.path.join(save_dir, save_file), 'rb') as f:     # Open the file
         flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
     return flags
+
 
 # 8
 def write_flags_and_BVE(flags, best_validation_loss, save_dir):
@@ -110,3 +120,66 @@ def write_flags_and_BVE(flags, best_validation_loss, save_dir):
         print(flags_dict, file=f)
     # Pickle the obj
     save_flags(flags, save_dir=save_dir)
+
+
+# 9
+def simulator_gaussian(Xpred):
+    """
+    The simulator function for gaussian, input X position output class
+    :param Xpred: The Xpred output from model
+    :return:
+    """
+    return None
+
+
+# 10
+def simulator_sine(Xpred):
+    """
+    The simulator function for sine wave, input X out put Y
+    :param Xpred: The Xpred output from model
+    :return:
+    """
+    return None
+
+
+# 11
+def simulator_robotic(Xpred):
+    """
+    The simulator function for robotic arms, input arm angles output final position Y
+    :param Xpred: The Xpred output from model
+    :return:
+    """
+    Ypred, positions = determine_final_position(Xpred[:, 0], Xpred[:, 1:])
+    return Ypred
+
+
+# 12
+def simulator_naval(Xpred):
+    """
+    The simulator function for naval dataset
+    :param Xpred: The Xpred output from model
+    :return:
+    """
+    return None
+
+
+# 13
+def simulator(data_set, Xpred):
+    """
+    This is the simulator which takes Xpred from inference models and feed them into real data
+    simulator to get Ypred
+    :param data_set: str, the name of the data set
+    :param Xpred: (N, dim_x), the numpy array of the Xpred got from the inference model
+    :return: Ypred from the simulator
+    """
+
+    if data_set == 'gaussian_mixture':
+        return simulator_gaussian(Xpred)
+    elif data_set == 'sine_wave':
+        return simulator_sine(Xpred)
+    elif data_set == 'naval_propulsion':
+        return simulator_naval(Xpred)
+    elif data_set == 'robotic_arm':
+        return simulator_robotic(Xpred)
+    else:
+        sys.exit("In Simulator: Your data_set entry is not correct, check again!")

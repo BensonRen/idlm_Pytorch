@@ -7,7 +7,7 @@ import os
 import shutil
 
 # Torch
-
+import torch
 # Own
 import flag_reader
 from utils import data_reader
@@ -38,6 +38,9 @@ def training_from_flag(flags):
 
 
 if __name__ == '__main__':
+    torch.manual_seed(1)
+    torch.cuda.manual_seed(1)
+
     # Read the parameters to be set
     flags = flag_reader.read_flag()
 

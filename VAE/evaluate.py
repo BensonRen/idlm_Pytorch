@@ -57,16 +57,11 @@ def evaluate_from_model(model_dir):
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
 
     # Get the data
-    train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
-                                                      y_range=flags.y_range,
-                                                      geoboundary=flags.geoboundary,
-                                                      batch_size=flags.batch_size,
-                                                      normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir)
+    train_loader, test_loader = data_reader.read_data(flags)
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Backprop, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(VAE, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")
