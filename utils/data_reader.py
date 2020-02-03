@@ -280,7 +280,7 @@ def read_data_gaussian_mixture(flags):
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
     # Read the data
-    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Gaussian Mixture/')
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Gaussian_Mixture/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_y = np.squeeze(data_y)                             # Squeeze since this is a 1 column label
@@ -294,7 +294,7 @@ def read_data_sine_wave(flags):
     :param flags: Input flags
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Sinusoidal Wave/')
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Sinusoidal_Wave/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_x = normalize_np(data_x)
@@ -308,7 +308,7 @@ def read_data_naval_propulsion(flags):
     :param flags: Input flags
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Naval Propulsion/')
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Naval_Propulsion/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_x = normalize_np(data_x)
@@ -322,7 +322,7 @@ def read_data_robotic_arm(flags):
     :param flags: Input flags
     :return: train_loader and test_loader in pytorch data set format (normalized)
     """
-    data_dir = os.path.join(flags.data_dir, 'Simulated DataSets/Robotic Arm/')
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Robotic_Arm/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_x = normalize_np(data_x)

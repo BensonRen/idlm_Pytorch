@@ -73,11 +73,14 @@ class Network(object):
         #print("label", labels.cpu().data)
         mse_loss = nn.functional.mse_loss(logit, labels, reduction='sum')          # The MSE Loss
         #print("loss", mse_loss.cpu().data)
+        bdy_loss = torch.zeros([1]).squeeze()                    # set the bdy loss to be 0
+        if torch.cuda.is_available():
+            bdy_loss = bdy_loss.cuda()
         # BDY_loss
-        if boundary:
-            relu = torch.nn.ReLU()
-            bdy_loss_all = relu(torch.abs(logit) - 1)
-            bdy_loss = torch.sum(bdy_loss_all)
+        # if boundary:
+        #     relu = torch.nn.ReLU()
+        #     bdy_loss_all = relu(torch.abs(logit) - 1)
+        #     bdy_loss = torch.sum(bdy_loss_all)
         kl_loss = -0.5*torch.sum(1 + z_log_var - torch.pow(z_mean, 2) - torch.exp(z_log_var))
         total_loss = self.kl_coeff * kl_loss + mse_loss + bdy_loss
         # print("size of kl_loss",kl_loss.size())
@@ -169,6 +172,7 @@ class Network(object):
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
+                print(loss_list)
                 loss_aggregate_list += loss_list                    # Aggregate the other loss (in np form)
 
             # Calculate the avg loss of training

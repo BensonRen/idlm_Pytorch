@@ -54,7 +54,6 @@ def evaluate_from_model(model_dir):
     print("Retrieving flag object for parameters")
     flags = flag_reader.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
-    flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags)

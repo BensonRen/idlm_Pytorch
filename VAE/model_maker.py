@@ -74,8 +74,8 @@ class VAE(nn.Module):
         for ind, (fc, bn) in enumerate(zip(self.linears_e, self.bn_linears_e)):
             if ind != len(self.linears_d) - 1:
                 # print("decoder layer", ind)
-                out = F.relu(bn(fc(out)))
-                # out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+                # out = F.relu(fc(out))
+                out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
             else:
                 out = fc(out)
         z_mean, z_log_var = torch.chunk(out, 2, dim=1)
@@ -109,11 +109,11 @@ class VAE(nn.Module):
             # print(out.size())
             if ind != len(self.linears_d) - 1:
                 #print("decoder layer", ind)
-                out = F.relu(fc(out))
-                # out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
+                # out = F.relu(fc(out))
+                out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
             else:
                 out = fc(out)
-        return out
+        return torch.tanh(out)
         #return torch.sigmoid(out)
 
     def spectra_encoder(self, S):
@@ -159,6 +159,8 @@ class VAE(nn.Module):
         :return: The output geometry
         """
         z = torch.randn([S.size(0), self.z_dim])
+        if torch.cuda.is_available():
+            z = z.cuda()
         return self.decode(z, self.spectra_encoder(S))
 
 
