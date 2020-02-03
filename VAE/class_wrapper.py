@@ -78,10 +78,8 @@ class Network(object):
             relu = torch.nn.ReLU()
             bdy_loss_all = relu(torch.abs(logit) - 1)
             bdy_loss = torch.sum(bdy_loss_all)
-        kl_loss = 1 + z_log_var - torch.pow(z_mean, 2) - torch.exp(z_log_var)
-        kl_loss = torch.sum(kl_loss)
-        kl_loss *= -0.5*self.kl_coeff
-        total_loss = kl_loss + mse_loss + bdy_loss
+        kl_loss = -0.5*torch.sum(1 + z_log_var - torch.pow(z_mean, 2) - torch.exp(z_log_var))
+        total_loss = self.kl_coeff * kl_loss + mse_loss + bdy_loss
         # print("size of kl_loss",kl_loss.size())
         # print("size of mse_loss",mse_loss.size())
         # print("size of bdy_loss",bdy_loss.size())
