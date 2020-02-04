@@ -30,15 +30,35 @@ if __name__ == '__main__':
     #                for j in range(3):
     #                    flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
     #                    train.training_from_flag(flags)
-    kl_coeff_list = [ 0.05, 0.025, 0.01, 0.005, 0.001]#e-2, 8e-3, 5e-3, 3e-3, 1e-3]
-    lr_list = [1e-3, 5e-3, 1e-2]
-    for kl_coeff in kl_coeff_list:
-        for lr in lr_list:
-            flags = flag_reader.read_flag()
-            flags.learn_rate = lr
-            flags.kl_coeff = kl_coeff
-            for i in range(2):
-                flags.model_name = flags.data_set + "kl_coeff_" + str(flags.kl_coeff) + "lr_" + str(flags.learn_rate) + "reg" + str(flags.reg_scale) + "trail" + str(i)
+    
+    
+    
+    
+    
+    
+    #kl_coeff_list = [1, 0.75, 0.5, 0.25, 0.1]#e-2, 8e-3, 5e-3, 3e-3, 1e-3]
+    #lr_list = [1e-3, 5e-3, 1e-2]
+    #for kl_coeff in kl_coeff_list:
+    #    for lr in lr_list:
+    #        flags = flag_reader.read_flag()
+    #        flags.learn_rate = lr
+    #        flags.kl_coeff = kl_coeff
+
+
+    unit_list = [500, 600, 700, 800]
+    for layer_num in range(5, 10):
+        for unit in unit_list:
+            flags = flag_reader.read_flag()  	            # setting the base case
+            linear_d = [unit for j in range(layer_num)]
+            linear_e = [unit for j in range(layer_num)]
+            linear_d[0] = 4
+            linear_d[-1] = 4
+            linear_e[0] = 6
+            linear_e[-1] = 4
+            flags.linear_d = linear_d
+            flags.linear_e = linear_e
+            for i in range(1):
+                flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i)
                 train.training_from_flag(flags)
 
 

@@ -113,7 +113,8 @@ class VAE(nn.Module):
                 out = F.relu(bn(fc(out)))  # ReLU + BN + Linear
             else:
                 out = fc(out)
-        return torch.tanh(out)
+        return out
+        #return torch.tanh(out)
         #return torch.sigmoid(out)
 
     def spectra_encoder(self, S):

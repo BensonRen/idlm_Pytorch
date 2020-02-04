@@ -186,6 +186,8 @@ class Network(object):
                 self.log.add_scalar('Loss/kl_train', loss_aggregate_list[0], epoch)
                 self.log.add_scalar('Loss/mse_train', loss_aggregate_list[1], epoch)
                 self.log.add_scalar('Loss/bdy_train', loss_aggregate_list[2], epoch)
+                self.log.add_histogram('z_mean', z_mean.cpu().data.numpy(), epoch)
+                self.log.add_histogram('z_log_var', z_log_var.cpu().data.numpy(), epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()

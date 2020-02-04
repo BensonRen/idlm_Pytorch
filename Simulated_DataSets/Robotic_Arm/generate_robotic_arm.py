@@ -20,7 +20,7 @@ angle_sample_range = np.array([-0.5*pi, 0.5*pi])                    # Specify th
 # angle_sample_range = np.array([0, 0])                    # Specify the angle sample range
 sample_ranges = [angle_sample_range for i in range(arm_num + 1)]    # List the range of samples to take, for angles
 sample_ranges[0] = [-origin_limit, origin_limit]                    # Modify the first to be origin y axis
-
+eps = 0.2
 
 def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
     """
@@ -36,6 +36,17 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
     for i in range(arm_num):
         assert (np.max(arm_angles[:, i]) < pi) and (np.min(arm_angles[:, i]) > -pi), \
             'Your angle has to be within [-pi, pi]'
+    # This is for normalized data for inference!!!
+    if (np.max(origin_pos) - 1 < eps) and (np.min(origin_pos)+1 < eps) and (np.max(arm_angles)-1 < eps) and (np.min(arm_angles)+1<eps):
+        print("inputting normalized results, getting the normalization back")
+        print("before, origin_pos=", origin_pos)
+        print("before, arm_angles=", arm_angles)
+        origin_pos *= origin_limit
+        arm_angles *= 0.5 * pi
+        print("after, origin_pos=", origin_pos)
+        print("after, arm_angles=", arm_angles)
+    else:
+        print("max mins are", np.max(origin_pos), np.min(origin_pos), np.max(arm_angles), np.min(arm_angles))
     # Start computing for positions
     positions = []                                          # Holder for positions to be plotted
     current_pos = np.zeros([len(origin_pos), 2])            # The robotic arm starts from [0, y]
@@ -48,6 +59,7 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
         current_pos[:, 0] += cos(arm_angles[:, arm_index]) * arm_lengths[arm_index]
         current_pos[:, 1] += sin(arm_angles[:, arm_index]) * arm_lengths[arm_index]
         positions.append(np.copy(current_pos))
+    plot_arms(np.array(positions))
     return current_pos, np.array(positions)
 
 
