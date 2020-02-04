@@ -71,6 +71,15 @@ def evaluate_from_model(model_dir):
     print("Evaluation finished")
 
 
+def evaluate_all(models_dir="models"):
+    """
+    This function evaluate all the models in the models/. directory
+    :return: None
+    """
+    for file in os.listdir(models_dir):
+        evaluate_from_model(file)
+    return None
+
 
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
