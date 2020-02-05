@@ -59,6 +59,7 @@ if __name__ == '__main__':
             flags.linear_e = linear_e
             for i in range(1):
                 flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i)
+                print(flags.model_name)
                 train.training_from_flag(flags)
 
 

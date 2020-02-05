@@ -38,14 +38,11 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
             'Your angle has to be within [-pi, pi]'
     # This is for normalized data for inference!!!
     if (np.max(origin_pos) - 1 < eps) and (np.min(origin_pos)+1 < eps) and (np.max(arm_angles)-1 < eps) and (np.min(arm_angles)+1<eps):
-        print("inputting normalized results, getting the normalization back")
-        print("before, origin_pos=", origin_pos)
-        print("before, arm_angles=", arm_angles)
         origin_pos *= origin_limit
         arm_angles *= 0.5 * pi
-        print("after, origin_pos=", origin_pos)
-        print("after, arm_angles=", arm_angles)
+        normalize_flag = True
     else:
+        normalize_flag = False
         print("max mins are", np.max(origin_pos), np.min(origin_pos), np.max(arm_angles), np.min(arm_angles))
     # Start computing for positions
     positions = []                                          # Holder for positions to be plotted
@@ -60,6 +57,9 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
         current_pos[:, 1] += sin(arm_angles[:, arm_index]) * arm_lengths[arm_index]
         positions.append(np.copy(current_pos))
     plot_arms(np.array(positions))
+    if normalize_flag:                                  # IF the data needs normalization
+        current_pos[:, 0] = (current_pos[:, 0] - 2) /2.
+        current_pos[:, 1] = current_pos[:, 1] / 7
     return current_pos, np.array(positions)
 
 
