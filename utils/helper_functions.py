@@ -149,7 +149,7 @@ def simulator_robotic(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
-    Ypred, positions = determine_final_position(Xpred[:, 0], Xpred[:, 1:])
+    Ypred, positions = determine_final_position(Xpred[:, 0], Xpred[:, 1:], evaluate_mode=True)
     return Ypred
 
 

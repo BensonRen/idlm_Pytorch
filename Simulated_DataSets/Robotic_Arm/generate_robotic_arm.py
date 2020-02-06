@@ -22,13 +22,14 @@ sample_ranges = [angle_sample_range for i in range(arm_num + 1)]    # List the r
 sample_ranges[0] = [-origin_limit, origin_limit]                    # Modify the first to be origin y axis
 eps = 0.2
 
-def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
+def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths, evaluate_mode=False):
     """
     The function that computes the final position of the angle. One number input implementation now
     :param origin_pos: [N, 1] array of float , The origin position on the y axis
     :param arm_angles: [N, arm_num] an array of angles [-pi, pi] that states the angle of the arm w.r.t
                         horizontal surface. Horizon to the right is 0, up is positive and below is negative
     :param arm_lengths: [N, arm_num] an array of float that states the lengths of the robotic arms
+    :param evaluate_mode: Boolean. The flag indicating whether this is a evaluate mode or not
     :return: current_pos: [N, 2] The final position of the robotic arm, a array of 2 numbers indicating (x, y) co-ordinates
     :return: positions: list of #arm_num of [N, 2], The positions that the arms nodes for plotting purpose
     """
@@ -37,12 +38,10 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
         assert (np.max(arm_angles[:, i]) < pi) and (np.min(arm_angles[:, i]) > -pi), \
             'Your angle has to be within [-pi, pi]'
     # This is for normalized data for inference!!!
-    if (np.max(origin_pos) - 1 < eps) and (np.min(origin_pos)+1 < eps) and (np.max(arm_angles)-1 < eps) and (np.min(arm_angles)+1<eps):
+    if evaluate_mode:
         origin_pos *= origin_limit
         arm_angles *= 0.5 * pi
-        normalize_flag = True
     else:
-        normalize_flag = False
         print("max mins are", np.max(origin_pos), np.min(origin_pos), np.max(arm_angles), np.min(arm_angles))
     # Start computing for positions
     positions = []                                          # Holder for positions to be plotted
@@ -57,7 +56,7 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths):
         current_pos[:, 1] += sin(arm_angles[:, arm_index]) * arm_lengths[arm_index]
         positions.append(np.copy(current_pos))
     plot_arms(np.array(positions))
-    if normalize_flag:                                  # IF the data needs normalization
+    if evaluate_mode:                               # IF the data needs normalization
         current_pos[:, 0] = (current_pos[:, 0] - 2) /2.
         current_pos[:, 1] = current_pos[:, 1] / 7
     return current_pos, np.array(positions)

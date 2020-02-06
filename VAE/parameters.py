@@ -4,15 +4,15 @@ The parameter file storing the parameters for VAE Model
 
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-DATA_SET = 'robotic_arm'
+# DATA_SET = 'robotic_arm'
 
 # Architectural Params
 DIM_Z = 2
-DIM_X = 4
-DIM_Y = 2
+DIM_X = 2
+DIM_Y = 1
 DIM_SPEC = None
 LINEAR_D = [DIM_Y + DIM_Z, 300, 300, 300,    DIM_X]           # Linear units for Decoder
 LINEAR_E = [DIM_Y + DIM_X, 300, 300, 300,  2*DIM_Z]                   # Linear units for Encoder
@@ -27,8 +27,8 @@ OPTIM = "Adam"
 REG_SCALE = 5e-3
 BATCH_SIZE = 256
 EVAL_BATCH_SIZE = 4096
-EVAL_STEP = 2
-TRAIN_STEP = 3000
+EVAL_STEP = 20
+TRAIN_STEP = 2000
 VERB_STEP = 1
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
