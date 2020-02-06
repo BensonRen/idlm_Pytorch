@@ -4,15 +4,15 @@ The parameter file storing the parameters for VAE Model
 
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
 # Architectural Params
-DIM_Z = 2
-DIM_X = 2
-DIM_Y = 1
+DIM_Z = 3
+DIM_X = 3
+DIM_Y = 2
 DIM_SPEC = None
 LINEAR_D = [DIM_Y + DIM_Z, 300, 300, 300,    DIM_X]           # Linear units for Decoder
 LINEAR_E = [DIM_Y + DIM_X, 300, 300, 300,  2*DIM_Z]                   # Linear units for Encoder
@@ -49,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "dim_z_2 + wBN + 100 + lr1e-3 + reg5e-3"
+EVAL_MODEL = "gaussian_mixturekl_coeff0.11lr0.005reg0.005"

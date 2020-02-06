@@ -11,45 +11,94 @@ import shutil
 from copy import deepcopy
 import sys
 import pickle
+import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
-
+from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
 # 1
-def get_Xpred(path):
+def get_Xpred(path, name=None):
+    """
+    Get certain predicion or truth numpy array from path, with name of model specified.
+    If there is no name specified, return the first found such array
+    :param path: str, the path for which to search
+    :param name: str, the name of the model to find
+    :return: np array
+    """
     for filename in os.listdir(path):
         if ("Xpred" in filename):
-            out_file = filename
-            print("Xpred File found", filename)
-            break
-    return os.path.join(path,out_file)
+            if name is None:
+                out_file = filename
+                print("Xpred File found", filename)
+                break
+            else:
+                if (name in filename):
+                    out_file = filename
+                    break
+    return np.loadtxt(os.path.join(path,out_file))
 
 
 # 2
-def get_Ypred(path):
+def get_Ypred(path, name=None):
+    """
+    Get certain predicion or truth numpy array from path, with name of model specified.
+    If there is no name specified, return the first found such array
+    :param path: str, the path for which to search
+    :param name: str, the name of the model to find
+    :return: np array
+    """
     for filename in os.listdir(path):
         if ("Ypred" in filename):
-            out_file = filename
-            print("Ypred File found", filename)
-            break;
-    return os.path.join(path,out_file)
+            if name is None:
+                out_file = filename
+                print("Ypred File found", filename)
+                break
+            else:
+                if (name in filename):
+                    out_file = filename
+                    break
+    return np.loadtxt(os.path.join(path,out_file))
 
 
 # 3
-def get_Xtruth(path):
+def get_Xtruth(path, name=None):
+    """
+    Get certain predicion or truth numpy array from path, with name of model specified.
+    If there is no name specified, return the first found such array
+    :param path: str, the path for which to search
+    :param name: str, the name of the model to find
+    :return: np array
+    """
     for filename in os.listdir(path):
         if ("Xtruth" in filename):
-            out_file = filename
-            print("Xtruth File found", filename)
-            break;
-    return os.path.join(path,out_file)
+            if name is None:
+                out_file = filename
+                print("Xtruth File found", filename)
+                break
+            else:
+                if (name in filename):
+                    out_file = filename
+                    break
+    return np.loadtxt(os.path.join(path,out_file))
 
 # 4
-def get_Ytruth(path):
+def get_Ytruth(path, name=None):
+    """
+    Get certain predicion or truth numpy array from path, with name of model specified.
+    If there is no name specified, return the first found such array
+    :param path: str, the path for which to search
+    :param name: str, the name of the model to find
+    :return: np array
+    """
     for filename in os.listdir(path):
         if ("Ytruth" in filename):
-            out_file = filename
-            print("Ytruth File found", filename)
-            break;
-    return os.path.join(path,out_file)
+            if name is None:
+                out_file = filename
+                print("Ytruth File found", filename)
+                break
+            else:
+                if (name in filename):
+                    out_file = filename
+                    break
+    return np.loadtxt(os.path.join(path,out_file))
 
 
 # 5
@@ -129,7 +178,11 @@ def simulator_gaussian(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
-    return None
+    # The Evaluation model is normalized, get back to original size
+    Xpred = Xpred * 11
+
+    Ypred = determine_class_from_x(Xpred)
+    return Ypred
 
 
 # 10

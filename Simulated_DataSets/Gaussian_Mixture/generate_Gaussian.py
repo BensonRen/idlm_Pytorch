@@ -16,32 +16,36 @@ cluster_distance_to_center = 10
 in_class_variance = 1
 
 
-def plotData(data_x, data_y, save_dir='generated_gaussian_scatter.png'):
+def plotData(data_x, data_y, save_dir='generated_gaussian_scatter.png', eval_mode=False):
     """
     Plot the scatter plot of the data to show the overview of the data points
     :param data_x: The 2 dimension x values of the data points
     :param data_y: The class of the data points
+    :param eval_mode: Bool, is this evaluation mode
     :param save_dir: The save name of the plot
     :return: None
     """
     f = plt.figure()
-    plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y)
+    if eval_mode:
+        data_x *= cluster_distance_to_center + in_class_variance
+    plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y, s=1)
     f.savefig(save_dir)
 
 
-def determine_class_from_x(Xpred):
+def determine_class_from_x(Xpred, data_dir='../Simulated_DataSets/Gaussian_Mixture/'):
     """
     Determine the class label from Xpred
     :param Xpred: [N, 2] The xpred to be simulated
     :return: Ypred: [N, 1] The label of those Xpred points
     """
-    labels = np.read_csv('class_labels.csv', delimiter=',')
-    centers = np.read_csv('data_centers.csv', delimiter=',')
+    labels = np.loadtxt(data_dir + 'class_labels.csv', delimiter=',')
+    centers = np.loadtxt(data_dir + 'data_centers.csv', delimiter=',')
     nbrs = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(centers)
     distance, indices = nbrs.kneighbors(Xpred)
     Ypred = np.zeros([len(Xpred), 1])
+    # print(indices)
     for i in range(len(Xpred)):
-        Ypred[i] = labels[indices[i, 1]]
+        Ypred[i] = labels[indices[i]]
     return Ypred
 
 

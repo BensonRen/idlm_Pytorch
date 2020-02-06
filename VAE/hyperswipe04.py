@@ -54,6 +54,10 @@ if __name__ == '__main__':
     #        flags = flag_reader.read_flag()  	            # setting the base case
     #        linear_d = [unit for j in range(layer_num)]
     #        linear_e = [unit for j in range(layer_num)]
+            #linear_d[0] = flags.dim_x + flags.dim_z
+            #linear_d[-1] = flags.dim_x
+            #linear_e[0] = flags.dim_y + flags.dim_x
+            #linear_e[-1] = flags.dim_z * 2
     #        linear_d[0] = 4
     #        linear_d[-1] = 4
     #        linear_e[0] = 6
