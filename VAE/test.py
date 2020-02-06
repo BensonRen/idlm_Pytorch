@@ -1,2 +1,3 @@
 import evaluate
-evaluate.evaluate_all()
+if __name__ == '__main__':
+    evaluate.evaluate_all()

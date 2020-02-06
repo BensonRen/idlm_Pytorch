@@ -15,7 +15,7 @@ origin_limit = 3                                                    # The max di
 arm_num = 3                                                         # Number of arms
 arm_lengths = [1, 1, 2]                                             # length of the robotic arm
 arm_max_length = np.sum(arm_lengths) + origin_limit                 # Drawing limit
-num_samples_per_dimension = 10                                       # Number of samples drawn from each dof
+num_samples_per_dimension = 2                                       # Number of samples drawn from each dof
 angle_sample_range = np.array([-0.5*pi, 0.5*pi])                    # Specify the angle sample range
 # angle_sample_range = np.array([0, 0])                    # Specify the angle sample range
 sample_ranges = [angle_sample_range for i in range(arm_num + 1)]    # List the range of samples to take, for angles
@@ -76,14 +76,14 @@ def plot_arms(positions, save_dir='.', save_name='robotic_arms_plot.png', margin
     # Draw the verticle line for the origin arm
     plt.plot([0, 0], [-arm_max_length, arm_max_length], lw=1, c='b')
     #plt.plot(positions[1:, :, 0], positions[1:, :, 1], ms=5, mfc='w')#, mec='b')
-    #plt.plot(positions[:, 0, 0], positions[:, 0, 1], lw=3, ls='-', c='k', alpha=0.1)
+    plt.plot(positions[:, 0, 0], positions[:, 0, 1], lw=3, ls='-', c='k', alpha=0.1)
     for i in range(shape[1]):
         #print("i =",i)
         #print("position0:", positions[:, i, 0])
         #print("position1:", positions[:, i, 1])
-        plt.plot(positions[:, i, 0], positions[:, i, 1], lw=2, ls='-', c='b', alpha=0.01)
-        #plt.scatter(positions[:, i, 0], positions[:, i, 1], c='b', s=30, marker='o')
-        #plt.scatter(positions[:, i, 0], positions[:, i, 1], c='w', s=20, marker='o')
+        plt.plot(positions[:, i, 0], positions[:, i, 1], lw=2, ls='-', c='k', alpha=1)
+        plt.scatter(positions[:, i, 0], positions[:, i, 1], c='b', s=30, marker='o')
+        plt.scatter(positions[:, i, 0], positions[:, i, 1], c='w', s=20, marker='o')
     #plt.ylim([-arm_max_length, arm_max_length])
     #plt.xlim([-margin, arm_max_length - origin_limit + margin])
     f .savefig(join(save_dir, save_name))
@@ -110,8 +110,8 @@ def Sample_through_space():
 
 
 if __name__ == '__main__':
-    #positions = np.array([np.reshape(np.array([0, 2]), [-1, 2]), np.reshape(np.array([1, 2]), [-1, 2]),
-    #                      np.reshape(np.array([2, 0.5]), [-1, 2]), np.reshape(np.array([3, 0.2]), [-1, 2])])
-    #print("original position shape", np.shape(positions))
-    #plot_arms(positions)
-    Sample_through_space()
+    positions = np.array([np.reshape(np.array([0, 2]), [-1, 2]), np.reshape(np.array([1, 4]), [-1, 2]),
+                          np.reshape(np.array([2, 3]), [-1, 2]), np.reshape(np.array([3, 0.2]), [-1, 2])])
+    print("original position shape", np.shape(positions))
+    plot_arms(positions)
+    # Sample_through_space()
