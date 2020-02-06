@@ -5,7 +5,7 @@ The simulated cluster would be similar to the artifical data set from the INN pa
 # Import libs
 import numpy as np
 import matplotlib.pyplot as plt
-
+from sklearn.neighbors import NearestNeighbors
 
 # Define the free parameters
 dimension = 2
@@ -29,6 +29,23 @@ def plotData(data_x, data_y, save_dir='generated_gaussian_scatter.png'):
     f.savefig(save_dir)
 
 
+def determine_class_from_x(Xpred):
+    """
+    Determine the class label from Xpred
+    :param Xpred: [N, 2] The xpred to be simulated
+    :return: Ypred: [N, 1] The label of those Xpred points
+    """
+    labels = np.read_csv('class_labels.csv', delimiter=',')
+    centers = np.read_csv('data_centers.csv', delimiter=',')
+    nbrs = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(centers)
+    distance, indices = nbrs.kneighbors(Xpred)
+    Ypred = np.zeros([len(Xpred), 1])
+    for i in range(len(Xpred)):
+        Ypred[i] = labels[indices[i, 1]]
+    return Ypred
+
+
+
 if __name__ == '__main__':
     centers = np.zeros([num_cluster, dimension])            # initialize the center positions
     for i in range(num_cluster):                            # the centers are at the rim of a circle with equal angle
@@ -47,7 +64,10 @@ if __name__ == '__main__':
         data_y[i] = class_for_cluster[i_class]             # Assign y to be 0,0,0....,1,1,1...,2,2,2.... e.g.
         data_x[i, 0] = np.random.normal(centers[i_class, 0], in_class_variance)
         data_x[i, 1] = np.random.normal(centers[i_class, 1], in_class_variance)
-    print("data_y", data_y)
+    #print("data_y", data_y)
     plotData(data_x, data_y)
-    np.savetxt('data_x.csv', data_x, delimiter=',')
-    np.savetxt('data_y.csv', data_y, delimiter=',')
+    # Save the data into format
+    np.savetxt('data_centers.csv', centers, delimiter=',')
+    np.savetxt('class_labels.csv', class_for_cluster, delimiter=',')
+    #np.savetxt('data_x.csv', data_x, delimiter=',')
+    #np.savetxt('data_y.csv', data_y, delimiter=',')
