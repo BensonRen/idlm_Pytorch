@@ -172,7 +172,7 @@ class Network(object):
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
-                print(loss_list)
+                #print(loss_list)
                 loss_aggregate_list += loss_list                    # Aggregate the other loss (in np form)
 
             # Calculate the avg loss of training

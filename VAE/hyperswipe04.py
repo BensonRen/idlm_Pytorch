@@ -36,14 +36,14 @@ if __name__ == '__main__':
     
     
     
-    kl_coeff_list = [1, 0.5, 0.1, 5e-2, 1e-2]#, 5e-3, 3e-3, 1e-3]
-    lr_list = [1e-3]
+    kl_coeff_list = [0.3, 0.25,  0.2, 0.15, 0.12, 0.11, 0.1, 0.08, 0.05, 0.06, 0.04]#, 5e-3, 3e-3, 1e-3]
+    lr_list = [1e-3, 1e-2, 5e-3]
     for kl_coeff in kl_coeff_list:
         for lr in lr_list:
             flags = flag_reader.read_flag()
             flags.learn_rate = lr
             flags.kl_coeff = kl_coeff
-            flags.model_name = flags.data_set + "kl_coeff" + str(kl_coeff) + "reg" + str(flags.reg_scale)
+            flags.model_name = flags.data_set + "kl_coeff" + str(kl_coeff) + "lr" + str(lr)+ "reg" + str(flags.reg_scale)
             train.training_from_flag(flags)
 
 
@@ -54,6 +54,10 @@ if __name__ == '__main__':
     #        flags = flag_reader.read_flag()  	            # setting the base case
     #        linear_d = [unit for j in range(layer_num)]
     #        linear_e = [unit for j in range(layer_num)]
+            #linear_d[0] = flags.dim_x + flags.dim_z
+            #linear_d[-1] = flags.dim_x
+            #linear_e[0] = flags.dim_y + flags.dim_x
+            #linear_e[-1] = flags.dim_z * 2
     #        linear_d[0] = 4
     #        linear_d[-1] = 4
     #        linear_e[0] = 6

@@ -10,12 +10,14 @@ import flag_reader
 from class_wrapper import Network
 from model_maker import VAE
 from utils import data_reader
+from utils import helper_functions
+from Simulated_DataSets.Gaussian_Mixture import generate_Gaussian
 
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 def compare_truth_pred(pred_file, truth_file):
     """
     Read truth and pred from csv files, compute their mean-absolute-error and the mean-squared-error
@@ -33,16 +35,35 @@ def compare_truth_pred(pred_file, truth_file):
 
 
 def plotMSELossDistrib(pred_file, truth_file, flags):
-    mae, mse = compare_truth_pred(pred_file, truth_file)
-    plt.figure(figsize=(12, 6))
-    plt.hist(mse, bins=100)
-    plt.xlabel('Mean Squared Error')
-    plt.ylabel('cnt')
-    plt.suptitle('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
-    plt.savefig(os.path.join(os.path.abspath(''), 'data',
-                             'Backprop_{}.png'.format(flags.eval_model)))
-    plt.show()
-    print('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
+    if (flags.data_set == 'gaussian_mixture'):
+        # get the prediction and truth array
+        pred = np.loadtxt(pred_file, delimiter=' ')
+        truth = np.loadtxt(truth_file, delimiter=' ')
+        # get confusion matrix
+        cm = confusion_matrix(truth, pred)
+        cm = cm / np.sum(cm)
+        # Calculate the accuracy 
+        accuracy = 0
+        for i in range(len(cm)):
+            accuracy += cm[i,i]
+        print("confusion matrix is", cm)
+        # Plotting the confusion heatmap
+        f = plt.figure(figsize=[15,15])
+        plt.title('accuracy = {}'.format(accuracy))
+        sns.set(font_scale=1.4)
+        sns.heatmap(cm, annot=True)
+        f.savefig('data/{}.png'.format(flags.eval_model),annot_kws={"size": 16})
+
+    else:
+        mae, mse = compare_truth_pred(pred_file, truth_file)
+        plt.figure(figsize=(12, 6))
+        plt.hist(mse, bins=100)
+        plt.xlabel('Mean Squared Error')
+        plt.ylabel('cnt')
+        plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
+        plt.savefig(os.path.join(os.path.abspath(''), 'data',
+                             '{}.png'.format(flags.eval_model)))
+        print('(Avg MSE={:.4e})'.format(np.mean(mse)))
 
 def evaluate_from_model(model_dir):
     """
@@ -52,6 +73,9 @@ def evaluate_from_model(model_dir):
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
+    if (model_dir.startswith("models")):
+        model_dir = model_dir[7:]
+        print("after removing prefix models/, now model_dir is:", model_dir)
     flags = flag_reader.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
@@ -69,7 +93,14 @@ def evaluate_from_model(model_dir):
     # Plot the MSE distribution
     plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
+    
+    # If gaussian, plot the scatter plot
+    if flags.data_set == 'gaussian_mixture':
+        Xpred = helper_functions.get_Xpred(path='data/', name=flags.eval_model) 
+        Ypred = helper_functions.get_Ypred(path='data/', name=flags.eval_model) 
 
+        # Plot the points scatter
+        generate_Gaussian.plotData(Xpred, Ypred, save_dir='data/' + flags.eval_model + 'generation plot.png', eval_mode=True)
 
 def evaluate_all(models_dir="models"):
     """
@@ -77,7 +108,7 @@ def evaluate_all(models_dir="models"):
     :return: None
     """
     for file in os.listdir(models_dir):
-        evaluate_from_model(file)
+        evaluate_from_model(os.path.join(models_dir, file))
     return None
 
 

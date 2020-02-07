@@ -51,13 +51,13 @@ if __name__ == '__main__':
             flags = flag_reader.read_flag()  	            # setting the base case
             linear_d = [unit for j in range(layer_num)]
             linear_e = [unit for j in range(layer_num)]
-            linear_d[0] = 4
-            linear_d[-1] = 4
-            linear_e[0] = 6
-            linear_e[-1] = 4
+            linear_d[0] = flags.dim_y + flags.dim_z
+            linear_d[-1] = flags.dim_x
+            linear_e[0] = flags.dim_y + flags.dim_x
+            linear_e[-1] = flags.dim_z * 2
             flags.linear_d = linear_d
             flags.linear_e = linear_e
-            for i in range(1):
+            for i in range(3):
                 flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i)
                 print(flags.model_name)
                 train.training_from_flag(flags)
