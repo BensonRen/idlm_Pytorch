@@ -118,7 +118,7 @@ class Network(object):
         """
         return lr_scheduler.ReduceLROnPlateau(optimizer=optm, mode='min',
                                               factor=self.flags.lr_decay_rate,
-                                              patience=10, verbose=True, threshold=1e-4)
+                                              patience=20, verbose=True, threshold=1e-4)
 
     def save(self):
         """
@@ -126,10 +126,7 @@ class Network(object):
         :return: None
         """
         # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
-        # torch.save(self.encoder, os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
-        # torch.save(self.decoder, os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
-        # torch.save(self.spec_enc, os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
+        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
 
     def load(self):
         """
@@ -137,10 +134,7 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
-        # self.encoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_encoder.pt'))
-        # self.decoder = torch.load(os.path.join(self.ckpt_dir, 'best_model_decoder.pt'))
-        # self.spec_enc = torch.load(os.path.join(self.ckpt_dir, 'best_model_spec_enc.pt'))
+        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
 
     def train(self):
         """
@@ -159,22 +153,41 @@ class Network(object):
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
-            loss_aggregate_list = np.array([0., 0., 0.])       # kl_loss, mse_loss, bdy_loss
             self.model.train()
-            for j, (geometry, spectra) in enumerate(self.train_loader):
+            # If MMD on x-space is present from the start, the model can get stuck.
+            # Instead, ramp it up exponetially.
+            loss_factor = min(1., 2. * 0.002 ** (1. - (float(epoch) / self.flags.train_step)))
+
+            for j, (x, y) in enumerate(self.train_loader):
                 if self.flags.data_set == 'gaussian_mixture':
-                    spectra = spectra.unsqueeze(1)
+                    spectra = y.unsqueeze(1)
+
+                # Pad the x, y with zero_noise
+                y_clean = y.clone()                                     # keep a copy of y for backward
+                x_pad = self.flags.zeros_noise_scale * torch.randn(self.flags.batch_size,
+                                                                   self.flags.dim_tot - self.flags.dim_x)
+                y_pad = self.flags.zeros_noise_scale * torch.randn(self.flags.batch_size,
+                                                                   self.flags.dim_tot - self.flags.dim_y -\
+                                                                   self.flags.dim_z)
+                z = torch.randn(self.flags.batch_size, self.flags.dim_z)
                 if cuda:
-                    geometry = geometry.cuda()                          # Put data onto GPU
-                    spectra = spectra.cuda()                            # Put data onto GPU
+                    geometry = x.cuda()  # Put data onto GPU
+                    spectra = y.cuda()  # Put data onto GPU
+                    x_pad = x_pad.cuda()
+                    y_pad = y_pad.cuda()
+                    y_clean = y_clean.cuda()
+                    z = z.cuda()
+
+                # Concate the x and y with pads and add y with small purtubation
+                y += self.flags.y_noise_scale * torch.randn(self.flags.batch_size, self.flags.dim_y)
+
+                x,y = torch.cat((x, x_pad), dim=1), torch.cat((z, y_pad, y), dim=1)
+
+
+                # Forward step
                 self.optm.zero_grad()                               # Zero the gradient first
-                # print("size of geometry:", geometry.size())
-                # print("size of spectra:", spectra.size())
-                G_pred, z_mean, z_log_var = self.model(geometry, spectra)              # Get G_pred
-                # print("For epoch ", epoch, " the z_mu = ", z_mean.cpu().data, "the z_log_var = ", z_log_var.cpu().data)
-                # print("size of G_pred", G_pred.size())
-                loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
-                                                                   z_mean=z_mean, z_log_var=z_log_var)
+                ypred = model(x)
+                loss, loss_list = self.make_loss(logit=ypred, labels=y)
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss

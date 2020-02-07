@@ -22,6 +22,14 @@ CONV_OUT_CHANNEL_SE = []
 CONV_KERNEL_SIZE_SE = []
 CONV_STRIDE_SE = []
 
+# Loss ratio
+LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
+LAMBDA_Z = 300.             # The Loss factor of the latent dimension (converging to normal distribution)
+LAMBDA_REV = 400.           # The Loss factor of the reverse transformation (let x converge to input distribution)
+NOISE_SCALE = 5e-2
+Y_NOISE_SCALE = 1e-1
+
+
 # Optimization params
 KL_COEFF = 1
 OPTIM = "Adam"
@@ -29,6 +37,7 @@ REG_SCALE = 5e-3
 BATCH_SIZE = 256
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 2
+GRAD_CLAMP = 15
 TRAIN_STEP = 3000
 VERB_STEP = 1
 LEARN_RATE = 1e-3
