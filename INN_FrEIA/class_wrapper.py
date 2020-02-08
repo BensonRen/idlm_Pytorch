@@ -168,7 +168,7 @@ class Network(object):
             for j, (x, y) in enumerate(self.train_loader):
                 batch_size = len(x)
                 if self.flags.data_set == 'gaussian_mixture':
-                    spectra = y.unsqueeze(1)
+                    y = y.unsqueeze(1)
 
                 ######################
                 # Preparing the data #
@@ -181,8 +181,8 @@ class Network(object):
                                                                    dim_tot - dim_y - dim_z)
                 z = torch.randn(batch_size, dim_z)
                 if cuda:
-                    geometry = x.cuda()  # Put data onto GPU
-                    spectra = y.cuda()  # Put data onto GPU
+                    x = x.cuda()  # Put data onto GPU
+                    y = y.cuda()  # Put data onto GPU
                     x_pad = x_pad.cuda()
                     y_pad = y_pad.cuda()
                     y_clean = y_clean.cuda()
@@ -264,7 +264,6 @@ class Network(object):
 
             if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
-                print("The training loss is", train_avg_loss)
                 self.log.add_scalar('Loss/total_train', train_avg_loss, epoch)
                 self.log.add_scalar('Loss/MSE_y_train', MSE_loss_y, epoch)
                 self.log.add_scalar('Loss/MSE_x_train', MSE_loss_x, epoch)
@@ -274,34 +273,105 @@ class Network(object):
                 # Set to Evaluation Mode
                 self.model.eval()
                 print("Not Doing Evaluation on the model now")
-                """
+
                 test_loss = 0
                 loss_aggregate_list = np.array([0., 0., 0.])  # kl_loss, mse_loss, bdy_loss
-                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
+                    batch_size = len(x)
                     if self.flags.data_set == 'gaussian_mixture':
-                        spectra = spectra.unsqueeze(1)
+                        y = y.unsqueeze(1)
+
+                    ######################
+                    # Preparing the data #
+                    ######################
+                    # Pad the x, y with zero_noise
+                    y_clean = y.clone()  # keep a copy of y for backward
+                    x_pad = self.flags.zeros_noise_scale * torch.randn(batch_size,
+                                                                       dim_tot - dim_x)
+                    y_pad = self.flags.zeros_noise_scale * torch.randn(batch_size,
+                                                                       dim_tot - dim_y - dim_z)
+                    z = torch.randn(batch_size, dim_z)
                     if cuda:
-                        geometry = geometry.cuda()
-                        spectra = spectra.cuda()
-                    G_pred, z_mean, z_log_var = self.model(geometry, spectra)  # Get G_pred
-                    loss, loss_list = self.make_loss(logit=G_pred, labels=geometry, boundary=True,
-                                          z_mean=z_mean, z_log_var=z_log_var)  # Get the loss tensor
-                    test_loss += loss                                       # Aggregate the loss
-                    loss_aggregate_list += loss_list                    # Aggregate the other loss (in np form)
+                        geometry = x.cuda()  # Put data onto GPU
+                        spectra = y.cuda()  # Put data onto GPU
+                        x_pad = x_pad.cuda()
+                        y_pad = y_pad.cuda()
+                        y_clean = y_clean.cuda()
+                        z = z.cuda()
+
+                    # Concate the x and y with pads and add y with small purtubation
+                    y += self.flags.y_noise_scale * torch.randn(batch_size, dim_y)
+
+                    x, y = torch.cat((x, x_pad), dim=1), torch.cat((z, y_pad, y), dim=1)
+
+                    ################
+                    # Forward step #
+                    ################
+                    self.optm.zero_grad()  # Zero the gradient first
+                    ypred = self.model(x)  # Get the Ypred
+                    y_without_pad = torch.cat((y[:, :dim_z], y[:, -dim_y:]), dim=1)
+
+                    # Do the same thing for ypred
+                    y_block_grad = torch.cat((ypred[:, :dim_z], ypred[:, -dim_y:]), dim=1)
+
+                    # Do the MSE loss for reconstruction, Doesn't compare z part (only pad and y itself)
+                    MSE_loss_y = self.make_loss(logit=ypred[:, dim_z:], labels=y[:, dim_z:])
+
+                    # Get the MMD loss for latent
+                    MMD_loss_latent = self.MMD(y_block_grad, y_without_pad)
+                    Forward_loss = self.flags.lambda_mse * MSE_loss_y + self.flags.lambda_z * MMD_loss_latent
+
+                    #################
+                    # Backward step #
+                    #################
+                    # Create random value for the padding for yz
+                    pad_yz = self.flags.zeros_noise_scale * torch.randn(batch_size,
+                                                                        dim_tot - dim_y - dim_z, device=device)
+                    # Add noise to the backward y value
+                    y = y_clean + self.flags.y_noise_scale * torch.randn(batch_size, dim_y, device=device)
+
+                    # Create a noisy z vector with noise level same as y
+                    noise_on_z = self.flags.y_noise_scale * torch.randn(batch_size, dim_z, device=device)
+
+                    # Add the noise to the outcome of z
+                    orig_z_perturbed = ypred.data[:, :dim_z] + noise_on_z
+
+                    # Set up the input of reverse network
+                    y_rev = torch.cat((orig_z_perturbed, pad_yz, y), dim=1)
+
+                    rand_z = torch.randn(batch_size, dim_z, device=device)
+                    # set up the randomized input of reverse network
+                    y_rev_rand = torch.cat((rand_z, pad_yz, y), dim=1)
+
+                    # Get the output of the inverse model
+                    xpred_rev = self.model(y_rev, rev=True)
+                    xpred_rev_rand = self.model(y_rev_rand, rev=True)
+
+                    # Set the Losses
+                    MMD_loss_x = self.MMD(xpred_rev_rand[:, :dim_x], x[:, :dim_x])
+                    MSE_loss_x = self.make_loss(xpred_rev, x)
+
+                    Backward_loss = self.flags.lambda_mse * MSE_loss_x + \
+                                    loss_factor * self.flags.lambda_rev * MMD_loss_x
+
+
+                    train_loss += Backward_loss + Forward_loss  # Aggregate the loss
+                # Aggregate the other loss (in np form)
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
-                loss_aggregate_list /= (j + 1)
+
                 self.log.add_scalar('Loss/total_test', test_avg_loss, epoch)
-                self.log.add_scalar('Loss/kl_test', loss_aggregate_list[0], epoch)
-                self.log.add_scalar('Loss/mse_test', loss_aggregate_list[1], epoch)
-                self.log.add_scalar('Loss/bdy_test', loss_aggregate_list[2], epoch)
+                self.log.add_scalar('Loss/MSE_y_test', MSE_loss_y, epoch)
+                self.log.add_scalar('Loss/MSE_x_test', MSE_loss_x, epoch)
+                self.log.add_scalar('Loss/MMD_z_test', MMD_loss_latent, epoch)
+                self.log.add_scalar('Loss/MMD_x_test', MMD_loss_x, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))
-                """
+
                 # Model improving, save the model down
-                if train_avg_loss < self.best_validation_loss:
+                if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = train_avg_loss
                     self.save()
                     print("Saving the model down...")
