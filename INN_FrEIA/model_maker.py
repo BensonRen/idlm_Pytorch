@@ -30,19 +30,30 @@ def INN(flags):
                           {'subnet_constructor': subnet_fc,
                            'clamp': 2.0},
                           name='coupling_{}'.format(i)))
-        nodes.append(Node(nodes[-1], PermuteRandom, {'seed', i}, name='permute_{}'.format(i)))
+        nodes.append(Node(nodes[-1], PermuteRandom, {'seed': i}, name='permute_{}'.format(i)))
     # Attach the output Node
     nodes.append(OutputNode(nodes[-1], name='output'))
+    print("The nodes are:", nodes)
     # Return the
-    return ReversibleGraphNet(nodes)
+    return ReversibleGraphNet(nodes, verbose=True)
 
+##########
+# Subnet #
+##########
 
+def subnet_fc(c_in, c_out):
+    return nn.Sequential(nn.Linear(c_in, 512), nn.ReLU(),
+                         nn.Linear(512,  c_out))
+
+# Can only take 2 input.... Due to the restriction of the framework used
+
+"""
 class subnet_fc(nn.Module):
-    """
+    ""
     Construct the subnet module
     :param flags: input flags from configuration
     :return: The sub net used in affine layers
-    """
+    ""
     def __init__(self, flags):
         self.linears = nn.ModuleList([])
         self.bn_linears = nn.ModuleList([])
@@ -52,14 +63,15 @@ class subnet_fc(nn.Module):
 
 
     def forward(self, out):
-        """
+        ""
         The forward function of the subnet structure
         :param out: The input of the subnet structure
         :return: Output of subnet structure
-        """
+        ""
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             if ind != len(self.linears) - 1:
                 out = F.relu(bn(fc(out)))
             else:
                 out = fc(out)
         return out
+"""
