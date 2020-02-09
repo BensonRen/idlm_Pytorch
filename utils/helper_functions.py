@@ -23,6 +23,8 @@ def get_Xpred(path, name=None):
     :param name: str, the name of the model to find
     :return: np array
     """
+    out_file = None
+    name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Xpred" in filename):
             if name is None:
@@ -33,6 +35,7 @@ def get_Xpred(path, name=None):
                 if (name in filename):
                     out_file = filename
                     break
+    assert out_file is not None, "Your Xpred model did not found" + name
     return np.loadtxt(os.path.join(path,out_file))
 
 
@@ -45,6 +48,8 @@ def get_Ypred(path, name=None):
     :param name: str, the name of the model to find
     :return: np array
     """
+    out_file = None
+    name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Ypred" in filename):
             if name is None:
@@ -55,6 +60,7 @@ def get_Ypred(path, name=None):
                 if (name in filename):
                     out_file = filename
                     break
+    assert out_file is not None, "Your Xpred model did not found" + name
     return np.loadtxt(os.path.join(path,out_file))
 
 
@@ -67,6 +73,8 @@ def get_Xtruth(path, name=None):
     :param name: str, the name of the model to find
     :return: np array
     """
+    out_file = None
+    name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Xtruth" in filename):
             if name is None:
@@ -77,6 +85,7 @@ def get_Xtruth(path, name=None):
                 if (name in filename):
                     out_file = filename
                     break
+    assert out_file is not None, "Your Xpred model did not found" + name
     return np.loadtxt(os.path.join(path,out_file))
 
 # 4
@@ -88,6 +97,8 @@ def get_Ytruth(path, name=None):
     :param name: str, the name of the model to find
     :return: np array
     """
+    out_file = None
+    name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Ytruth" in filename):
             if name is None:
@@ -98,6 +109,7 @@ def get_Ytruth(path, name=None):
                 if (name in filename):
                     out_file = filename
                     break
+    assert out_file is not None, "Your Xpred model did not found" + name
     return np.loadtxt(os.path.join(path,out_file))
 
 

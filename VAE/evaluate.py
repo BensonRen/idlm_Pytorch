@@ -52,7 +52,8 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
         plt.title('accuracy = {}'.format(accuracy))
         sns.set(font_scale=1.4)
         sns.heatmap(cm, annot=True)
-        f.savefig('data/{}.png'.format(flags.eval_model),annot_kws={"size": 16})
+        eval_model_str = flags.eval_model.replace('/','_')
+        f.savefig('data/{}.png'.format(eval_model_str),annot_kws={"size": 16})
 
     else:
         mae, mse = compare_truth_pred(pred_file, truth_file)
@@ -100,7 +101,7 @@ def evaluate_from_model(model_dir):
         Ypred = helper_functions.get_Ypred(path='data/', name=flags.eval_model) 
 
         # Plot the points scatter
-        generate_Gaussian.plotData(Xpred, Ypred, save_dir='data/' + flags.eval_model + 'generation plot.png', eval_mode=True)
+        generate_Gaussian.plotData(Xpred, Ypred, save_dir='data/' + flags.eval_model.replace('/','_') + 'generation plot.png', eval_mode=True)
 
 def evaluate_all(models_dir="models"):
     """

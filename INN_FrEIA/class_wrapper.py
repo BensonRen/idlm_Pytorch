@@ -189,7 +189,7 @@ class Network(object):
                     z = z.cuda()
 
                 # Concate the x and y with pads and add y with small purtubation
-                y += self.flags.y_noise_scale * torch.randn(batch_size, dim_y)
+                y += self.flags.y_noise_scale * torch.randn(batch_size, dim_y, device=device)
 
                 x, y = torch.cat((x, x_pad), dim=1), torch.cat((z, y_pad, y), dim=1)
 
@@ -272,10 +272,9 @@ class Network(object):
 
                 # Set to Evaluation Mode
                 self.model.eval()
-                print("Not Doing Evaluation on the model now")
+                print("Doing Evaluation on the model now")
 
                 test_loss = 0
-                loss_aggregate_list = np.array([0., 0., 0.])  # kl_loss, mse_loss, bdy_loss
                 for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
                     batch_size = len(x)
                     if self.flags.data_set == 'gaussian_mixture':
@@ -292,15 +291,15 @@ class Network(object):
                                                                        dim_tot - dim_y - dim_z)
                     z = torch.randn(batch_size, dim_z)
                     if cuda:
-                        geometry = x.cuda()  # Put data onto GPU
-                        spectra = y.cuda()  # Put data onto GPU
+                        x = x.cuda()  # Put data onto GPU
+                        y = y.cuda()  # Put data onto GPU
                         x_pad = x_pad.cuda()
                         y_pad = y_pad.cuda()
                         y_clean = y_clean.cuda()
                         z = z.cuda()
 
                     # Concate the x and y with pads and add y with small purtubation
-                    y += self.flags.y_noise_scale * torch.randn(batch_size, dim_y)
+                    y += self.flags.y_noise_scale * torch.randn(batch_size, dim_y, device=device)
 
                     x, y = torch.cat((x, x_pad), dim=1), torch.cat((z, y_pad, y), dim=1)
 
@@ -355,7 +354,7 @@ class Network(object):
                                     loss_factor * self.flags.lambda_rev * MMD_loss_x
 
 
-                    train_loss += Backward_loss + Forward_loss  # Aggregate the loss
+                    test_loss += Backward_loss + Forward_loss  # Aggregate the loss
                 # Aggregate the other loss (in np form)
 
                 # Record the testing loss to the tensorboard
