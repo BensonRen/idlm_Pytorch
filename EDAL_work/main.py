@@ -4,12 +4,19 @@ from tqdm import tqdm
 
 
 energy_terms = [
+    #'Transmission line',
+    #'Electricity line',
+    'Power line',
+    'Energy infrastructure',
+    'Electric infrastructure',
+    #'Power',
+    #'Energy'
     #'Generator',
     #'Coal',
     #'Oil',
-     'Natural Gas',
-     'Geothermal',
-     'Hydropower'
+    #'Natural Gas',
+    # 'Geothermal',
+    # 'Hydropower'
 ]
 
 ml_terms = [

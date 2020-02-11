@@ -136,7 +136,11 @@ class Network(object):
         :return:
         """
         # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
-        self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
+        if torch.cuda.is_available():
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
+        else:
+            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'), map_location = torch.device('cpu'))
+
 
     def train(self):
         """
@@ -390,6 +394,11 @@ class Network(object):
             self.model.cuda()
         # Set to evaluation mode for batch_norm layers
         self.model.eval()
+        # Set the dimensions
+        dim_x = self.flags.dim_x
+        dim_y = self.flags.dim_y
+        dim_z = self.flags.dim_z
+        dim_tot = self.flags.dim_tot
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
@@ -400,20 +409,26 @@ class Network(object):
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
-            for ind, (geometry, spectra) in enumerate(self.test_loader):
-                if cuda:
-                    geometry = geometry.cuda()
-                    spectra = spectra.cuda()
-                # Initialize the geometry first
+            for ind, (x, y) in enumerate(self.test_loader):
+                batch_size = len(x)
+                # Create random value for the padding for yz
+                pad_yz = self.flags.zeros_noise_scale * torch.randn(batch_size,
+                                                                    dim_tot - dim_y - dim_z, device=device)
+                # Create a noisy z vector with noise level same as y
+                z = torch.randn(batch_size, dim_z, device=device)
+
+                y_cat = torch.cat((z, pad_yz, y), dim=1)
+                # Initialize the x first
                 if self.flags.data_set == 'gaussian_mixture':
-                    spectra = spectra.unsqueeze(1)
+                    y = y.unsqueeze(1)
                 if cuda:
-                    geometry = geometry.cuda()
-                    spectra = spectra.cuda()
-                Xpred = self.model.inference(spectra).cpu().data.numpy()
+                    x = x.cuda()
+                    y = y.cuda()
+                Xpred = self.model(y_cat, rev=True)
+                Xpred = Xpred[:, :dim_x].cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)
-                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred, fmt='%.3f')
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
