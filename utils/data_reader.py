@@ -52,6 +52,7 @@ def check_data(input_directory, col_range=range(2, 10), col_names=('h1','h2','h3
 
 
 
+
 # add columns of derived values to the input data
 # for now, just ratios of the inputs
 def addColumns(input_directory, output_directory, x_range, y_range):
