@@ -25,13 +25,8 @@ def training_from_flag(flags):
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
     # Get the data
-    train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
-                                                      y_range=flags.y_range,
-                                                      geoboundary=flags.geoboundary,
-                                                      batch_size=flags.batch_size,
-                                                      normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir,
-                                                      test_ratio=flags.test_ratio)
+    train_loader, test_loader = data_reader.read_data(flags)
+
     # Reset the boundary is normalized
     if flags.normalize_input:
         flags.geoboundary_norm = [-1, 1, -1, 1]
