@@ -8,7 +8,7 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import INN
+from model_maker import cINN
 from utils import data_reader
 from utils import helper_functions
 from Simulated_DataSets.Gaussian_Mixture import generate_Gaussian
@@ -85,7 +85,7 @@ def evaluate_from_model(model_dir):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(INN, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(cINN, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
 
     # Evaluation process
     print("Start eval now:")

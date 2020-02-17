@@ -14,6 +14,7 @@ from utils import data_reader
 from class_wrapper import Network
 from model_maker import cINN
 from utils.helper_functions import put_param_into_folder,write_flags_and_BVE
+from evaluate import evaluate_from_model
 
 def training_from_flag(flags):
     """
@@ -36,6 +37,7 @@ def training_from_flag(flags):
     write_flags_and_BVE(flags, ntwk.best_validation_loss, ntwk.ckpt_dir)
     # put_param_into_folder(ntwk.ckpt_dir)
 
+    evaluate_from_model(ntwk.model_name)
 
 if __name__ == '__main__':
     torch.manual_seed(1)

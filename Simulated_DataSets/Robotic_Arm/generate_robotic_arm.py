@@ -34,6 +34,9 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths, ev
     :return: positions: list of #arm_num of [N, 2], The positions that the arms nodes for plotting purpose
     """
     # First make sure that the angles are legal angles
+    #print("shape of arm_angles", np.shape(arm_angles))
+    #print("shape of original_pos", np.shape(origin_pos))
+    #print(np.max(arm_angles))
     for i in range(arm_num):
         assert (np.max(arm_angles[:, i]) < pi) and (np.min(arm_angles[:, i]) > -pi), \
             'Your angle has to be within [-pi, pi]'

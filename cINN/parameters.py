@@ -10,7 +10,7 @@ The parameter file storing the parameters for INN Model
 DATA_SET = 'robotic_arm'
 
 # Architectural Params
-DIM_Z = 2
+DIM_Z = 4
 DIM_X = 4
 DIM_Y = 2
 DIM_TOT = 4
@@ -38,7 +38,7 @@ BATCH_SIZE = 256
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 2
 GRAD_CLAMP = 15
-TRAIN_STEP = 1500
+TRAIN_STEP = 150
 VERB_STEP = 1
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
@@ -59,4 +59,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "robotic_armcouple_layer_num9dim_total5"
+EVAL_MODEL = "20200216_172257"

@@ -295,7 +295,7 @@ class Network(object):
                 if cuda:
                     x = x.cuda()
                     y = y.cuda()
-                Xpred = self.model(z, y, rev=True)
+                Xpred = self.model(z, y, rev=True).cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
