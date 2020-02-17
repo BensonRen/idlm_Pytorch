@@ -8,8 +8,8 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import VAE
-import data_reader
+from model_maker import Forward
+from utils import data_reader
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -55,12 +55,7 @@ def evaluate_from_model(model_dir):
     flags.eval_model = model_dir                    # Reset the eval mode
 
     # Get the data
-    train_loader, test_loader = data_reader.read_data(x_range=flags.x_range,
-                                                      y_range=flags.y_range,
-                                                      geoboundary=flags.geoboundary,
-                                                      batch_size=flags.batch_size,
-                                                      normalize_input=flags.normalize_input,
-                                                      data_dir=flags.data_dir)
+    train_loader, test_loader = data_reader.read_data(flags)
     print("Making network now")
 
     # Make Network

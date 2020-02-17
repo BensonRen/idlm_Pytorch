@@ -7,13 +7,13 @@ import  numpy as np
 import flag_reader
 if __name__ == '__main__':
     # Setting the loop for setting the parameter
-    for i in range(4,9):
+    for i in range(3,7):
         flags = flag_reader.read_flag()  	#setting the base case
         linear = [500 for j in range(i)]        #Set the linear units
         linear[0] = 8                   # The start of linear
-        linear[-1] = 150                # The end of linear
+        linear[-1] = 12                # The end of linear
         flags.linear = linear
-        for j in range(3):
-            flags.model_name = "trail_"+str(j)+"_complexity_swipe_layer_num" + str(i)
+        for j in range(1):
+            flags.model_name = "trail_"+str(j)+"_layer_num" + str(i) + "unit_500"
             train.training_from_flag(flags)
 

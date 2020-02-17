@@ -9,7 +9,7 @@ import os
 
 # Own
 import flag_reader
-import data_reader
+from utils import data_reader
 from class_wrapper import Network
 from model_maker import Forward
 from utils.helper_functions import put_param_into_folder, write_flags_and_BVE

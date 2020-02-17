@@ -3,24 +3,24 @@ The parameter file storing the parameters for INN Model
 """
 
 # Define which data set you are using
-# DATA_SET = 'meta_material'
+DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-DATA_SET = 'robotic_arm'
+# DATA_SET = 'robotic_arm'
 
 # Architectural Params
 DIM_Z = 2
-DIM_X = 4
-DIM_Y = 2
-DIM_TOT = 4
+DIM_X = 8
+DIM_Y = 5
+DIM_TOT = 20
 COUPLE_LAYER_NUM = 8
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
-LINEAR_SE = []                                              # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = []
-CONV_KERNEL_SIZE_SE = []
-CONV_STRIDE_SE = []
+LINEAR_SE = [150, 150, 150, 150, DIM_Y]                                              # Linear units for spectra encoder
+CONV_OUT_CHANNEL_SE = [4, 4, 4]
+CONV_KERNEL_SIZE_SE = [5, 5, 8]
+CONV_STRIDE_SE = [1, 1, 2]
 
 # Loss ratio
 LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
