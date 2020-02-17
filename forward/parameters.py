@@ -13,9 +13,12 @@ USE_CONV = False                         # Whether use upconv layer when not usi
 LINEAR = [8, 300, 300, 300, 300, 300, 12]
 FIX_W0 = False
 # If the Lorentzian is Flase
-CONV_OUT_CHANNEL = [4, 4, 4]
-CONV_KERNEL_SIZE = [8, 5, 5]
-CONV_STRIDE = [2, 1, 1]
+#CONV_OUT_CHANNEL = [4, 4, 4]
+#CONV_KERNEL_SIZE = [8, 5, 5]
+#CONV_STRIDE = [2, 1, 1]
+CONV_OUT_CHANNEL = []
+CONV_KERNEL_SIZE = []
+CONV_STRIDE = []
 
 # Optimization parameters
 OPTIM = "Adam"
