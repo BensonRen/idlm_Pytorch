@@ -37,7 +37,8 @@ FORCE_RUN = True
 #DATA_DIR = '/work/sr365/'      # For server usage
 DATA_DIR = '../dataIn/pretraining/'                # For local useage
 #DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'                # For Omar useage
-GEOBOUNDARY =[30, 52, 42, 52]
+# GEOBOUNDARY =[30, 52, 42, 52]
+GEOBOUNDARY =[20, 200, 20, 100]
 NORMALIZE_INPUT = True
 TEST_RATIO = 0.2
 

@@ -31,6 +31,8 @@ def importData(directory, x_range, y_range):
             lbl.append(curve)
     ftr = np.array(ftr, dtype='float32')
     lbl = np.array(lbl, dtype='float32')
+    for i in range(len(ftr[0, :])):
+        print('For feature {}, the max is {} and min is {}'.format(i, np.max(ftr[:, i]), np.min(ftr[:, i])))
     return ftr, lbl
 
 
