@@ -6,11 +6,14 @@ from tqdm import tqdm
 energy_terms = [
     #'Transmission line',
     #'Electricity line',
-    'Power line',
-    'Energy infrastructure',
-    'Electric infrastructure',
-    #'Power',
-    #'Energy'
+    #'Power line',
+    #'Energy infrastructure',
+    #'Electric infrastructure',
+    'solar',
+    'wind',
+    'Power',
+    'Energy',
+    'electrification'
     #'Generator',
     #'Coal',
     #'Oil',
@@ -51,7 +54,7 @@ for e in tqdm(energy_terms):
             kw = ';'.join([quote(e), quote(m), quote(r)])
             search_query = scholarly.search_pubs_query(kw)
             i = 0
-            while i < 20:
+            while i < 100:
                 try:
                     res = next(search_query)
                     i += 1
@@ -66,4 +69,4 @@ for e in tqdm(energy_terms):
                 except StopIteration:
                     break
     results_pd = pd.DataFrame.from_dict(results)
-    results_pd.to_csv(f'./{e}.csv', index=False)
+    results_pd.to_csv(f'./top100results{e}.csv', index=False)

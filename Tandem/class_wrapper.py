@@ -353,6 +353,8 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
+
+
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False

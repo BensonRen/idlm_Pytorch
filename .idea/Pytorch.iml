@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/utils" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Simulated DataSets/Robotic Arm" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/INN_FrEIA" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
