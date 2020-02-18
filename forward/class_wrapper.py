@@ -121,7 +121,7 @@ class Network(object):
         for epoch in range(self.flags.train_step):
             # print("This is training Epoch {}".format(epoch))
             # Set to Training Mode
-            train_loss = 0
+            train_loss = []
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
@@ -133,12 +133,12 @@ class Network(object):
                 # print("spectra type:", spectra.dtype)
                 loss = self.make_loss(logit, spectra)              # Get the loss tensor
                 loss.backward()                                # Calculate the backward gradients
-                torch.nn.utils.clip_grad_value_(self.model.parameters(), 10)
+                # torch.nn.utils.clip_grad_value_(self.model.parameters(), 10)
                 self.optm.step()                                    # Move one step the optimizer
-                train_loss += loss                                  # Aggregate the loss
+                train_loss.append(loss.cpu().data.numpy())                                  # Aggregate the loss
 
             # Calculate the avg loss of training
-            train_avg_loss = train_loss.cpu().data.numpy() / (j+1)
+            train_avg_loss = np.mean(train_avg_loss)
 
             if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
@@ -170,17 +170,17 @@ class Network(object):
                 # Set to Evaluation Mode
                 self.model.eval()
                 print("Doing Evaluation on the model now")
-                test_loss = 0
+                test_loss = []
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     logit = self.model(geometry)
                     loss = self.make_loss(logit, spectra)                   # compute the loss
-                    test_loss += loss                                       # Aggregate the loss
+                    test_loss.append(loss.cpu().data.numpy())                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                test_avg_loss = np.mean(test_loss)
                 self.log.add_scalar('Loss/test', test_avg_loss, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
