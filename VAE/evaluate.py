@@ -13,7 +13,6 @@ from utils import data_reader
 from utils import helper_functions
 from Simulated_DataSets.Gaussian_Mixture import generate_Gaussian
 from utils.evaluation_helper import plotMSELossDistrib
-
 # Libs
 
 def evaluate_from_model(model_dir):
@@ -53,13 +52,15 @@ def evaluate_from_model(model_dir):
         # Plot the points scatter
         generate_Gaussian.plotData(Xpred, Ypred, save_dir='data/' + flags.eval_model.replace('/','_') + 'generation plot.png', eval_mode=True)
 
+
 def evaluate_all(models_dir="models"):
     """
     This function evaluate all the models in the models/. directory
     :return: None
     """
     for file in os.listdir(models_dir):
-        evaluate_from_model(os.path.join(models_dir, file))
+        if os.path.isfile(os.path.join(models_dir, file, 'flags.obj')):
+            evaluate_from_model(os.path.join(models_dir, file))
     return None
 
 

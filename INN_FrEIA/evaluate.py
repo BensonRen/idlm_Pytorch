@@ -59,8 +59,8 @@ def evaluate_all(models_dir="models"):
     :return: None
     """
     for file in os.listdir(models_dir):
-
-        evaluate_from_model(os.path.join(models_dir, file))
+        if os.path.isfile(os.path.join(models_dir, file, 'flags.obj')):
+            evaluate_from_model(os.path.join(models_dir, file))
     return None
 
 

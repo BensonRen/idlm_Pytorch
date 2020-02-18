@@ -10,39 +10,11 @@ import flag_reader
 from class_wrapper import Network
 from model_maker import Forward
 from utils import data_reader
+from utils.evaluation_helper import plotMSELossDistrib
 # Libs
-import numpy as np
-import matplotlib.pyplot as plt
 
 
-def compare_truth_pred(pred_file, truth_file):
-    """
-    Read truth and pred from csv files, compute their mean-absolute-error and the mean-squared-error
-    :param pred_file: full path to pred file
-    :param truth_file: full path to truth file
-    :return: mae and mse
-    """
-    pred = np.loadtxt(pred_file, delimiter=' ')
-    truth = np.loadtxt(truth_file, delimiter=' ')
-
-    mae = np.mean(np.abs(pred-truth), axis=1)
-    mse = np.mean(np.square(pred-truth), axis=1)
-
-    return mae, mse
-
-
-def plotMSELossDistrib(pred_file, truth_file, flags):
-    mae, mse = compare_truth_pred(pred_file, truth_file)
-    plt.figure(figsize=(12, 6))
-    plt.hist(mse, bins=100)
-    plt.xlabel('Mean Squared Error')
-    plt.ylabel('cnt')
-    plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
-    plt.savefig(os.path.join(os.path.abspath(''), 'data',
-                             'Backprop_{}.png'.format(flags.eval_model)))
-    plt.show()
-    print('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
-
+def
 def evaluate_from_model(model_dir):
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
