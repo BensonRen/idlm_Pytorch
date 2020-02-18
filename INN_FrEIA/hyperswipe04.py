@@ -42,8 +42,8 @@ if __name__ == '__main__':
             flags.dim_z = dim_z
             flags.dim_y = dim_y
             flags.linear_se[-1] = dim_y
-            flags.couple_layer_num = couple_layer
             flags.model_name = flags.data_set + "dim_y" + str(dim_y) + "dim_z" + str(dim_z)
+            train.training_from_flag(flags)
     
     
     ###########################

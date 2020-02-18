@@ -37,7 +37,7 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
     plt.hist(mse, bins=100)
     plt.xlabel('Mean Squared Error')
     plt.ylabel('cnt')
-    plt.suptitle('Backprop (Avg MSE={:.4e})'.format(np.mean(mse)))
+    plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
     plt.savefig(os.path.join(os.path.abspath(''), 'data',
                              'Backprop_{}.png'.format(flags.eval_model)))
     plt.show()
@@ -50,6 +50,9 @@ def evaluate_from_model(model_dir):
     :return: None
     """
     # Retrieve the flag object
+    if (model_dir.startswith("models")):
+        model_dir = model_dir[7:]
+        print("after removing prefix models/, now model_dir is:", model_dir)
     print("Retrieving flag object for parameters")
     flags = flag_reader.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
@@ -69,6 +72,16 @@ def evaluate_from_model(model_dir):
     plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
 
+
+def evaluate_all(models_dir="models"):
+    """
+    This function evaluate all the models in the models/. directory
+    :return: None
+    """
+    for file in os.listdir(models_dir):
+        if os.path.isfile(os.path.join(models_dir, file, 'flags.obj')):
+            evaluate_from_model(os.path.join(models_dir, file))
+    return None
 
 
 if __name__ == '__main__':
