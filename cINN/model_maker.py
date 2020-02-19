@@ -25,7 +25,7 @@ def cINN(flags):
     # Set up the conditional node (y)
     cond_node = ConditionNode(flags.dim_y)
     # Start from input layer
-    nodes = [InputNode(flags.dim_tot, name='input')]
+    nodes = [InputNode(flags.dim_x, name='input')]
     # Recursively add the coupling layers and random permutation layer
     for i in range(flags.couple_layer_num):
         nodes.append(Node(nodes[-1], GLOWCouplingBlock,
@@ -46,8 +46,9 @@ def cINN(flags):
 ##########
 
 def subnet_fc(c_in, c_out):
-    return nn.Sequential(nn.Linear(c_in, 512), nn.ReLU(),
-                         nn.Linear(512,  c_out))
+    return nn.Sequential(nn.Linear(c_in, 512), nn.ReLU(), 
+                                  nn.Linear(512, 512), nn.ReLU(),
+                                  nn.Linear(512,  c_out))
 
 # Can only take 2 input.... Due to the restriction of the framework used
 

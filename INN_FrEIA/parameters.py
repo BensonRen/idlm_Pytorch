@@ -3,24 +3,27 @@ The parameter file storing the parameters for INN Model
 """
 
 # Define which data set you are using
-DATA_SET = 'meta_material'
+# DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 
 # Architectural Params
 DIM_Z = 2
-DIM_X = 8
-DIM_Y = 5
-DIM_TOT = 20
+DIM_X = 4
+DIM_Y = 2
+DIM_TOT = 5
 COUPLE_LAYER_NUM = 8
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
 LINEAR_SE = [150, 150, 150, 150, DIM_Y]                                              # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = [4, 4, 4]
-CONV_KERNEL_SIZE_SE = [5, 5, 8]
-CONV_STRIDE_SE = [1, 1, 2]
+CONV_OUT_CHANNEL_SE = []
+CONV_KERNEL_SIZE_SE = []
+CONV_STRIDE_SE = []
+#CONV_OUT_CHANNEL_SE = [4, 4, 4]
+#CONV_KERNEL_SIZE_SE = [5, 5, 8]
+#CONV_STRIDE_SE = [1, 1, 2]
 
 # Loss ratio
 LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
@@ -51,9 +54,9 @@ Y_RANGE = [i for i in range(10 , 2011 )]
 FORCE_RUN = True
 MODEL_NAME  = None
 # MODEL_NAME  = 'dim_z_2 + wBN + 100 + lr1e-3 + reg5e-3'
-DATA_DIR = '/work/sr365/'      # For server usage
+# DATA_DIR = '/work/sr365/'      # For server usage
 #DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'                # For Omar useage
-# DATA_DIR = '../'                # For local useage
+DATA_DIR = '../'                # For local useage
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 

@@ -161,7 +161,6 @@ class Network(object):
         dim_x = self.flags.dim_x
         dim_y = self.flags.dim_y
         dim_z = self.flags.dim_z
-        dim_tot = self.flags.dim_tot
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
@@ -179,7 +178,6 @@ class Network(object):
                 ######################
                 # Preparing the data #
                 ######################
-                z = torch.randn(batch_size, dim_z)
                 if cuda:
                     x = x.cuda()  # Put data onto GPU
                     y = y.cuda()  # Put data onto GPU

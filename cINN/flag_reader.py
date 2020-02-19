@@ -25,7 +25,6 @@ def read_flag():
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
     parser.add_argument('--dim-x', default=DIM_X, type=int, help='dimension of the latent variable x')
     parser.add_argument('--dim-y', default=DIM_Y, type=int, help='dimension of the latent variable y')
-    parser.add_argument('--dim-tot', default=DIM_TOT, type=int, help='dimension of the total dimension of both sides')
     parser.add_argument('--dim-spec', default=DIM_SPEC, type=int, help='dimension of the spectra encoded conponent')
     parser.add_argument('--couple-layer-num', default=COUPLE_LAYER_NUM, type=int, help='The number of coupling blocks to use')
     parser.add_argument('--subnet-linear', type=list, default=SUBNET_LINEAR, help='The fc layers units for subnetwork')

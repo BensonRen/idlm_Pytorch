@@ -138,7 +138,7 @@ class Network(object):
                 train_loss.append(loss.cpu().data.numpy())                                  # Aggregate the loss
 
             # Calculate the avg loss of training
-            train_avg_loss = np.mean(train_avg_loss)
+            train_avg_loss = np.mean(train_loss)
 
             if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard

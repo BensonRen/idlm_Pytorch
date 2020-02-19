@@ -410,6 +410,9 @@ class Network(object):
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (x, y) in enumerate(self.test_loader):
+                if cuda:
+                    x = x.cuda()  # Put data onto GPU
+                    y = y.cuda()  # Put data onto GPU
                 batch_size = len(x)
                 # Create random value for the padding for yz
                 pad_yz = self.flags.zeros_noise_scale * torch.randn(batch_size,

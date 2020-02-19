@@ -30,15 +30,20 @@ if __name__ == '__main__':
     #                for j in range(3):
     #                    flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
     #                    train.training_from_flag(flags)
-    
-    
-    for dim_tot in range(7, 10):
-        for couple_layer in range(5,10):
+    for i in range(2): 
+        for couple_layer in range(10,15):
             flags = flag_reader.read_flag()  	            # setting the base case
-            flags.dim_tot = dim_tot
             flags.couple_layer_num = couple_layer
-            flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + "dim_total" + str(dim_tot)
+            flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + \
+                                 "trail_" + str(i)
             train.training_from_flag(flags)
+    
+    #for dim_tot in range(4, 5):
+    #    for couple_layer in range(5,10):
+    #        flags = flag_reader.read_flag()  	            # setting the base case
+    #        flags.couple_layer_num = couple_layer
+    #        flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + "dim_total" + str(dim_tot)
+    #        train.training_from_flag(flags)
     
     
     #kl_coeff_list = [1, 0.75, 0.5, 0.25, 0.1]#e-2, 8e-3, 5e-3, 3e-3, 1e-3]

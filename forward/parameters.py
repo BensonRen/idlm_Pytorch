@@ -10,7 +10,7 @@ DATA_SET = 'meta_material'
 
 USE_LORENTZ = False
 USE_CONV = False                         # Whether use upconv layer when not using lorentz @Omar
-LINEAR = [8, 300, 300, 300, 300, 300, 12]
+LINEAR = [8, 500, 500, 12]
 FIX_W0 = False
 # If the Lorentzian is Flase
 #CONV_OUT_CHANNEL = [4, 4, 4]
