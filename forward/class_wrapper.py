@@ -122,6 +122,7 @@ class Network(object):
             # print("This is training Epoch {}".format(epoch))
             # Set to Training Mode
             train_loss = []
+            train_loss_eval_mode_list = []
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
@@ -135,15 +136,26 @@ class Network(object):
                 loss.backward()                                # Calculate the backward gradients
                 # torch.nn.utils.clip_grad_value_(self.model.parameters(), 10)
                 self.optm.step()                                    # Move one step the optimizer
-                train_loss.append(loss.cpu().data.numpy())                                  # Aggregate the loss
+                train_loss.append(np.copy(loss.cpu().data.numpy()))                                  # Aggregate the loss
+
+                #############################################
+                # Extra test for err_test < err_train issue #
+                #############################################
+                self.model.eval()
+                logit = self.model(geometry)  # Get the output
+                loss = self.make_loss(logit, spectra)  # Get the loss tensor
+                train_loss_eval_mode_list.append(np.copy(loss.cpu().data.numpy()))
+                self.model.train()
 
             # Calculate the avg loss of training
             train_avg_loss = np.mean(train_loss)
+            train_avg_eval_mode_loss = np.mean(train_loss_eval_mode_list)
 
             if epoch % self.flags.eval_step == 0:                        # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
                 #train_avg_loss = train_loss.data.numpy() / (j+1)
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                self.log.add_scalar('Loss/train_eval_mode', train_avg_eval_mode_loss, epoch)
                 if self.flags.use_lorentz:
                     for j in range(self.flags.num_plot_compare):
                         f = self.compare_spectra(Ypred=logit[j, :].cpu().data.numpy(),
@@ -177,7 +189,7 @@ class Network(object):
                         spectra = spectra.cuda()
                     logit = self.model(geometry)
                     loss = self.make_loss(logit, spectra)                   # compute the loss
-                    test_loss.append(loss.cpu().data.numpy())                                       # Aggregate the loss
+                    test_loss.append(np.copy(loss.cpu().data.numpy()))                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = np.mean(test_loss)
