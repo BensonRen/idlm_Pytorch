@@ -48,7 +48,8 @@ def determine_final_position(origin_pos, arm_angles, arm_lengths=arm_lengths, ev
         current_pos[:, 0] += cos(arm_angles_diff[:, arm_index]) * arm_lengths[arm_index]
         current_pos[:, 1] += sin(arm_angles_diff[:, arm_index]) * arm_lengths[arm_index]
         positions.append(np.copy(current_pos))
-    plot_arms(np.array(positions))
+    if not evaluate_mode:
+        plot_arms(np.array(positions))
     return current_pos, np.array(positions)
 
 

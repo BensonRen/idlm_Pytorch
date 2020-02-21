@@ -26,7 +26,7 @@ def evaluate_from_model(model_dir):
     if (model_dir.startswith("models")):
         model_dir = model_dir[7:]
         print("after removing prefix models/, now model_dir is:", model_dir)
-    flags = flag_reader.load_flags(os.path.join("models", model_dir))
+    flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
     # Get the data
@@ -70,5 +70,6 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(useless_flags.eval_model)
+    # evaluate_from_model(useless_flags.eval_model)
+    evaluate_all()
 

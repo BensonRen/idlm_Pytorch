@@ -10,3 +10,4 @@ dataIn
 **slurm*
 */models
 */data
+**__pycache__**

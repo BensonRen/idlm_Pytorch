@@ -330,8 +330,6 @@ def read_data_robotic_arm(flags):
     data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Robotic_Arm/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
-    data_x = normalize_np(data_x)
-    data_y = normalize_np(data_y)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
