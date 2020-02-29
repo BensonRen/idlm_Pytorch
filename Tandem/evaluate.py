@@ -3,6 +3,8 @@ This file serves as a evaluation interface for the network
 """
 # Built in
 import os
+import sys
+sys.path.append('../utils/')
 # Torch
 
 # Own
@@ -24,6 +26,9 @@ def evaluate_from_model(model_dir):
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
+    if (model_dir.startswith("models")):
+        model_dir = model_dir[7:]
+        print("after removing prefix models/, now model_dir is:", model_dir)
     flags = load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
@@ -61,5 +66,6 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_from_model(useless_flags.eval_model)
+    evaluate_all()
 

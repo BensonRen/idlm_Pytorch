@@ -29,7 +29,7 @@ BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 128
 EVAL_STEP = 2
 TRAIN_STEP = 200
-VERB_STEP = 1
+BACKPROP_STEP = 200
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "sine_wave"
+EVAL_MODEL = "sine_wavereg0.0005trail_2_backward_complexity_swipe_layer150_num7"

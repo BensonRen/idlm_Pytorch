@@ -35,7 +35,7 @@ def read_flag():
                         help='The Batch size for back propagation')
     parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
-    parser.add_argument('--verb-step', default=VERB_STEP, type=int, help='# steps to print and check best performance')
+    parser.add_argument('--backprop-step', default=BACKPROP_STEP, type=int, help='# steps for back propagation')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
     parser.add_argument('--lr-decay-rate', default=LR_DECAY_RATE, type=float,
                         help='decay learn rate by multiplying this factor')

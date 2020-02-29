@@ -4,15 +4,15 @@ The parameter file storing the parameters for INN Model
 
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-# DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+DATA_SET = 'gaussian_mixture'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
 # Architectural Params
-DIM_Z = 3
-DIM_X = 3
-DIM_Y = 2
+DIM_Z = 2
+DIM_X = 2
+DIM_Y = 1
 COUPLE_LAYER_NUM = 8
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer

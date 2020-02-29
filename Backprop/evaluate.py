@@ -27,12 +27,14 @@ def evaluate_from_model(eval_flags):
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
+    if (model_dir.startswith("models")):
+        model_dir = model_dir[7:]
+        print("after removing prefix models/, now model_dir is:", model_dir)
     flags = load_flags(os.path.join("models", eval_flags.eval_model))
     flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.eval_batch_size = eval_flags.eval_batch_size
     flags.train_step = eval_flags.train_step
-    flags.verb_step = eval_flags.verb_step
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags)

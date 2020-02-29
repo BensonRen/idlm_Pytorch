@@ -262,8 +262,18 @@ class Network(object):
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
         print(target_spectra_expand.size())
         print(self.model.geometry_eval.size())
+        if torch.cuda.is_available():
+            self.model.geometry_eval = self.model.geometry_eval.cuda()
         # Start backprop
-        for i in range(self.flags.train_step):
+            try:
+                bs = self.flags.backprop_step         # for previous code that did not incorporate this
+            except AttributeError:
+                print("There is no attribute backprop_step, catched error and adding this now")
+                self.flags.backprop_step = 200
+        #print("shape of logit", np.shape(logit))
+        print("shape of target_spectra_expand", np.shape(target_spectra_expand))
+        print("shape of geometry_eval", np.shape(self.model.geometry_eval))
+        for i in range(self.flags.backprop_step):
             logit = self.model(self.model.geometry_eval)                      # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                           # Calculate the Gradient
@@ -283,6 +293,7 @@ class Network(object):
         best_estimate_index = np.argmin(loss.cpu().data.numpy())
         Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
         Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
+        print("the shape of Xpred_best is", np.shape(Xpred_best))
 
         return Xpred_best, Ypred_best
 
