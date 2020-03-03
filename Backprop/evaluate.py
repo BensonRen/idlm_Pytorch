@@ -33,6 +33,7 @@ def evaluate_from_model(model_dir):
     flags = load_flags(os.path.join("models", eval_flags.eval_model))
     flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
+    flags.lr = 0.05
     flags.eval_batch_size = eval_flags.eval_batch_size
     flags.train_step = eval_flags.train_step
 

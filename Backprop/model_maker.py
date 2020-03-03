@@ -46,23 +46,23 @@ class Backprop(nn.Module):
             in_channel = out_channel # Update the out_channel
         if len(self.convs):                     # Make sure there is not en empty one
             self.convs.append(nn.Conv1d(in_channel, out_channels=1, kernel_size=1, stride=1, padding=0))
-
+    """
     def init_geometry_eval(self, flags):
-        """
+        ""
         The initialization function during inference time
         :param flags: The flag carrying new informaiton about evaluation time
         :return: Randomly initialized geometry
-        """
+        ""
         # Initialize the geometry_eval field
         print("Eval Geometry Re-initialized")
         self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
-""" changed the network structure on 03.03.2020
+    # changed the network structure on 03.03.2020
     def randomize_geometry_eval(self):
         if torch.cuda.is_available():
             self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True).cuda()       # Randomize
         else:
             self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True)       # Randomize
-"""
+        """
     def forward(self, G):
         """
         The forward function which defines how the network is connected
