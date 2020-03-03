@@ -5,6 +5,7 @@ This is the helper functions for various functions
 6-8: Functions handling flags
 9-12: Simulator functions
 13: Meta-simulator function
+14: Normalize at eval mode (get back the original range)
 """
 import os
 import shutil
@@ -14,6 +15,8 @@ import pickle
 import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
 from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
+from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
+
 # 1
 def get_Xpred(path, name=None):
     """
@@ -204,7 +207,9 @@ def simulator_sine(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
-    return None
+    Xpred = normalize_eval(Xpred, x_max=1, x_min=-1)
+    Ypred = getYfromX(Xpred)
+    return Ypred
 
 
 # 11
@@ -248,3 +253,17 @@ def simulator(data_set, Xpred):
         return simulator_robotic(Xpred)
     else:
         sys.exit("In Simulator: Your data_set entry is not correct, check again!")
+
+
+# 14
+def normalize_eval(x, m_max, x_min):
+    """
+    Normalize the x into [-1, 1] range in each dimension [:, i]
+    :param x: np array to be normalized
+    :return: normalized np array
+    """
+    for i in range(len(x[0])):
+        x_range = (x_max - x_min ) /2.
+        x_avg = (x_max + x_min) / 2.
+        x[:, i] = (x[:, i] - x_avg) / x_range
+    return x

@@ -20,7 +20,7 @@ class Backprop(nn.Module):
         super(Backprop, self).__init__()
         self.bp = False                                                 # The flag that the model is backpropagating
         # Initialize the geometry_eval field
-        self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
+        # self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
         # Linear Layer and Batch_norm Layer definitions here
         self.linears = nn.ModuleList([])
         self.bn_linears = nn.ModuleList([])
@@ -56,10 +56,13 @@ class Backprop(nn.Module):
         # Initialize the geometry_eval field
         print("Eval Geometry Re-initialized")
         self.geometry_eval = torch.randn([flags.eval_batch_size, flags.linear[0]], requires_grad=True)
-
+""" changed the network structure on 03.03.2020
     def randomize_geometry_eval(self):
-        self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True)       # Randomize
-
+        if torch.cuda.is_available():
+            self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True).cuda()       # Randomize
+        else:
+            self.geometry_eval = torch.randn_like(self.geometry_eval, requires_grad=True)       # Randomize
+"""
     def forward(self, G):
         """
         The forward function which defines how the network is connected
@@ -67,8 +70,6 @@ class Backprop(nn.Module):
         :return: S: The 300 dimension spectra
         """
         out = G                                                         # initialize the out
-        if self.bp:                                               # If the evaluation mode
-            out = self.geometry_eval
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             if ind != len(self.linears) - 1:

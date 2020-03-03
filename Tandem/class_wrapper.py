@@ -11,6 +11,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 # from torchsummary import summary
 from torch.optim import lr_scheduler
+from utils.helper_functions import simulator
 
 # Libs
 import numpy as np
@@ -168,13 +169,14 @@ class Network(object):
         Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
+        #print("loading backward model, forward can be found in pre-train")
+        print("loading from model:", self.ckpt_dir)
         if torch.cuda.is_available():           # If load to a CUDA device
-            # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
             self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
             self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'))
         else:                                   # If this is a CPU machine
             self.model_f = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'),
-                                      map_location=torch.device('cpu'))
+                                     map_location=torch.device('cpu'))
             self.model_b = torch.load(os.path.join(self.ckpt_dir, 'best_model_backward.pt'),
                                       map_location=torch.device('cpu'))
 
@@ -187,6 +189,8 @@ class Network(object):
         """
         Forward Training part
         """
+        self.best_forward_validation_loss = self.best_validation_loss
+
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model_f.cuda()
@@ -243,15 +247,15 @@ class Network(object):
                           % (epoch, train_avg_loss, test_avg_loss ))
 
                     # Model improving, save the model down
-                    if test_avg_loss < self.best_validation_loss:
-                        self.best_validation_loss = test_avg_loss
+                    if test_avg_loss < self.best_forward_validation_loss:
+                        self.best_forward_validation_loss = test_avg_loss
                         self.save_f()
                         print("Saving the model down...")
 
-                        if self.best_validation_loss < self.flags.stop_threshold:
+                        if self.best_forward_validation_loss < self.flags.stop_threshold:
                             print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
-                                  (epoch, self.best_validation_loss))
-                            return None
+                                  (epoch, self.best_forward_validation_loss))
+                            break
 
                 # Learning rate decay upon plateau
                 self.lr_scheduler.step(train_avg_loss)
@@ -277,6 +281,8 @@ class Network(object):
         """
         Backward Training Part
         """
+        self.model_b.train()
+        self.model_f.eval()
         print("Now, start Backward Training")
         # Construct optimizer after the model moved to GPU
         self.optm_b = self.make_optimizer_b()
@@ -297,13 +303,18 @@ class Network(object):
                     G_out = self.model_b(spectra.unsqueeze(1))   # Get the geometry prediction
                 else:
                     G_out = self.model_b(spectra)  # Get the geometry prediction
-                print("G_out.size", G_out.size())
+                # print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
                 loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_b.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
                 # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
+            
+            # Testing code #
+            if epoch == self.flags.train_step - 1:
+                print('Training Ypred is', S_out.cpu().data.numpy())
+                print('Training Ytruth is', spectra.cpu().data.numpy())
 
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
@@ -336,24 +347,48 @@ class Network(object):
                 self.log.add_scalar('Loss/backward_test', test_avg_loss, epoch)
                 self.log.add_scalar('Loss/BDY_test', self.Boundary_loss.cpu().data.numpy(), epoch)
 
+                # Testing code #
+                print('Testing Ypred is', S_out.cpu().data.numpy())
+                print('Testing Ytruth is', spectra.cpu().data.numpy())
+                
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss))
 
+                
                 # Model improving, save the model down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = test_avg_loss
                     self.save_b()
-                    print("Saving the model down...")
+                    print("Saving the backward model down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
                               (epoch, self.best_validation_loss))
+                        self.log.close()
                         return None
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
 
+        ##################################################################
+        # Do the testing here to make sure the model did not play with me#
+        ##################################################################
+        #self.load()
+        self.model_f.eval()
+        self.model_b.eval()
+        for ind, (geometry, spectra) in enumerate(self.test_loader):
+            if cuda:
+                geometry = geometry.cuda()
+                spectra = spectra.cuda()
+            print("this is batch number of eval:", ind)
+            print("size of geometry", np.shape(geometry))
+            Xpred = self.model_b(spectra)
+            Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
+            Ypred_pred = self.model_f(Xpred)
+            print("Ytruth:", spectra.cpu().data.numpy())
+            print("Ypred:", Ypred)
+            print("Ypred_pred:", Ypred_pred.cpu().data.numpy())
 
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
@@ -363,8 +398,13 @@ class Network(object):
             self.model_f.cuda()
 
         # Set to evaluation mode for batch_norm layers
+        #self.model_f.train()
         self.model_f.eval()
+        #self.model_b.train()
         self.model_b.eval()
+
+
+        print('using data set simulator: ',self.flags.data_set)
 
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
@@ -381,10 +421,20 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 Xpred = self.model_b(spectra)
+                #Xpred = self.model_b(spectra).cpu().data.numpy()
+                #Ypred = simulator(self.flags.data_set, Xpred)
                 Ypred = self.model_f(Xpred)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fxp, Xpred.cpu().data.numpy(), fmt='%.3f')
+                #np.savetxt(fyp, Ypred, fmt='%.3f')
+                #np.savetxt(fxp, Xpred, fmt='%.3f')
+                print("Ypred shape", np.shape(Ypred))
+                print("Xpred shape", np.shape(Xpred))
+                print("Xtruth shape",np.shape(geometry))
+                #print("Ytruth:", spectra.cpu().data.numpy())
+                #print("Ypred:", Ypred.cpu().data.numpy())
+                #print("Ypred:", Ypred)
         return Ypred_file, Ytruth_file
 

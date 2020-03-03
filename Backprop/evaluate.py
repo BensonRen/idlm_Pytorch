@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def evaluate_from_model(eval_flags):
+def evaluate_from_model(model_dir):
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -68,5 +68,6 @@ if __name__ == '__main__':
 
     print(eval_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(eval_flags)
+    #evaluate_all()
+    evaluate_from_model(eval_flags.eval_model)
 

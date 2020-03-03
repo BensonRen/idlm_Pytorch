@@ -46,18 +46,18 @@ class Network(object):
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
 
-    def make_optimizer_eval(self):
+    def make_optimizer_eval(self, geometry_eval):
         """
         The function to make the optimizer during evaluation time.
         The difference between optm is that it does not have regularization and it only optmize the self.geometr_eval tensor
         :return: the optimizer_eval
         """
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam([self.model.geometry_eval], lr=self.flags.lr)
+            op = torch.optim.Adam([geometry_eval], lr=self.flags.lr)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop([self.model.geometry_eval], lr=self.flags.lr)
+            op = torch.optim.RMSprop([geometry_eval], lr=self.flags.lr)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD([self.model.geometry_eval], lr=self.flags.lr)
+            op = torch.optim.SGD([geometry_eval], lr=self.flags.lr)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -228,10 +228,6 @@ class Network(object):
         self.model.eval()
         self.model.bp = True
 
-        # Construct optimizer after the model moved to GPU
-        self.optm_eval = self.make_optimizer_eval()
-        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
-
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
@@ -247,29 +243,35 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                self.model.randomize_geometry_eval()
-                self.optm_eval = self.make_optimizer_eval()
-                self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
-                Xpred, Ypred = self.evaluate_one(spectra)
+                Xpred, Ypred = self.evaluate_one(spectra, geometry)
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred, fmt='%.3f')
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def evaluate_one(self, target_spectra):
+    def evaluate_one(self, target_spectra, geometry):
+        if torch.cuda.is_available():
+            geometry_eval = torch.randn([self.flags.eval_batch_size, flags.linear[0]], requires_grad=True, device='cuda')
+        else:
+            geometry_eval = torch.randn([self.flags.eval_batch_size, flags.linear[0]], requires_grad=True)
+        self.optm_eval = self.make_optimizer_eval(geometry_eval)
+        self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
         # expand the target spectra to eval batch size
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
         print(target_spectra_expand.size())
         print(self.model.geometry_eval.size())
-        if torch.cuda.is_available():
-            self.model.geometry_eval = self.model.geometry_eval.cuda()
         # Start backprop
-            try:
-                bs = self.flags.backprop_step         # for previous code that did not incorporate this
-            except AttributeError:
-                print("There is no attribute backprop_step, catched error and adding this now")
-                self.flags.backprop_step = 200
+        try:
+            bs = self.flags.backprop_step         # for previous code that did not incorporate this
+        except AttributeError:
+            print("There is no attribute backprop_step, catched error and adding this now")
+            self.flags.backprop_step = 50
+        try:
+            vs = self.flags.verb_step
+        except AttributeError:
+            print("There is no attribute verb_step, catched error and adding this now")
+            self.flags.verb_step = 5
         #print("shape of logit", np.shape(logit))
         print("shape of target_spectra_expand", np.shape(target_spectra_expand))
         print("shape of geometry_eval", np.shape(self.model.geometry_eval))
@@ -282,17 +284,19 @@ class Network(object):
             # check periodically to stop and print stuff
             if i % self.flags.verb_step == 0:
                 print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
+                print("printing the first 5 geometry_eval")
+                print(self.model.geometry_eval.cpu().data.numpy()[0:5,:])
                 if loss.data < self.flags.stop_threshold:                       # Check if stop
                     print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
                     break
 
-        # Learning rate decay upon plateau
-        self.lr_scheduler.step(loss.data)
+            # Learning rate decay upon plateau
+            self.lr_scheduler.step(loss.data)
 
         # Get the best performing one
         best_estimate_index = np.argmin(loss.cpu().data.numpy())
-        Xpred_best = self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :]
-        Ypred_best = logit.cpu().data.numpy()[best_estimate_index, :]
+        Xpred_best = np.reshape(self.model.geometry_eval.cpu().data.numpy()[best_estimate_index, :], [1, -1])
+        Ypred_best = np.reshape(logit.cpu().data.numpy()[best_estimate_index, :], [1, -1])
         print("the shape of Xpred_best is", np.shape(Xpred_best))
 
         return Xpred_best, Ypred_best

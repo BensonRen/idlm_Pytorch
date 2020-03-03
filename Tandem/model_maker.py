@@ -56,7 +56,7 @@ class Forward(nn.Module):
         out = G                                                         # initialize the out
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears_f, self.bn_linears_f)):
-            if ind != len(self.linears_b) - 1:
+            if ind != len(self.linears_f) - 1:
                 # print(out.size())
                 out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
             else:

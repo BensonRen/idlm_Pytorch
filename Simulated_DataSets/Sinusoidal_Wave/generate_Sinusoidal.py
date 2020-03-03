@@ -33,28 +33,23 @@ def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):
         ax.scatter(data_x[0, :], data_x[1, :], data_y[i, :], s=2)
         f.savefig('dimension_{}'.format(i+1) + save_dir)
 
+
+def getYfromX(x):
+    y_shape = [num_sample_dimension for i in range(x_dimension + 1)]
+    y_shape[0] = y_dimension
+    data_y = np.zeros(y_shape)
+    for i in range(len(x)):
+        data_y[0, :] += sin(f*np.pi*x[i, ::])
+        data_y[1, :] += cos(f*np.pi*x[i, ::])
+        # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
+    return data_y 
+
 if __name__ == '__main__':
     xx = []
     for i in range(x_dimension):
         xx.append(np.linspace(x_low, x_high, num=num_sample_dimension))         # append each linspace into the list
     x = np.array(np.meshgrid(*xx))                                # shape(x_dim, #point, #point, ...) of data points
-    # Initialize the y
-    y_shape = [num_sample_dimension for i in range(x_dimension + 1)]
-    y_shape[0] = y_dimension
-    data_y = np.zeros(y_shape)
-    print(len(x))
-    print('shape x', np.shape(x))
-    print('shape y', np.shape(data_y))
-    #data_x = np.concatenate([np.reshape(a, [-1, 1]) for a in x], axis=1)
-    #data_y = np.reshape(data_y, [-1, 2])
-    #print(data_x[:, 0])
-    #print(np.shape(data_x[:, 0]))
-    print("shape x[0,::]", np.shape(x[0, :]))
-    for i in range(len(x)):
-        data_y[0, :] += sin(f*np.pi*x[i, ::])
-        data_y[1, :] += cos(f*np.pi*x[i, ::])
-        # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
-        # data_y[1, :] -= x[i, ::]              # Easy case for validation of architecture
+    data_y = getYfromX(x)
     print('shape x', np.shape(x))
     print('shape y', np.shape(data_y))
     # Plot the data
