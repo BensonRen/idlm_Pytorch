@@ -6,7 +6,7 @@ import train
 import  numpy as np
 import flag_reader
 if __name__ == '__main__':
-    linear_unit_list = [50, 100, 200, 500]
+    linear_unit_list = [100, 200, 300, 400]
     #linear_unit_list = [1000, 500]
     #linear_unit_list = [1000, 500, 300, 150]
     # reg_scale_list = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]

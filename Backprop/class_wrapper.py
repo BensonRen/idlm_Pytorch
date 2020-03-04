@@ -85,9 +85,6 @@ class Network(object):
         if self.flags.data_set != 'gaussian_mixture':
             MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
             BDY_loss = 0
-            #if self.model.bp:
-            #    # Boundary loss of the geometry_eval to be less than 1
-            #    BDY_loss = torch.mean(torch.clamp(torch.abs(self.model.geometry_eval) - 1, min=0, max=inf))
             self.MSE_loss = MSE_loss
             self.Boundary_loss = BDY_loss
             return torch.add(MSE_loss, BDY_loss)
@@ -164,8 +161,6 @@ class Network(object):
                 self.optm.zero_grad()                               # Zero the gradient first
                 logit = self.model(geometry)                        # Get the output
                 loss = self.make_loss(logit, spectra)               # Get the loss tensor
-                # print("size of logit", logit.size())
-                # print("size of spectra", spectra.size())
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
@@ -219,15 +214,15 @@ class Network(object):
 
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
+        try:
+            bs = self.flags.backprop_step         # for previous code that did not incorporate this
+        except AttributeError:
+            print("There is no attribute backprop_step, catched error and adding this now")
+            self.flags.backprop_step = 500
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()
-
-        # Set to evaluation mode for batch_norm layers
-        #self.model.init_geometry_eval(self.flags)
         self.model.eval()
-        #self.model.bp = True
-
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(self.saved_model))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(self.saved_model))
@@ -244,7 +239,7 @@ class Network(object):
                     spectra = spectra.cuda()
                 # Initialize the geometry first
                 Xpred, Ypred, loss = self.evaluate_one(spectra)
-                self.plot_histogram(loss, ind)
+                # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred, fmt='%.3f')
@@ -252,35 +247,18 @@ class Network(object):
         return Ypred_file, Ytruth_file
 
     def evaluate_one(self, target_spectra):
-        geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
-        print(geometry_eval)
-        print(target_spectra)
         if torch.cuda.is_available():
-            print("creating geometry_eval on cuda")
-            #geometry_eval = geometry_eval.cuda()
-            #geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
+            geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
         else:
-            print("creating geometry_eval on cpu")
-            #geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True)
+            geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True)
         self.optm_eval = self.make_optimizer_eval(geometry_eval)
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
         # expand the target spectra to eval batch size
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
-        print(target_spectra_expand.size())
         # Start backprop
-        try:
-            bs = self.flags.backprop_step         # for previous code that did not incorporate this
-        except AttributeError:
-            print("There is no attribute backprop_step, catched error and adding this now")
-            self.flags.backprop_step = 50
-        try:
-            vs = self.flags.verb_step
-        except AttributeError:
-            print("There is no attribute verb_step, catched error and adding this now")
-            self.flags.verb_step = 5
         #print("shape of logit", np.shape(logit))
-        print("shape of target_spectra_expand", np.shape(target_spectra_expand))
-        print("shape of geometry_eval", np.shape(geometry_eval))
+        #print("shape of target_spectra_expand", np.shape(target_spectra_expand))
+        #print("shape of geometry_eval", np.shape(geometry_eval))
         for i in range(self.flags.backprop_step):
             logit = self.model(geometry_eval)                      # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
@@ -288,7 +266,7 @@ class Network(object):
             self.optm_eval.step()                                       # Move one step the optimizer
 
             # check periodically to stop and print stuff
-            if i % self.flags.verb_step == 0:
+            if i % self.flags.eval_step == 0:
                 print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
                 #print("printing the first 5 geometry_eval")
                 #print(self.model.geometry_eval.cpu().data.numpy()[0:5,:])
@@ -301,12 +279,12 @@ class Network(object):
 
         # Get the best performing one
         MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
-        print("shape of MSE list", np.shape(MSE_list))
+        #print("shape of MSE list", np.shape(MSE_list))
         best_estimate_index = np.argmin(MSE_list)
-        print("best_estimate_index = ", best_estimate_index, " best error is ", MSE_list[best_estimate_index])
+        #print("best_estimate_index = ", best_estimate_index, " best error is ", MSE_list[best_estimate_index])
         Xpred_best = np.reshape(np.copy(geometry_eval.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
         Ypred_best = np.reshape(np.copy(logit.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
-        print("the shape of Xpred_best is", np.shape(Xpred_best))
+        #print("the shape of Xpred_best is", np.shape(Xpred_best))
 
         return Xpred_best, Ypred_best, MSE_list
     
