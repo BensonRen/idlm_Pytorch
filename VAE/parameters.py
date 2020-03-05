@@ -5,13 +5,13 @@ The parameter file storing the parameters for VAE Model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-DATA_SET = 'robotic_arm'
+# DATA_SET = 'robotic_arm'
 
 # Architectural Params
-DIM_Z = 2
-DIM_X = 4
+DIM_Z = 1
+DIM_X = 3
 DIM_Y = 2
 DIM_SPEC = None
 LINEAR_D = [DIM_Y + DIM_Z, 300, 300, 300,    DIM_X]           # Linear units for Decoder
@@ -28,7 +28,7 @@ REG_SCALE = 5e-3
 BATCH_SIZE = 256
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
-TRAIN_STEP = 2000
+TRAIN_STEP = 300
 VERB_STEP = 1
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
@@ -49,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "gaussian_mixturekl_coeff0.11lr0.005reg0.005"
+EVAL_MODEL = "20200305_110939"

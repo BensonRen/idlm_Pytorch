@@ -52,6 +52,7 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
         plt.xlabel('Mean Squared Error')
         plt.ylabel('cnt')
         plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
+        eval_model_str = flags.eval_model.replace('/','_')
         plt.savefig(os.path.join(os.path.abspath(''), 'data',
-                             '{}.png'.format(flags.eval_model)))
+                             '{}.png'.format(eval_model_str)))
         print('(Avg MSE={:.4e})'.format(np.mean(mse)))

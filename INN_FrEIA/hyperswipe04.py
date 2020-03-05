@@ -51,7 +51,7 @@ if __name__ == '__main__':
     ###########################
 
     for dim_tot in range(5, 10):
-        for couple_layer in range(5,10):
+        for couple_layer in range(5,8):
             flags = flag_reader.read_flag()  	            # setting the base case
             flags.dim_tot = dim_tot
             flags.couple_layer_num = couple_layer

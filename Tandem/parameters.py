@@ -4,9 +4,9 @@ Hyper-parameters of the Tandem model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-DATA_SET = 'robotic_arm'
+# DATA_SET = 'robotic_arm'
 
 # Model Architecture parameters
 #LOAD_FORWARD_CKPT_DIR = 'pre_trained_forward/'
@@ -24,7 +24,7 @@ LOAD_FORWARD_CKPT_DIR = None
 # CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [4, 300, 300, 2]
+LINEAR_F = [3, 150, 150, 150, 150, 150, 2]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
@@ -50,12 +50,12 @@ STOP_THRESHOLD = 1e-5
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = "sine_wave"
+EVAL_MODEL = "sine_wave" 
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
-MODEL_NAME = None
+MODEL_NAME = 'sine_wave'
 
 # DATA_DIR = '../'
 DATA_DIR = '../'

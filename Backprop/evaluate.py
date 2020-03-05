@@ -43,6 +43,9 @@ def evaluate_from_model(model_dir):
 
     # Make Network
     ntwk = Network(Backprop, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    print("number of trainable parameters is :")
+    pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
+    print(pytorch_total_params)
     # Evaluation process
     print("Start eval now:")
     pred_file, truth_file = ntwk.evaluate()

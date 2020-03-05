@@ -207,8 +207,12 @@ def simulator_sine(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
-    Xpred = normalize_eval(Xpred, x_max=1, x_min=-1)
+    # First step is to un-normalize the data into original range
+    Xpred = unnormalize_eval(Xpred, x_max=1, x_min=-1)
+    # Then feed through the original simulator
     Ypred = getYfromX(Xpred)
+    # Then normalize it as the range of the original data
+    Ypred = normalize_eval(Ypred, x_max=3, x_min=-3)
     return Ypred
 
 
@@ -256,7 +260,7 @@ def simulator(data_set, Xpred):
 
 
 # 14
-def normalize_eval(x, m_max, x_min):
+def normalize_eval(x, x_max, x_min):
     """
     Normalize the x into [-1, 1] range in each dimension [:, i]
     :param x: np array to be normalized
@@ -266,4 +270,18 @@ def normalize_eval(x, m_max, x_min):
         x_range = (x_max - x_min ) /2.
         x_avg = (x_max + x_min) / 2.
         x[:, i] = (x[:, i] - x_avg) / x_range
+    return x
+
+
+# 15
+def unnormalize_eval(x, x_max, x_min):
+    """
+    UnNormalize the x into [-1, 1] range in each dimension [:, i]
+    :param x: np array to be normalized
+    :return: normalized np array
+    """
+    for i in range(len(x[0])):
+        x_range = (x_max - x_min ) /2.
+        x_avg = (x_max + x_min) / 2.
+        x[:, i] = x[:, i] * x_range + x_avg
     return x

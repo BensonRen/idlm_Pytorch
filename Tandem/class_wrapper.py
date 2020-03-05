@@ -370,7 +370,7 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
-
+        """
         ##################################################################
         # Do the testing here to make sure the model did not play with me#
         ##################################################################
@@ -389,7 +389,7 @@ class Network(object):
             print("Ytruth:", spectra.cpu().data.numpy())
             print("Ypred:", Ypred)
             print("Ypred_pred:", Ypred_pred.cpu().data.numpy())
-
+        """
     def evaluate(self, save_dir='data/'):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
@@ -398,8 +398,8 @@ class Network(object):
             self.model_f.cuda()
 
         # Set to evaluation mode for batch_norm layers
-        #self.model_f.train()
-        self.model_f.eval()
+        self.model_f.train()
+        #self.model_f.eval()
         #self.model_b.train()
         self.model_b.eval()
 

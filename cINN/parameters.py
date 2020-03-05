@@ -57,4 +57,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "20200216_172257"
+EVAL_MODEL = "sine_wavecouple_layer_num8trail_0" 

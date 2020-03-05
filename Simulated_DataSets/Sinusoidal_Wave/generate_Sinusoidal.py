@@ -35,12 +35,17 @@ def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):
 
 
 def getYfromX(x):
-    y_shape = [num_sample_dimension for i in range(x_dimension + 1)]
-    y_shape[0] = y_dimension
+    #y_shape = [num_sample_dimension for i in range(x_dimension + 1)]
+    #y_shape[0] = y_dimension
+    #data_y = np.zeros(y_shape)
+    y_shape = np.array(np.shape(x))
+    y_shape[-1] = 2             # y_dimension hard-coded
     data_y = np.zeros(y_shape)
-    for i in range(len(x)):
-        data_y[0, :] += sin(f*np.pi*x[i, ::])
-        data_y[1, :] += cos(f*np.pi*x[i, ::])
+    print("shape of data_y is", np.shape(data_y))
+    print("shape of input x is", np.shape(x))
+    for i in range(3):
+        data_y[:, 0] += sin(f*np.pi*x[:, i])
+        data_y[:, 1] += cos(f*np.pi*x[:, i])
         # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
     return data_y 
 
@@ -49,14 +54,11 @@ if __name__ == '__main__':
     for i in range(x_dimension):
         xx.append(np.linspace(x_low, x_high, num=num_sample_dimension))         # append each linspace into the list
     x = np.array(np.meshgrid(*xx))                                # shape(x_dim, #point, #point, ...) of data points
-    data_y = getYfromX(x)
-    print('shape x', np.shape(x))
-    print('shape y', np.shape(data_y))
-    # Plot the data
-    plotData(x, data_y)
     # Reshape the data into one long list
     data_x = np.concatenate([np.reshape(np.ravel(x[i, :]), [-1, 1] ) for i in range(x_dimension)], axis=1)
-    data_y = np.reshape(np.ravel(data_y), [-1, y_dimension])
+    print('shape x', np.shape(data_x))
+    data_y = getYfromX(data_x)
+    print('shape y', np.shape(data_y))
     # Save the data into txt files
     np.savetxt('data_x.csv', data_x, delimiter=',')
     np.savetxt('data_y.csv', data_y, delimiter=',')
