@@ -173,7 +173,7 @@ class Network(object):
             for j, (x, y) in enumerate(self.train_loader):
                 batch_size = len(x)
                 if self.flags.data_set == 'gaussian_mixture':
-                    y = y.unsqueeze(1)
+                    y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
 
                 ######################
                 # Preparing the data #
@@ -220,7 +220,7 @@ class Network(object):
                 for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
                     batch_size = len(x)
                     if self.flags.data_set == 'gaussian_mixture':
-                        y = y.unsqueeze(1)
+                        y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
 
                     ######################
                     # Preparing the data #
@@ -289,14 +289,18 @@ class Network(object):
 
                 # Initialize the x first
                 if self.flags.data_set == 'gaussian_mixture':
-                    y = y.unsqueeze(1)
+                    y_prev = np.copy(y.data.numpy())
+                    y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                 if cuda:
                     x = x.cuda()
                     y = y.cuda()
                 Xpred = self.model(z, y, rev=True).cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
+                if self.flags.data_set == 'gaussian_mixture':
+                    np.savetxt(fyt, y_prev, fmt='%.3f')
+                else:
+                    np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyp, Ypred, fmt='%.3f')
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file

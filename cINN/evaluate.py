@@ -123,5 +123,6 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_from_model(useless_flags.eval_model)
+    evaluate_all()
 

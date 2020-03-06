@@ -2,9 +2,9 @@
 Hyper-parameters of the Tandem model
 """
 # Define which data set you are using
-# DATA_SET = 'meta_material'
+DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
@@ -13,26 +13,26 @@ DATA_SET = 'sine_wave'
 LOAD_FORWARD_CKPT_DIR = None
 
 #LOAD_FORWARD_CKPT_DIR = None
-# LINEAR_F = [8, 150, 150, 150, 150, 150]
-# CONV_OUT_CHANNEL_F = [4, 4, 4]
-# CONV_KERNEL_SIZE_F = [8, 5, 5]
-# CONV_STRIDE_F = [2, 1, 1]
+LINEAR_F = [8, 1000, 1000, 1000, 1000, 150]
+CONV_OUT_CHANNEL_F = [4, 4, 4]
+CONV_KERNEL_SIZE_F = [8, 5, 5]
+CONV_STRIDE_F = [2, 1, 1]
 
-# LINEAR_B = [150, 150, 150, 150, 150,  8]
-# CONV_OUT_CHANNEL_B = [4, 4, 4]
-# CONV_KERNEL_SIZE_B = [5, 5, 8]
-# CONV_STRIDE_B = [1, 1, 2]
+LINEAR_B = [150, 500, 500, 500, 500,  8]
+CONV_OUT_CHANNEL_B = [4, 4, 4]
+CONV_KERNEL_SIZE_B = [5, 5, 8]
+CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [3, 150, 150, 150, 150, 150, 2]
-CONV_OUT_CHANNEL_F = []
-CONV_KERNEL_SIZE_F = []
-CONV_STRIDE_F = []
+#LINEAR_F = [3, 150, 150, 150, 150, 150, 2]
+#CONV_OUT_CHANNEL_F = []
+#CONV_KERNEL_SIZE_F = []
+#CONV_STRIDE_F = []
 
-LINEAR_B = [2, 150, 150, 150, 150, 150, 150, 3]
-CONV_OUT_CHANNEL_B = []
-CONV_KERNEL_SIZE_B = []
-CONV_STRIDE_B = []
+#LINEAR_B = [2, 150, 150, 150, 150, 150, 150, 3]
+#CONV_OUT_CHANNEL_B = []
+#CONV_KERNEL_SIZE_B = []
+#CONV_STRIDE_B = []
 
 # Optimizer parameters
 OPTIM = "Adam"
@@ -50,16 +50,16 @@ STOP_THRESHOLD = 1e-5
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = "sine_wave" 
+EVAL_MODEL = "meta_material" 
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
-MODEL_NAME = 'sine_wave'
+MODEL_NAME = None
 
 # DATA_DIR = '../'
-DATA_DIR = '../'
-# DATA_DIR = '/work/sr365/'
+# DATA_DIR = '../'
+DATA_DIR = '/work/sr365/'
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
 GEOBOUNDARY = [30, 52, 42, 52]
 NORMALIZE_INPUT = True

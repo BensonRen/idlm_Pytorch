@@ -19,23 +19,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def evaluate_from_model(model_dir):
+def predict_from_model(pre_trained_model, Xpred_file):
     """
-    Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
+    Predicting interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
     :return: None
     """
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
-    if (model_dir.startswith("models")):
-        model_dir = model_dir[7:]
-        print("after removing prefix models/, now model_dir is:", model_dir)
-    flags = load_flags(os.path.join("models", model_dir))
+    flags = load_flags(pre_trained_model)                       # Get the pre-trained model
     flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
-    flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
-    flags.lr = 0.05
-    flags.eval_batch_size = eval_flags.eval_batch_size
-    flags.train_step = eval_flags.train_step
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags)
@@ -48,14 +41,14 @@ def evaluate_from_model(model_dir):
     print(pytorch_total_params)
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.evaluate()
+    pred_file, truth_file = ntwk.predict(Xpred_file)
 
     # Plot the MSE distribution
     plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
 
 
-def evaluate_all(models_dir="models"):
+def predict_all(models_dir="data"):
     """
     This function evaluate all the models in the models/. directory
     :return: None

@@ -32,9 +32,6 @@ def evaluate_from_model(model_dir):
     flags = load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
-    # For meta materials only
-    flags.data_set = "meta_material"
-
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags)
 
@@ -43,7 +40,8 @@ def evaluate_from_model(model_dir):
     # Make Network
     ntwk = Network(Forward, Backward, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
     print("number of trainable parameters is :")
-    pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
+    pytorch_total_params = sum(p.numel() for p in ntwk.model_f.parameters() if p.requires_grad) +\
+                           sum(p.numel() for p in ntwk.model_b.parameters() if p.requires_grad)
     print(pytorch_total_params)
 
     # Evaluation process
@@ -72,6 +70,6 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/meta_material")
+    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_all("")
 

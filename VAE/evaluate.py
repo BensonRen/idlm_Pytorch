@@ -44,7 +44,8 @@ def evaluate_from_model(model_dir):
     pred_file, truth_file = ntwk.evaluate()
 
     # Plot the MSE distribution
-    plotMSELossDistrib(pred_file, truth_file, flags)
+    if flags.data_set != 'meta_material':
+        plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
     
     # If gaussian, plot the scatter plot
@@ -74,5 +75,5 @@ if __name__ == '__main__':
     print(useless_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/robotic_arm")
+    evaluate_all("models/meta_material")
 
