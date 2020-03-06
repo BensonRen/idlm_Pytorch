@@ -18,6 +18,7 @@ from torch.optim import lr_scheduler
 import numpy as np
 from math import inf
 import matplotlib.pyplot as plt
+import pandas as pd
 # Own module
 
 
@@ -287,7 +288,31 @@ class Network(object):
         #print("the shape of Xpred_best is", np.shape(Xpred_best))
 
         return Xpred_best, Ypred_best, MSE_list
-    
+
+
+    def predict(self, Xpred_file):
+        """
+        The prediction function, takes Xpred file and write Ypred file using trained model
+        :param Xpred_file: Xpred file by (usually VAE) for meta-material
+        :return: pred_file, truth_file to compare
+        """
+        self.load()         # load the model
+        Ypred_file = Xpred_file.replace('Xpred', 'Ypred')
+        Xpred = pd.read_csv(Xpred_file, header=None, delimiter=' ')     # Read the input
+        Xpred_tensor = torch.from_numpy(Xpred)
+
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model.cuda()
+            Xpred_tensor = Xpred_tensor.cuda()
+        with open(Ypred_file, 'a') as fyp:
+            Ypred = self.model(Xpred_tensor)
+            np.savetxt(fyp, Ypred.cpu().data.numpy(), fmt='%.3f')
+
+        Ytruth_file = Ypred_file.replace('Ypred', 'Ytruth')
+        return Ypred_file, Ytruth_file
+
+
 
     def plot_histogram(self, loss, ind):
         """

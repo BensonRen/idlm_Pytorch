@@ -1,5 +1,5 @@
 """
-This file serves as a evaluation interface for the network
+This file serves as a prediction interface for the network
 """
 # Built in
 import os
@@ -28,9 +28,9 @@ def predict_from_model(pre_trained_model, Xpred_file):
     # Retrieve the flag object
     print("Retrieving flag object for parameters")
     flags = load_flags(pre_trained_model)                       # Get the pre-trained model
-    flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
+    flags.eval_model = eval_flags.pre_trained_model                    # Reset the eval mode
 
-    # Get the data
+    # Get the data, this part is useless in prediction but just for simplicity
     train_loader, test_loader = data_reader.read_data(flags)
     print("Making network now")
 
