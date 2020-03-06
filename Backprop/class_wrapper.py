@@ -299,7 +299,8 @@ class Network(object):
         self.load()         # load the model
         Ypred_file = Xpred_file.replace('Xpred', 'Ypred')
         Xpred = pd.read_csv(Xpred_file, header=None, delimiter=' ')     # Read the input
-        Xpred_tensor = torch.from_numpy(Xpred)
+        Xpred.info()
+        Xpred_tensor = torch.from_numpy(Xpred.values).to(torch.float)
 
         cuda = True if torch.cuda.is_available() else False
         if cuda:

@@ -26,9 +26,14 @@ def predict_from_model(pre_trained_model, Xpred_file):
     :return: None
     """
     # Retrieve the flag object
+    print("This is doing the prediction for file", Xpred_file)
     print("Retrieving flag object for parameters")
+    if (pre_trained_model.startswith("models")):
+        eval_model = pre_trained_model[7:]
+        print("after removing prefix models/, now model_dir is:", eval_model)
+    
     flags = load_flags(pre_trained_model)                       # Get the pre-trained model
-    flags.eval_model = eval_flags.pre_trained_model                    # Reset the eval mode
+    flags.eval_model = eval_model                    # Reset the eval mode
 
     # Get the data, this part is useless in prediction but just for simplicity
     train_loader, test_loader = data_reader.read_data(flags)
@@ -44,27 +49,22 @@ def predict_from_model(pre_trained_model, Xpred_file):
     pred_file, truth_file = ntwk.predict(Xpred_file)
 
     # Plot the MSE distribution
+    flags.eval_model = pred_file # To make the plot name different
     plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
 
 
 def predict_all(models_dir="data"):
     """
-    This function evaluate all the models in the models/. directory
+    This function predict all the models in the models/. directory
     :return: None
     """
     for file in os.listdir(models_dir):
-        if os.path.isfile(os.path.join(models_dir, file, 'flags.obj')):
-            evaluate_from_model(os.path.join(models_dir, file))
+        if 'Xpred_meta_material' in file:                     # Only meta material has this need currently
+            predict_from_model("models/meta_materialreg0.0005trail_2_complexity_swipe_layer1000_num6", 
+            os.path.join(models_dir,file))
     return None
 
 
 if __name__ == '__main__':
-    # Read the flag, however only the flags.eval_model is used and others are not used
-    eval_flags = flag_reader.read_flag()
-
-    print(eval_flags.eval_model)
-    # Call the evaluate function from model
-    #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model)
-
+    predict_all('../VAE/data')
