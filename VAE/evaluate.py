@@ -75,5 +75,5 @@ if __name__ == '__main__':
     print(useless_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/meta_material")
+    evaluate_all("models/gaussian/kl_swipe")
 

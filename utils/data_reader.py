@@ -163,7 +163,7 @@ def gridShape(input_dir, output_dir, shapeType, r_bounds, h_bounds):
 
 
 def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
-                 data_dir=os.path.abspath(''), rand_seed=1234, normalize_input = True, test_ratio = 0.2 ):
+                 data_dir=os.path.abspath(''), rand_seed=1234, normalize_input = True, test_ratio = 0.002 ):
     """
       :param input_size: input size of the arrays
       :param output_size: output size of the arrays

@@ -76,5 +76,5 @@ if __name__ == '__main__':
     # Call the evaluate function from model
     # evaluate_from_model(useless_flags.eval_model)
 
-    evaluate_all()
+    evaluate_all("models/gaussian")
 

@@ -49,7 +49,7 @@ def predict_from_model(pre_trained_model, Xpred_file):
     pred_file, truth_file = ntwk.predict(Xpred_file)
 
     # Plot the MSE distribution
-    flags.eval_model = pred_file # To make the plot name different
+    flags.eval_model = pred_file.replace('.','_') # To make the plot name different
     plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
 
