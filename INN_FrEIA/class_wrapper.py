@@ -411,6 +411,8 @@ class Network(object):
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (x, y) in enumerate(self.test_loader):
+                if self.flags.data_set == 'gaussian_mixture':
+                    y = y.unsqueeze(1)
                 if cuda:
                     x = x.cuda()  # Put data onto GPU
                     y = y.cuda()  # Put data onto GPU
@@ -420,14 +422,11 @@ class Network(object):
                                                                     dim_tot - dim_y - dim_z, device=device)
                 # Create a noisy z vector with noise level same as y
                 z = torch.randn(batch_size, dim_z, device=device)
-
+                print("shape of z:", np.shape(z))
+                print("shape of pad_yz:", np.shape(pad_yz))
+                print("shape of y:", np.shape(y))
                 y_cat = torch.cat((z, pad_yz, y), dim=1)
                 # Initialize the x first
-                if self.flags.data_set == 'gaussian_mixture':
-                    y = y.unsqueeze(1)
-                if cuda:
-                    x = x.cuda()
-                    y = y.cuda()
                 Xpred = self.model(y_cat, rev=True)
                 Xpred = Xpred[:, :dim_x].cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)

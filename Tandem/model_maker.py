@@ -110,9 +110,9 @@ class Backward(nn.Module):
         :return: G: The 8-d geometry
         """
         out = S
-        if (len(S[0]) == 1) and (self.flags.linear_b[0] != 1):
-            # This is when gaussian_mixture data comes in
-            out = self.one_hot(out, self.flags.linear_b[0])
+        #if (len(S[0]) == 1) and (self.flags.linear_b[0] != 1):
+        #    # This is when gaussian_mixture data comes in
+        #    out = self.one_hot(out, self.flags.linear_b[0])
         if self.convs_b:
             out = out.unsqueeze(1)
             # For the Conv Layers
