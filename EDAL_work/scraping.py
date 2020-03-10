@@ -4,16 +4,19 @@ from tqdm import tqdm
 
 
 energy_terms = [
+    'inverse problem',
+    'inverse problems',
+    'inverse design',
     #'Transmission line',
     #'Electricity line',
     #'Power line',
     #'Energy infrastructure',
     #'Electric infrastructure',
-    'solar',
-    'wind',
-    'Power',
-    'Energy',
-    'electrification'
+    #'solar',
+    #'wind',
+    #'Power',
+    #'Energy',
+    #'electrification'
     #'Generator',
     #'Coal',
     #'Oil',
@@ -23,21 +26,21 @@ energy_terms = [
 ]
 
 ml_terms = [
-    'machine learning',
+    #'machine learning',
     'deep learning',
-    'support vector machine',
-    'random forest',
-    'regression tree',
+    #'support vector machine',
+    #'random forest',
+    #'regression tree',
     'neural network'
 ]
 
 rs_terms = [
-    'remote sensing',
-    'satellite',
-    'aerial',
-    'UAV',
-    'unmanned aerial vehicle',
-    'hyperspectral'
+   # 'remote sensing',
+   # 'satellite',
+   # 'aerial',
+   # 'UAV',
+   # 'unmanned aerial vehicle',
+   # 'hyperspectral'
 ]
 
 
@@ -50,23 +53,23 @@ for e in tqdm(energy_terms):
     print()
     results = []
     for m in ml_terms:
-        for r in rs_terms:
-            kw = ';'.join([quote(e), quote(m), quote(r)])
-            search_query = scholarly.search_pubs_query(kw)
-            i = 0
-            while i < 100:
-                try:
-                    res = next(search_query)
-                    i += 1
-                    if hasattr(res, 'citedby'):
-                        res.bib['citedby'] = res.citedby
-                    else:
-                        res.bib['citedby'] = 'NA'
-                    res.bib['kw1'] = e
-                    res.bib['kw2'] = m
-                    res.bib['kw3'] = r
-                    results.append(res.bib)
-                except StopIteration:
-                    break
+        #for r in rs_terms:
+        kw = ';'.join([quote(e), quote(m)])
+        search_query = scholarly.search_pubs_query(kw)
+        i = 0
+        while i < 100:
+            try:
+                res = next(search_query)
+                i += 1
+                if hasattr(res, 'citedby'):
+                    res.bib['citedby'] = res.citedby
+                else:
+                    res.bib['citedby'] = 'NA'
+                res.bib['kw1'] = e
+                res.bib['kw2'] = m
+                #res.bib['kw3'] = r
+                results.append(res.bib)
+            except StopIteration:
+                break
     results_pd = pd.DataFrame.from_dict(results)
     results_pd.to_csv(f'./top100results{e}.csv', index=False)
