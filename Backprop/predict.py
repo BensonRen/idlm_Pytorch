@@ -67,4 +67,4 @@ def predict_all(models_dir="data"):
 
 
 if __name__ == '__main__':
-    predict_all('../VAE/data')
+    predict_all('../cINN/data')

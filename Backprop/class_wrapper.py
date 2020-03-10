@@ -83,15 +83,15 @@ class Network(object):
         """
         if logit is None:
             return None
-        if self.flags.data_set != 'gaussian_mixture':
-            MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-            BDY_loss = 0
-            self.MSE_loss = MSE_loss
-            self.Boundary_loss = BDY_loss
-            return torch.add(MSE_loss, BDY_loss)
-        else:                           # This is cross entropy loss where data is categorical
-            criterion = nn.CrossEntropyLoss()
-            return criterion(logit, labels.long())
+        #if self.flags.data_set != 'gaussian_mixture':
+        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+        BDY_loss = 0
+        self.MSE_loss = MSE_loss
+        self.Boundary_loss = BDY_loss
+        return torch.add(MSE_loss, BDY_loss)
+        #else:                           # This is cross entropy loss where data is categorical
+        #    criterion = nn.CrossEntropyLoss()
+        #    return criterion(logit, labels.long())
 
     def make_optimizer(self):
         """
@@ -156,6 +156,8 @@ class Network(object):
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
+                if self.flags.data_set == 'gaussian_mixture':
+                    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
@@ -181,6 +183,8 @@ class Network(object):
                 print("Doing Evaluation on the model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                    if self.flags.data_set == 'gaussian_mixture':
+                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
@@ -236,6 +240,8 @@ class Network(object):
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
+                if self.flags.data_set == 'gaussian_mixture':
+                    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                 if cuda:
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()

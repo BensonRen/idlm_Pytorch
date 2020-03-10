@@ -306,3 +306,6 @@ class Network(object):
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred, fmt='%.3f')
         return Ypred_file, Ytruth_file
+
+    def evaluate_multiple_time(self, save_dir='multi_eval'):
+        self.load()

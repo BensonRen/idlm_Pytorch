@@ -29,7 +29,7 @@ CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
 
-LINEAR_B = [4, 400, 400, 400, 400, 400, 400, 2]
+LINEAR_B = [4, 1000, 1000, 1000, 1000, 400, 100, 2]
 CONV_OUT_CHANNEL_B = []
 CONV_KERNEL_SIZE_B = []
 CONV_STRIDE_B = []
@@ -40,22 +40,22 @@ REG_SCALE = 1e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 1024
 EVAL_STEP = 20
-TRAIN_STEP = 500
+TRAIN_STEP = 700
 VERB_STEP = 10
-LEARN_RATE = 1e-3
+LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
-LR_DECAY_RATE = 0.5
+LR_DECAY_RATE = 0.9
 STOP_THRESHOLD = 1e-5
 
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = "gaussian model_0309"
+EVAL_MODEL = "gaussian_model_0309"
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
-MODEL_NAME = 'gaussian model_0309'
+MODEL_NAME = 'gaussian_model_0309'
 
 DATA_DIR = '../'
 #DATA_DIR = '/work/sr365/'

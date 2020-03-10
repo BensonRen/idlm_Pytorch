@@ -96,22 +96,23 @@ class Network(object):
         """
         if logit is None:
             return None
-        BDY_loss = torch.zeros(size=[])
+        BDY_loss = torch.zeros(size=[], requires_grad=False)
+        if torch.cuda.is_available:
+            BDY_loss = BDY_loss.cuda()
+        # Boundary loss of the geometry_eval to be less than 1
+        if G is not None:
+            relu = torch.nn.ReLU()
+            BDY_loss_all = relu(torch.abs(G) - 1)
+            BDY_loss = torch.mean(BDY_loss_all)
         self.Boundary_loss = BDY_loss
-        if self.flags.data_set != 'gaussian_mixture':
-            MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
-
-            # Boundary loss of the geometry_eval to be less than 1
-            if G is not None:
-                relu = torch.nn.ReLU()
-                BDY_loss_all = relu(torch.abs(G) - 1)
-                BDY_loss = torch.mean(BDY_loss_all)
-            self.MSE_loss = MSE_loss
-            self.Boundary_loss = BDY_loss
-            return torch.add(MSE_loss, BDY_loss)
-        else:  # This is cross entropy loss where data is categorical
-            criterion = nn.CrossEntropyLoss()
-            return criterion(logit, labels.long())
+        #if self.flags.data_set != 'gaussian_mixture':
+        MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
+        self.MSE_loss = MSE_loss
+        self.Boundary_loss = BDY_loss
+        return torch.add(MSE_loss, BDY_loss)
+        #else:  # This is cross entropy loss where data is categorical
+        #    criterion = nn.CrossEntropyLoss()
+        #    return torch.add(BDY_loss, criterion(logit, labels.long()))
 
     def make_optimizer_f(self):
         """
@@ -207,6 +208,8 @@ class Network(object):
                 # boundary_loss = 0                 # Unnecessary during training since we provide geometries
                 self.model_f.train()
                 for j, (geometry, spectra) in enumerate(self.train_loader):
+                    if self.flags.data_set == 'gaussian_mixture':
+                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                     if cuda:
                         geometry = geometry.cuda()                          # Put data onto GPU
                         spectra = spectra.cuda()                            # Put data onto GPU
@@ -232,6 +235,8 @@ class Network(object):
                     print("Doing Evaluation on the forward model now")
                     test_loss = 0
                     for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                        if self.flags.data_set == 'gaussian_mixture':
+                            spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                         if cuda:
                             geometry = geometry.cuda()
                             spectra = spectra.cuda()
@@ -300,13 +305,8 @@ class Network(object):
                     spectra = spectra.cuda()    # Put data onto GPU
                 self.optm_b.zero_grad()         # Zero the gradient first
                 if self.flags.data_set == 'gaussian_mixture':
-                    spectra_onehot = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                    #spectra = spectra.unsqueeze(1)
-                    print("shape of spectra",np.shape(spectra))
-                    print("shape of spectra_onehot",np.shape(spectra_onehot))
-                    G_out = self.model_b(spectra_onehot)  # Get the geometry prediction
-                else:
-                    G_out = self.model_b(spectra)  # Get the geometry prediction
+                    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                G_out = self.model_b(spectra)  # Get the geometry prediction
                 # print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
                 loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
@@ -339,11 +339,8 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     if self.flags.data_set == 'gaussian_mixture':
-                        spectra_onehot = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                        #spectra = spectra.unsqueeze(1)
-                        G_out = self.model_b(spectra_onehot)  # Get the geometry prediction
-                    else:
-                        G_out = self.model_b(spectra)  # Get the geometry prediction
+                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                    G_out = self.model_b(spectra)  # Get the geometry prediction
                     S_out = self.model_f(G_out)  # Get the spectra prediction
                     loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
                     test_loss += loss  # Aggregate the loss
@@ -418,10 +415,12 @@ class Network(object):
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+        # For gaussian itself
+        Ypre_pred_file = os.path.join(save_dir, 'test_Ypre_pred_{}.csv'.format(saved_model_str))
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
-                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
+                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp, open(Ypre_pred_file, 'a') as fypp:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
                 if self.flags.data_set == 'gaussian_mixture':
@@ -432,11 +431,14 @@ class Network(object):
                     spectra = spectra.cuda()
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 if self.flags.data_set == 'gaussian_mixture':
-                    Xpred = self.model_b(spectra).cpu().data.numpy()
+                    Xpred = self.model_b(spectra)
+                    Ypre_pred = self.model_f(Xpred).cpu().data.numpy()
+                    Xpred = Xpred.cpu().data.numpy()
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred, fmt='%.3f')
                     np.savetxt(fxp, Xpred, fmt='%.3f')
                     np.savetxt(fyt, spectra_origin, fmt='%.3f')
+                    np.savetxt(fypp, Ypre_pred, fmt='%.3f')
                 else:
                     Xpred = self.model_b(spectra)
                     Ypred = self.model_f(Xpred)

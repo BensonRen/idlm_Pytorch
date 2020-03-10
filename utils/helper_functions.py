@@ -194,9 +194,8 @@ def simulator_gaussian(Xpred):
     :return:
     """
     # The Evaluation model is normalized, get back to original size
-    Xpred = Xpred * 11
-
-    Ypred = determine_class_from_x(Xpred)
+    Xpred_unnorm = unnormalize_eval(Xpred, x_max=13, x_min=-13)
+    Ypred = determine_class_from_x(Xpred_unnorm)
     return Ypred
 
 
