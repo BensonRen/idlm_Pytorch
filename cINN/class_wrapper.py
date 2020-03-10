@@ -296,12 +296,13 @@ class Network(object):
                     x = x.cuda()
                     y = y.cuda()
                 Xpred = self.model(z, y, rev=True).cpu().data.numpy()
-                Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fxp, Xpred, fmt='%.3f')
                 if self.flags.data_set == 'gaussian_mixture':
                     np.savetxt(fyt, y_prev, fmt='%.3f')
                 else:
                     np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, Ypred, fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                if self.flags.data_set != 'meta_material':
+                    Ypred = simulator(self.flags.data_set, Xpred)
+                    np.savetxt(fyp, Ypred, fmt='%.3f')
         return Ypred_file, Ytruth_file

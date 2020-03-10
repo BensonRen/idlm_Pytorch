@@ -50,12 +50,12 @@ STOP_THRESHOLD = 1e-5
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = "gaussian_mixturereg0.0005trail_1_complexity_swipe_layer400_num8"
+EVAL_MODEL = "gaussian model_0309"
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]
-MODEL_NAME = None
+MODEL_NAME = 'gaussian model_0309'
 
 DATA_DIR = '../'
 #DATA_DIR = '/work/sr365/'

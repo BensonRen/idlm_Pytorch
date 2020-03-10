@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "meta_materialreg0.0005trail_2_complexity_swipe_layer1000_num6" 
+EVAL_MODEL = "gaussian_mixturereg0.0005trail_1_backward_complexity_swipe_layer60_num9"
