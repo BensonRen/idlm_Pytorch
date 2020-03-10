@@ -307,11 +307,11 @@ class Network(object):
                     np.savetxt(fyp, Ypred, fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='multi_eval'):
+    def evaluate_multiple_time(self, time=1000, save_dir='multi_eval/sine_wave'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result
         :return:
         """
         for i in range(time):
-            self.evaluate(save_dir=save_dir, prefix=i)
+            self.evaluate(save_dir=save_dir, prefix='inference' + str(i))

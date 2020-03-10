@@ -12,14 +12,13 @@ from model_maker import cINN
 from utils import data_reader
 from utils import helper_functions
 from Simulated_DataSets.Gaussian_Mixture import generate_Gaussian
+from utils.evaluation_helper import plotMSELossDistrib
 
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
 
-def evaluate_from_model(model_dir):
+def evaluate_from_model(model_dir, multi_flag=False):
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -45,10 +44,13 @@ def evaluate_from_model(model_dir):
 
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.evaluate()
+    if multi_flag:
+        ntwk.evaluate_multiple_time()
+    else:
+        pred_file, truth_file = ntwk.evaluate()
 
     # Plot the MSE distribution
-    if flags.data_set != 'meta_material': 
+    if flags.data_set != 'meta_material' and not multi_flag: 
         plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
     
@@ -77,6 +79,6 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/meta_material")
+    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
+    #evaluate_all("models/meta_material")
 
