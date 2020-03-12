@@ -58,4 +58,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "sine_wavecouple_layer_num8trail_0" 
+EVAL_MODEL = "meta_materialcouple_layer_num5trail_1"

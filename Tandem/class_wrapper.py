@@ -417,10 +417,12 @@ class Network(object):
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
         # For gaussian itself
         Ypre_pred_file = os.path.join(save_dir, 'test_Ypre_pred_{}.csv'.format(saved_model_str))
+        YSIM_Truth_file = os.path.join(save_dir, 'test_YSim_truth_{}.csv'.format(saved_model_str))
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
-                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp, open(Ypre_pred_file, 'a') as fypp:
+                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp,\
+                open(Ypre_pred_file, 'a') as fypp, open(YSIM_Truth_file, 'a') as fyst:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
                 if self.flags.data_set == 'gaussian_mixture':
@@ -435,6 +437,8 @@ class Network(object):
                     Ypre_pred = self.model_f(Xpred).cpu().data.numpy()
                     Xpred = Xpred.cpu().data.numpy()
                     Ypred = simulator(self.flags.data_set, Xpred)
+                    Ysim_truth = simulator(self.flags.data_set, geometry.cpu().data.numpy())
+                    np.savetxt(fyst, Ysim_truth, fmt='%.3f')
                     np.savetxt(fyp, Ypred, fmt='%.3f')
                     np.savetxt(fxp, Xpred, fmt='%.3f')
                     np.savetxt(fyt, spectra_origin, fmt='%.3f')
