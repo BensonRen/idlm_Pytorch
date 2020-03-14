@@ -217,7 +217,7 @@ class Network(object):
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
 
-    def evaluate(self, save_dir='data/'):
+    def evaluate(self, save_dir='data/', save_all=False):
         self.load()                             # load the model as constructed
         try:
             bs = self.flags.backprop_step         # for previous code that did not incorporate this
@@ -246,7 +246,7 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                Xpred, Ypred, loss = self.evaluate_one(spectra)
+                Xpred, Ypred, loss = self.evaluate_one(spectra, save_all=save_all, ind=ind)
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
@@ -254,7 +254,7 @@ class Network(object):
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def evaluate_one(self, target_spectra):
+    def evaluate_one(self, target_spectra, save_dir='data/', save_all=False, ind=None):
         if torch.cuda.is_available():
             geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
         else:
@@ -272,6 +272,13 @@ class Network(object):
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                           # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
+            if save_all:
+                saved_model_str = self.saved_model.replace('/', '_') + '-' + str(i) + '-' + str(ind)
+                Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
+                Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+                with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
+                    np.savetxt(fyp, logit.cpu().data.numpy(), fmt='%.3f')
+                    np.savetxt(fxp, geometry_eval.cpu().data.numpy(), fmt='%.3f')
 
             # check periodically to stop and print stuff
             if i % self.flags.eval_step == 0:

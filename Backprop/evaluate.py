@@ -19,7 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def evaluate_from_model(model_dir):
+def evaluate_from_model(model_dir, multi_flag=False):
+
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -48,7 +49,10 @@ def evaluate_from_model(model_dir):
     print(pytorch_total_params)
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.evaluate()
+    if multi_flag:
+        pred_file, truth_file = ntwk.evaluate(save_dir='multi_eval/sine_wave', save_all=True)
+    else:
+        pred_file, truth_file = ntwk.evaluate()
 
     # Plot the MSE distribution
     plotMSELossDistrib(pred_file, truth_file, flags)
@@ -73,5 +77,6 @@ if __name__ == '__main__':
     print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model)
+    evaluate_from_model(eval_flags.eval_model, multi_flag=True)
+    #evaluate_from_model(eval_flags.eval_model)
 
