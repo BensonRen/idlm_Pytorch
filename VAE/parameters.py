@@ -49,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "20200305_110939"
+EVAL_MODEL = "sine_wavekl_coeff0.04lr0.001reg0.005"

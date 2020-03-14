@@ -231,7 +231,7 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
 
-    def evaluate(self, save_dir='data/'):
+    def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
         if cuda:
@@ -239,7 +239,7 @@ class Network(object):
         # Set to evaluation mode for batch_norm layers
         self.model.eval()
         
-        saved_model_str = self.saved_model.replace('/','_')
+        saved_model_str = self.saved_model.replace('/','_') + prefix
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
@@ -268,3 +268,15 @@ class Network(object):
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred, fmt='%.3f')
         return Ypred_file, Ytruth_file
+    
+    
+    def evaluate_multiple_time(self, time=1000, save_dir='multi_eval/sine_wave'):
+        """
+        Make evaluation multiple time for deeper comparison for stochastic algorithms
+        :param save_dir: The directory to save the result
+        :return:
+        """
+        for i in range(time):
+            self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
+
+    # This is for getting each

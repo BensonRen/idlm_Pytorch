@@ -393,7 +393,7 @@ class Network(object):
             print("Ypred:", Ypred)
             print("Ypred_pred:", Ypred_pred.cpu().data.numpy())
         """
-    def evaluate(self, save_dir='data/'):
+    def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
         if cuda:
@@ -409,20 +409,20 @@ class Network(object):
 
         print('using data set simulator: ',self.flags.data_set)
 
-        saved_model_str = self.saved_model.replace('/','_')
+        saved_model_str = self.saved_model.replace('/','_') + prefix
         # Get the file names
         Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
         # For gaussian itself
-        Ypre_pred_file = os.path.join(save_dir, 'test_Ypre_pred_{}.csv'.format(saved_model_str))
-        YSIM_Truth_file = os.path.join(save_dir, 'test_YSim_truth_{}.csv'.format(saved_model_str))
+        #Ypre_pred_file = os.path.join(save_dir, 'test_Ypre_pred_{}.csv'.format(saved_model_str))
+        #YSIM_Truth_file = os.path.join(save_dir, 'test_YSim_truth_{}.csv'.format(saved_model_str))
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
-                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp,\
-                open(Ypre_pred_file, 'a') as fypp, open(YSIM_Truth_file, 'a') as fyst:
+                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp: #,\
+                #open(Ypre_pred_file, 'a') as fypp, open(YSIM_Truth_file, 'a') as fyst:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
                 if self.flags.data_set == 'gaussian_mixture':
@@ -434,15 +434,15 @@ class Network(object):
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 if self.flags.data_set == 'gaussian_mixture':
                     Xpred = self.model_b(spectra)
-                    Ypre_pred = self.model_f(Xpred).cpu().data.numpy()
+                    #Ypre_pred = self.model_f(Xpred).cpu().data.numpy()
                     Xpred = Xpred.cpu().data.numpy()
                     Ypred = simulator(self.flags.data_set, Xpred)
-                    Ysim_truth = simulator(self.flags.data_set, geometry.cpu().data.numpy())
-                    np.savetxt(fyst, Ysim_truth, fmt='%.3f')
+                    #Ysim_truth = simulator(self.flags.data_set, geometry.cpu().data.numpy())
+                    #np.savetxt(fyst, Ysim_truth, fmt='%.3f')
                     np.savetxt(fyp, Ypred, fmt='%.3f')
                     np.savetxt(fxp, Xpred, fmt='%.3f')
                     np.savetxt(fyt, spectra_origin, fmt='%.3f')
-                    np.savetxt(fypp, Ypre_pred, fmt='%.3f')
+                    #np.savetxt(fypp, Ypre_pred, fmt='%.3f')
                 else:
                     Xpred = self.model_b(spectra)
                     Ypred = self.model_f(Xpred)
@@ -457,3 +457,13 @@ class Network(object):
                 #print("Ypred:", Ypred)
         return Ypred_file, Ytruth_file
 
+    def evaluate_multiple_time(self, time=1000, save_dir='multi_eval/meta_material'):
+        """
+        Make evaluation multiple time for deeper comparison for stochastic algorithms
+        :param save_dir: The directory to save the result
+        :return:
+        """
+        for i in range(time):
+            self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
+
+    # This is for getting each

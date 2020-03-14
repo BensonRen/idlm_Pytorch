@@ -16,7 +16,7 @@ from utils.evaluation_helper import plotMSELossDistrib
 
 # Libs
 
-def evaluate_from_model(model_dir):
+def evaluate_from_model(model_dir, multi_flag=False):
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -43,10 +43,14 @@ def evaluate_from_model(model_dir):
 
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.evaluate()
+    if multi_flag:
+        ntwk.evaluate_multiple_time()
+    else:
+        pred_file, truth_file = ntwk.evaluate()
 
     # Plot the MSE distribution
-    plotMSELossDistrib(pred_file, truth_file, flags)
+    if flags.data_set != 'meta_material' and not multi_flag: 
+        plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
     
     # If gaussian, plot the scatter plot
@@ -73,8 +77,9 @@ if __name__ == '__main__':
     useless_flags = flag_reader.read_flag()
 
     print(useless_flags.eval_model)
+    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     # Call the evaluate function from model
     # evaluate_from_model(useless_flags.eval_model)
 
-    evaluate_all("models/gaussian")
+    # evaluate_all("models/gaussian")
 
