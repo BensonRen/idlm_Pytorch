@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import evaluate
 import seaborn as sns; sns.set()
-import helper_functions
+from utils import helper_functions
 from sklearn.neighbors import NearestNeighbors
 from pandas.plotting import table
 from scipy.spatial import distance_matrix
@@ -422,7 +422,8 @@ def MeanAvgnMinMSEvsTry(data_dir):
     :return:
     """
     # Read Ytruth file
-    Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, dellimiter=' ').values
+    Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, delimiter=' ').values
+    print("shape of ytruth is", np.shape(Yt))
     # Get all the Ypred into list
     Ypred_list = []
     for files in os.listdir(data_dir):
@@ -434,17 +435,31 @@ def MeanAvgnMinMSEvsTry(data_dir):
     mse_mat = np.zeros([len(Ypred_list), len(Ypred_list[0])])
     print("shape of mse_mat is", np.shape(mse_mat))
     for ind, yp in enumerate(Ypred_list):
-        mse = np.square(yp - Yt, axis=1)
+        mse = np.mean(np.square(yp - Yt), axis=1)
         mse_mat[ind, :] = mse
+    print("shape of the yp is", np.shape(yp)) 
+    print("shape of mse is", np.shape(mse))
 
     # Calculate the min and avg from mat
     mse_min_list = np.zeros(len(Ypred_list))
     mse_avg_list = np.zeros(len(Ypred_list))
 
     for i in range(len(Ypred_list)):
-        mse_avg_list[i] = np.mean(mse_mat[:i, :])
-        mse_min_list[i] = np.mean(np.min(mse_mat[:i, :], axis=0))
+        mse_avg_list[i] = np.mean(mse_mat[:i+1, :])
+        mse_min_list[i] = np.mean(np.min(mse_mat[:i+1, :], axis=0))
 
     # Save the list down for further analysis
     np.savetxt(os.path.join(data_dir, 'mse_avg_list.txt'), mse_avg_list, delimiter=' ')
     np.savetxt(os.path.join(data_dir, 'mse_min_list.txt'), mse_min_list, delimiter=' ')
+
+    # Plotting
+    f = plt.figure()
+    x_axis = np.arange(len(Ypred_list))
+    plt.plot(x_axis, mse_avg_list, label='avg')
+    plt.plot(x_axis, mse_min_list, label='min')
+    plt.legend()
+    plt.xlabel('inference number')
+    plt.ylabel('mse error')
+    plt.savefig(os.path.join(data_dir,'mse_plot vs time'))
+
+
