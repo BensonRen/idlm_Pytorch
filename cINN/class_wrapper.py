@@ -316,4 +316,3 @@ class Network(object):
         for i in range(time):
             self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
 
-    # This is for getting each

@@ -413,3 +413,38 @@ def get_bvl(file_path):
     else:
         return float(bvl)
 
+
+def MeanAvgnMinMSEvsTry(data_dir):
+    """
+    Plot the mean average Mean and Min Squared error over Tries
+    :param data_dir: The directory where the data is in
+    :param title: The title for the plot
+    :return:
+    """
+    # Read Ytruth file
+    Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, dellimiter=' ').values
+    # Get all the Ypred into list
+    Ypred_list = []
+    for files in os.listdir(data_dir):
+        if 'Ypred' in files:
+            Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
+            Ypred_list.append(Yp)
+
+    # Calculate the large MSE matrix
+    mse_mat = np.zeros([len(Ypred_list), len(Ypred_list[0])])
+    print("shape of mse_mat is", np.shape(mse_mat))
+    for ind, yp in enumerate(Ypred_list):
+        mse = np.square(yp - Yt, axis=1)
+        mse_mat[ind, :] = mse
+
+    # Calculate the min and avg from mat
+    mse_min_list = np.zeros(len(Ypred_list))
+    mse_avg_list = np.zeros(len(Ypred_list))
+
+    for i in range(len(Ypred_list)):
+        mse_avg_list[i] = np.mean(mse_mat[:i, :])
+        mse_min_list[i] = np.mean(np.min(mse_mat[:i, :], axis=0))
+
+    # Save the list down for further analysis
+    np.savetxt(os.path.join(data_dir, 'mse_avg_list.txt'), mse_avg_list, delimiter=' ')
+    np.savetxt(os.path.join(data_dir, 'mse_min_list.txt'), mse_min_list, delimiter=' ')
