@@ -26,7 +26,7 @@ CONV_STRIDE = []
 OPTIM = "Adam"
 REG_SCALE = 1e-3
 BATCH_SIZE = 1024
-EVAL_BATCH_SIZE = 4096
+EVAL_BATCH_SIZE = 1000
 EVAL_STEP = 50
 TRAIN_STEP = 500
 BACKPROP_STEP = 200
@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "20200310_131438"
+EVAL_MODEL = "sine_wavereg0.0005trail_2_backward_complexity_swipe_layer150_num7" 

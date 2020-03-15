@@ -246,7 +246,7 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                Xpred, Ypred, loss = self.evaluate_one(spectra, save_all=save_all, ind=ind)
+                Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind)
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
