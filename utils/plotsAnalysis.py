@@ -461,5 +461,59 @@ def MeanAvgnMinMSEvsTry(data_dir):
     plt.xlabel('inference number')
     plt.ylabel('mse error')
     plt.savefig(os.path.join(data_dir,'mse_plot vs time'))
+    return None
+
+
+def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory structure
+    """
+    Do the recursive call for all sub_dir under this directory
+    :param data_dir: The mother directory that calls
+    :return:
+    """
+    for dirs in os.listdir(data_dir):
+        for subdirs in os.listdir(os.path.join(data_dir, dirs)):
+            if 'gaussian' not in subdirs:                               # Dont do for gaussian first
+                MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs))
+    return None
+
+
+def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'): # Depth=2 now based on current directory structure
+    """
+    The function to draw the aggregate plot for Mean Average and Min MSEs
+    :param data_dir: The mother directory to call
+    :param data_name: The data set name
+    :return:
+    """
+    # Predefined name of the avg lists
+    min_list_name = 'mse_min_list.txt'
+    avg_list_name = 'mse_avg_list.txt'
+
+    # Loop through the directories
+    avg_dict, min_dict = {}, {}
+    for dirs in os.listdir(data_dir):
+        for subdirs in os.listdir((os.path.join(data_dir, dirs))):
+            if subdirs == data_name:
+                # Read the lists
+                mse_avg_list = pd.read_csv(os.path.join(data_dir, dirs, subdirs, avg_list_name),
+                                           header=None, delimiter=' ').values
+                mse_min_list = pd.read_csv(os.path.join(data_dir, dirs, subdirs, min_list_name),
+                                           header=None, delimiter=' ').values
+                # Put them into dictionary
+                avg_dict[dirs] = mse_avg_list
+                min_dict[dirs] = mse_min_list
+
+    def plotDict(dict, name):
+        f = plt.figure()
+        x_axis = np.arange(len(mse_avg_list))
+        for key, value in dict.items():
+            plt.plot(x_axis, value, label=key)
+        plt.legend()
+        plt.xlabel('inference time')
+        plt.ylabel('mse error')
+        plt.savefig(os.path.join(data_dir, save_name + name))
+
+    plotDict(avg_dict, '_avg.png')
+    plotDict(min_dict, '_min.png')
+
 
 
