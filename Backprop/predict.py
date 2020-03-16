@@ -61,10 +61,11 @@ def predict_all(models_dir="data"):
     """
     for file in os.listdir(models_dir):
         if 'Xpred_meta_material' in file:                     # Only meta material has this need currently
+            print("predicting for file", file)
             predict_from_model("models/meta_materialreg0.0005trail_2_complexity_swipe_layer1000_num6", 
             os.path.join(models_dir,file))
     return None
 
 
 if __name__ == '__main__':
-    predict_all('../cINN/data')
+    predict_all('/work/sr365/multi_eval/VAE/meta_material')

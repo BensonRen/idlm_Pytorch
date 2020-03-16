@@ -3,8 +3,8 @@ Hyper-parameters of the Tandem model
 """
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
@@ -24,12 +24,12 @@ LOAD_FORWARD_CKPT_DIR = None
 #CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [2, 60, 60, 60, 60, 60, 60, 60, 4]
+LINEAR_F = [3, 150, 150, 150, 150, 150, 2]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
 
-LINEAR_B = [4, 1000, 1000, 1000, 1000, 400, 100, 2]
+LINEAR_B = [2, 150, 150, 150, 150, 150, 150, 3]
 CONV_OUT_CHANNEL_B = []
 CONV_KERNEL_SIZE_B = []
 CONV_STRIDE_B = []
@@ -40,7 +40,7 @@ REG_SCALE = 1e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 1024
 EVAL_STEP = 2
-TRAIN_STEP = 50
+TRAIN_STEP = 300
 VERB_STEP = 2
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying

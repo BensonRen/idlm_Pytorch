@@ -234,6 +234,7 @@ class Network(object):
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+        print("evalution output pattern:", Ypred_file)
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
@@ -255,6 +256,7 @@ class Network(object):
         return Ypred_file, Ytruth_file
 
     def evaluate_one(self, target_spectra, save_dir='data/', save_all=False, ind=None):
+        print("evaluate_one gets save_dir:", save_dir)
         if torch.cuda.is_available():
             geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
         else:
@@ -272,13 +274,6 @@ class Network(object):
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                           # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
-            if save_all:
-                saved_model_str = self.saved_model.replace('/', '_') + '-' + str(i) + '-' + str(ind)
-                Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
-                Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
-                with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, logit.cpu().data.numpy(), fmt='%.3f')
-                    np.savetxt(fxp, geometry_eval.cpu().data.numpy(), fmt='%.3f')
 
             # check periodically to stop and print stuff
             if i % self.flags.eval_step == 0:
@@ -291,6 +286,14 @@ class Network(object):
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(loss.data)
+        if save_all:
+            for i in range(len(geometry_eval.cpu().data.numpy())):
+                saved_model_str = self.saved_model.replace('/', '_') + 'inference' + str(i)
+                Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
+                Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+                with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
+                    np.savetxt(fyp, logit.cpu().data.numpy()[i,:], fmt='%.3f')
+                    np.savetxt(fxp, geometry_eval.cpu().data.numpy()[i,:], fmt='%.3f')
 
         # Get the best performing one
         MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)

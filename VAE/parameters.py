@@ -49,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "sine_wavekl_coeff0.04lr0.001reg0.005"
+EVAL_MODEL = "meta_materialkl_coeff0.06lr0.001reg0.005"
