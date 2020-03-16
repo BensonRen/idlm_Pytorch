@@ -223,7 +223,7 @@ class Network(object):
             bs = self.flags.backprop_step         # for previous code that did not incorporate this
         except AttributeError:
             print("There is no attribute backprop_step, catched error and adding this now")
-            self.flags.backprop_step = 500
+            self.flags.backprop_step = 2
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model.cuda()

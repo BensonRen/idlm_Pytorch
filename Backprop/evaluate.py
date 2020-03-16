@@ -33,6 +33,7 @@ def evaluate_from_model(model_dir, multi_flag=False):
         print("after removing prefix models/, now model_dir is:", model_dir)
     flags = load_flags(os.path.join("models", model_dir))
     flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
+    flags.backprop_step = eval_flags.backprop_step
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.05
     flags.eval_batch_size = eval_flags.eval_batch_size
@@ -50,7 +51,7 @@ def evaluate_from_model(model_dir, multi_flag=False):
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/sine_wave_new', save_all=True)
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/sine_wave', save_all=True)
     else:
         pred_file, truth_file = ntwk.evaluate()
 
