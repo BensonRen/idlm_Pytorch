@@ -20,7 +20,7 @@ from math import inf
 import matplotlib.pyplot as plt
 import pandas as pd
 # Own module
-
+from utils.time_recorder import time_keeper
 
 class Network(object):
     def __init__(self, model_fn, flags, train_loader, test_loader,
@@ -150,6 +150,9 @@ class Network(object):
         self.optm = self.make_optimizer()
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
 
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(self.ckpt_dir, 'training time.txt'))
+
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
@@ -216,6 +219,7 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
+        tk.record(1)                    # Record at the end of the training
 
     def evaluate(self, save_dir='data/', save_all=False):
         self.load()                             # load the model as constructed
@@ -236,6 +240,9 @@ class Network(object):
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
         print("evalution output pattern:", Ypred_file)
 
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(save_dir, 'evaluation_time.txt'))
+
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
@@ -248,6 +255,7 @@ class Network(object):
                     spectra = spectra.cuda()
                 # Initialize the geometry first
                 Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind)
+                tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')

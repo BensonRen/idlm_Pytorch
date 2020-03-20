@@ -6,7 +6,7 @@ This is a class for keeping time and possible recording it to a file
 
 
 class time_keeper(object):
-    def __init__(self, time_keeping_file = "time_keeper.txt"):
+    def __init__(self, time_keeping_file="time_keeper.txt"):
         self.start = time.time()
         self.time_keeping_file = time_keeping_file
         self.end = -1

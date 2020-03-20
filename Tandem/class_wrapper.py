@@ -11,12 +11,13 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 # from torchsummary import summary
 from torch.optim import lr_scheduler
-from utils.helper_functions import simulator
 
 # Libs
 import numpy as np
 from math import inf
 # Own module
+from utils.time_recorder import time_keeper
+from utils.helper_functions import simulator
 
 
 class Network(object):
@@ -191,6 +192,9 @@ class Network(object):
         Forward Training part
         """
         self.best_forward_validation_loss = self.best_validation_loss
+
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(self.ckpt_dir, 'training time.txt'))
 
         cuda = True if torch.cuda.is_available() else False
         if cuda:
@@ -373,6 +377,7 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
+        tk.record(1)                # Record the total time of the training peroid
         """
         ##################################################################
         # Do the testing here to make sure the model did not play with me#
@@ -463,7 +468,9 @@ class Network(object):
         :param save_dir: The directory to save the result
         :return:
         """
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
         for i in range(time):
             self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
+            tk.record(i)
 
     # This is for getting each

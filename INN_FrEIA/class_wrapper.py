@@ -17,6 +17,7 @@ import numpy as np
 from math import inf
 # Own module
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+from utils.time_recorder import time_keeper
 
 
 class Network(object):
@@ -160,6 +161,9 @@ class Network(object):
         dim_y = self.flags.dim_y
         dim_z = self.flags.dim_z
         dim_tot = self.flags.dim_tot
+
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(self.ckpt_dir, 'training time.txt'))
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
@@ -386,6 +390,7 @@ class Network(object):
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
+        tk.record(1)                # Record the total time of the training peroid
 
     def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed
@@ -442,7 +447,9 @@ class Network(object):
         :param save_dir: The directory to save the result
         :return:
         """
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
         for i in range(time):
             self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
+            tk.record(i)
 
     # This is for getting each
