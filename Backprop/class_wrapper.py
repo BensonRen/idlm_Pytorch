@@ -257,10 +257,11 @@ class Network(object):
 
     def evaluate_one(self, target_spectra, save_dir='data/', save_all=False, ind=None):
         print("evaluate_one gets save_dir:", save_dir)
-        if torch.cuda.is_available():
-            geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
+        if torch.cuda.is_available():                                   # Initialize UNIFORM RANDOM NUMBER
+            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
         else:
-            geometry_eval = torch.randn([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True)
+            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True) 
+        
         self.optm_eval = self.make_optimizer_eval(geometry_eval)
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
         # expand the target spectra to eval batch size
@@ -270,7 +271,10 @@ class Network(object):
         #print("shape of target_spectra_expand", np.shape(target_spectra_expand))
         #print("shape of geometry_eval", np.shape(geometry_eval))
         for i in range(self.flags.backprop_step):
-            logit = self.model(geometry_eval)                      # Get the output
+            # Make the initialization from [-1, 1]
+            geometry_eval_input = geometry_eval * 2 - 1
+            self.optm_eval.zero_grad()                               # Zero the gradient first
+            logit = self.model(geometry_eval_input)                      # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                           # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
@@ -278,8 +282,8 @@ class Network(object):
             # check periodically to stop and print stuff
             if i % self.flags.eval_step == 0:
                 print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
-                #print("printing the first 5 geometry_eval")
-                #print(self.model.geometry_eval.cpu().data.numpy()[0:5,:])
+                #print("printing the first 5 geometry_eval_input")
+                #print(self.model.geometry_eval_input.cpu().data.numpy()[0:5,:])
                 if loss.data < self.flags.stop_threshold:                       # Check if stop
                     print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
                     break
@@ -287,20 +291,22 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(loss.data)
         if save_all:
-            for i in range(len(geometry_eval.cpu().data.numpy())):
+            for i in range(len(geometry_eval_input.cpu().data.numpy())):
                 saved_model_str = self.saved_model.replace('/', '_') + 'inference' + str(i)
                 Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
                 Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+                ypred = np.reshape(logit.cpu().data.numpy()[i,:], [1, -1])
+                xpred = np.reshape(geometry_eval_input.cpu().data.numpy()[i,:], [1, -1])
                 with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, logit.cpu().data.numpy()[i,:], fmt='%.3f')
-                    np.savetxt(fxp, geometry_eval.cpu().data.numpy()[i,:], fmt='%.3f')
+                    np.savetxt(fyp, ypred, fmt='%.3f')
+                    np.savetxt(fxp, xpred, fmt='%.3f')
 
         # Get the best performing one
         MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
         #print("shape of MSE list", np.shape(MSE_list))
         best_estimate_index = np.argmin(MSE_list)
         #print("best_estimate_index = ", best_estimate_index, " best error is ", MSE_list[best_estimate_index])
-        Xpred_best = np.reshape(np.copy(geometry_eval.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
+        Xpred_best = np.reshape(np.copy(geometry_eval_input.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
         Ypred_best = np.reshape(np.copy(logit.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
         #print("the shape of Xpred_best is", np.shape(Xpred_best))
 

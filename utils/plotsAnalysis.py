@@ -475,13 +475,15 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if 'Backprop' in dirs or not os.path.isdir(os.path.join(data_dir, dirs)):
+        #if 'Backprop' in dirs or 
+        if not os.path.isdir(os.path.join(data_dir, dirs)):
             print("enters folder", dirs)
             continue
         for subdirs in os.listdir(os.path.join(data_dir, dirs)):
-            if 'gaussian' not in subdirs:                               # Dont do for gaussian first
-                print("enters folder", subdirs)
-                MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs))
+            if 'gaussian' in subdirs or 'meta_material' not in subdirs or os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_avg_list.txt')):                               # Dont do for gaussian first and if this has been done
+                continue;
+            print("enters folder", subdirs)
+            MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs))
     return None
 
 
@@ -503,7 +505,8 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if 'Backprop' in dirs or not os.path.isdir(os.path.join(data_dir, dirs)):
+        # if 'Backprop' in dirs or
+        if not os.path.isdir(os.path.join(data_dir, dirs)):
             print("skipping due to it is not a directory")
             continue;
         for subdirs in os.listdir((os.path.join(data_dir, dirs))):
@@ -516,12 +519,12 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
                 # Put them into dictionary
                 avg_dict[dirs] = mse_avg_list
                 min_dict[dirs] = mse_min_list
-
+        
     def plotDict(dict, name, logy=False):
         f = plt.figure()
         x_axis = np.arange(len(mse_avg_list))
-        for key, value in dict.items():
-            plt.plot(x_axis, value, label=key)
+        for key in sorted(dict.keys()):
+            plt.plot(x_axis, dict[key], label=key)
         if logy:
             ax = plt.gca()
             ax.set_yscale('log')
