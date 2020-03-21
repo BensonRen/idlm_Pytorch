@@ -540,6 +540,46 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
     plotDict(min_dict, '_minlog.png', logy=True)
 
 
-def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time'):
+def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=False):
+    """
+    This function is to plot the evaluation time behavior of different algorithms on different data sets
+    :param data_dir: The mother directory where all the results are put
+    :param data_name: The specific dataset to analysis
+    :param save_name: The saving name of the plotted figure
+    :param logy: take logrithmic at axis y
+    :return:
+    """
+    eval_time_dict = {}
+    for dirs in os.listdir(data_dir):
+        # Dont include Backprop for now and check if it is a directory
+        print("entering :", dirs)
+        print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
+        print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
+        # if 'Backprop' in dirs or
+        if not os.path.isdir(os.path.join(data_dir, dirs)):
+            print("skipping due to it is not a directory")
+            continue;
+        for subdirs in os.listdir((os.path.join(data_dir, dirs))):
+            if subdirs == data_name:
+                # Read the lists
+                eval_time = pd.read_csv(os.path.join(data_dir, dirs, subdirs, 'evaluation_time.txt'),
+                                           header=None, delimiter=',').values[:, 1]
+                # Put them into dictionary
+                eval_time_dict[dirs] = eval_time
 
+    # Plotting
+    f = plt.figure()
+    for key in sorted(dict.keys()):
+        average_time = dict[key][-1] / len(dict[key])
+        plt.plot(np.arange(len(dict[key])), dict[key], label=key + 'average_time='.format(average_time))
+    plt.legend()
+    plt.xlabel('#inference trails')
+    plt.ylabel('inference time taken (s)')
+    plt.title(data_name + 'evaluation_time')
+    if logy:
+        ax = plt.gca()
+        ax.set_yscale('log')
+        plt.savefig(os.path.join(data_dir, data_name + save_name + 'logy.png'))
+    else:
+        plt.savefig(os.path.join(data_dir, data_name + save_name + '.png'))
 
