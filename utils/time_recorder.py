@@ -6,8 +6,9 @@ This is a class for keeping time and possible recording it to a file
 
 
 class time_keeper(object):
-    def __init__(self, time_keeping_file="time_keeper.txt"):
+    def __init__(self, time_keeping_file="time_keeper.txt", max_running_time=4):
         self.start = time.time()
+        self.max_running_time = max_running_time * 60 * 60
         self.time_keeping_file = time_keeping_file
         self.end = -1
         self.duration = -1
@@ -22,3 +23,5 @@ class time_keeper(object):
             self.end = time.time()
             self.duration = self.end - self.start
             f.write('{},{}\n'.format(write_number, self.duration))
+            if (self.duration > self.max_running_time):
+                raise ValueError('Your program has run over the maximum time limit set by Ben in time_keeper function')

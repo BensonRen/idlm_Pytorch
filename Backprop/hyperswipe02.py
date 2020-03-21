@@ -16,8 +16,8 @@ if __name__ == '__main__':
         for i in range(4, 10):
             flags = flag_reader.read_flag()  	#setting the base case
             linear = [linear_unit for j in range(i)]        #Set the linear units
-            linear[0] = 2                   # The start of linear
-            linear[-1] = 4                # The end of linear
+            linear[0] = 3                   # The start of linear
+            linear[-1] = 2                # The end of linear
             flags.linear = linear
             for reg_scale in reg_scale_list:
                 flags.reg_scale = reg_scale

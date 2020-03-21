@@ -58,4 +58,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "gaussian_mixturecouple_layer_num6trail_1"
+EVAL_MODEL = "robotic_armcouple_layer_num6trail_0"

@@ -480,7 +480,7 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
             print("enters folder", dirs)
             continue
         for subdirs in os.listdir(os.path.join(data_dir, dirs)):
-            if 'gaussian' in subdirs or 'meta_material' not in subdirs or os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_avg_list.txt')):                               # Dont do for gaussian first and if this has been done
+            if 'gaussian' in subdirs or os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_avg_list.txt')):                               # Dont do for gaussian first and if this has been done
                 continue;
             print("enters folder", subdirs)
             MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs))
@@ -539,5 +539,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
     plotDict(avg_dict, '_avglog.png', logy=True)
     plotDict(min_dict, '_minlog.png', logy=True)
 
+
+def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time'):
 
 

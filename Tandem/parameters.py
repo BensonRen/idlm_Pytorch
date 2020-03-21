@@ -50,7 +50,7 @@ STOP_THRESHOLD = 1e-5
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = 'meta_material'
+EVAL_MODEL = 'gaussian_model_0310' 
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]

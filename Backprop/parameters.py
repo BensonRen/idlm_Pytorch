@@ -3,8 +3,8 @@ Params for Back propagation model
 """
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+# DATA_SET = 'gaussian_mixture'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 
@@ -25,15 +25,15 @@ CONV_STRIDE = []
 # Optimizer Params
 OPTIM = "Adam"
 REG_SCALE = 1e-3
-BATCH_SIZE = 10
+BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 1000
 EVAL_STEP = 20
-TRAIN_STEP = 200
+TRAIN_STEP = 300
 BACKPROP_STEP = 300
-LEARN_RATE = 1e-3
+LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.8
-STOP_THRESHOLD = 1e-4
+STOP_THRESHOLD = 1e-5
 
 # Data specific Params
 X_RANGE = [i for i in range(2, 10 )]
@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "gaussian_mixturereg0.0005trail_1_backward_complexity_swipe_layer60_num9"
+EVAL_MODEL = "sine_wavereg0.0005trail_2_backward_complexity_swipe_layer150_num7"
