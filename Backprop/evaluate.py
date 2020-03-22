@@ -82,5 +82,6 @@ if __name__ == '__main__':
     #evaluate_all()
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
     evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
+
     #evaluate_from_model(eval_flags.eval_model)
 
