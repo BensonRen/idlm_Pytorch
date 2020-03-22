@@ -48,4 +48,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "sine_wavereg0.0005trail_2_backward_complexity_swipe_layer150_num7"
+EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"

@@ -319,11 +319,13 @@ def PlotPossibleGeoSpace(figname, Xpred_dir, compare_original = False,calculate_
     :params Xpred_dir: The directory to look for Xpred file which is the source of plotting
     :output A plot containing 4 subplots showing the 8 geomoetry dimensions
     """
-    Xpredfile = helper_functions.get_Xpred(Xpred_dir)
-    Xpred = pd.read_csv(Xpredfile, header=None, delimiter=' ').values
+    Xpred = helper_functions.get_Xpred(Xpred_dir)
+    #Xpredfile = helper_functions.get_Xpred(Xpred_dir)
+    #Xpred = pd.read_csv(Xpredfile, header=None, delimiter=' ').values
     
-    Xtruthfile = helper_functions.get_Xtruth(Xpred_dir)
-    Xtruth = pd.read_csv(Xtruthfile, header=None, delimiter=' ').values
+    Xtruth = helper_functions.get_Xtruth(Xpred_dir)
+    #Xtruthfile = helper_functions.get_Xtruth(Xpred_dir)
+    #Xtruth = pd.read_csv(Xtruthfile, header=None, delimiter=' ').values
 
     f = plt.figure()
     ax0 = plt.gca()
@@ -540,13 +542,14 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
     plotDict(min_dict, '_minlog.png', logy=True)
 
 
-def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=False):
+def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=False, limit=1000):
     """
     This function is to plot the evaluation time behavior of different algorithms on different data sets
     :param data_dir: The mother directory where all the results are put
     :param data_name: The specific dataset to analysis
     :param save_name: The saving name of the plotted figure
     :param logy: take logrithmic at axis y
+    :param limit: the limit of x max
     :return:
     """
     eval_time_dict = {}
@@ -569,17 +572,19 @@ def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=Fa
 
     # Plotting
     f = plt.figure()
-    for key in sorted(dict.keys()):
-        average_time = dict[key][-1] / len(dict[key])
-        plt.plot(np.arange(len(dict[key])), dict[key], label=key + 'average_time='.format(average_time))
+    for key in sorted(eval_time_dict.keys()):
+        average_time = eval_time_dict[key][-1] / len(eval_time_dict[key])
+        plt.plot(np.arange(len(eval_time_dict[key])), eval_time_dict[key], label=key + 'average_time={0:.2f}s'.format(average_time))
     plt.legend()
     plt.xlabel('#inference trails')
     plt.ylabel('inference time taken (s)')
     plt.title(data_name + 'evaluation_time')
+    plt.xlim([0, limit])
     if logy:
         ax = plt.gca()
         ax.set_yscale('log')
         plt.savefig(os.path.join(data_dir, data_name + save_name + 'logy.png'))
     else:
         plt.savefig(os.path.join(data_dir, data_name + save_name + '.png'))
+
 

@@ -27,7 +27,8 @@ def get_Xpred(path, name=None):
     :return: np array
     """
     out_file = None
-    name = name.replace('/','_')
+    if name is not None:
+        name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Xpred" in filename):
             if name is None:
@@ -77,7 +78,8 @@ def get_Xtruth(path, name=None):
     :return: np array
     """
     out_file = None
-    name = name.replace('/','_')
+    if name is not None:
+        name = name.replace('/','_')
     for filename in os.listdir(path):
         if ("Xtruth" in filename):
             if name is None:
