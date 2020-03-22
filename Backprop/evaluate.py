@@ -19,11 +19,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def evaluate_from_model(model_dir, multi_flag=False):
+def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
 
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
+    :param multi_flag: The switch to turn on if you want to generate all different inference trial results
+    :param eval_data_all: The switch to turn on if you want to put all data in evaluation data
     :return: None
     """
     # Retrieve the flag object
@@ -40,7 +42,7 @@ def evaluate_from_model(model_dir, multi_flag=False):
     flags.train_step = eval_flags.train_step
 
     # Get the data
-    train_loader, test_loader = data_reader.read_data(flags)
+    train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")
 
     # Make Network
@@ -78,6 +80,7 @@ if __name__ == '__main__':
     print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model, multi_flag=True)
+    #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
+    evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_from_model(eval_flags.eval_model)
 

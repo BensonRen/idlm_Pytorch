@@ -163,7 +163,8 @@ def gridShape(input_dir, output_dir, shapeType, r_bounds, h_bounds):
 
 
 def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
-                 data_dir=os.path.abspath(''), rand_seed=1234, normalize_input = True, test_ratio = 0.02 ):
+                 data_dir=os.path.abspath(''), rand_seed=1234, normalize_input = True, test_ratio=0.02,
+                             eval_data_all=False):
     """
       :param input_size: input size of the arrays
       :param output_size: output size of the arrays
@@ -184,7 +185,8 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     :param train_valid_tuple: if it's not none, it will be the names of train and valid files
     :return: feature and label read from csv files, one line each time
     """
-
+    if eval_data_all:
+        test_ratio = 0.999
     # get data files
     print('getting data files...')
     ftrTrain, lblTrain = importData(os.path.join(data_dir, 'dataIn'), x_range, y_range)
@@ -235,7 +237,7 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     return train_loader, test_loader
 
 
-def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=1234, test_ratio=0.02):
+def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=1234, test_ratio=0.2):
     """
     Helper function that takes structured data_x and data_y into dataloaders
     :param data_x: the structured x data
@@ -278,7 +280,7 @@ def normalize_np(x):
     return x
 
 
-def read_data_gaussian_mixture(flags):
+def read_data_gaussian_mixture(flags, eval_data_all=False):
     """
     Data reader function for the gaussian mixture data set
     :param flags: Input flags
@@ -290,10 +292,12 @@ def read_data_gaussian_mixture(flags):
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_y = np.squeeze(data_y)                             # Squeeze since this is a 1 column label
     data_x = normalize_np(data_x)
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
 
 
-def read_data_sine_wave(flags):
+def read_data_sine_wave(flags, eval_data_all=False):
     """
     Data reader function for the sine function data set
     :param flags: Input flags
@@ -304,10 +308,12 @@ def read_data_sine_wave(flags):
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_x = normalize_np(data_x)
     data_y = normalize_np(data_y)
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
-def read_data_naval_propulsion(flags):
+def read_data_naval_propulsion(flags, eval_data_all=False):
     """
     Data reader function for the naval propulsion data set
     :param flags: Input flags
@@ -318,10 +324,12 @@ def read_data_naval_propulsion(flags):
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     data_x = normalize_np(data_x)
     data_y = normalize_np(data_y)
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
-def read_data_robotic_arm(flags):
+def read_data_robotic_arm(flags, eval_data_all=False):
     """
     Data reader function for the robotic arm data set
     :param flags: Input flags
@@ -330,10 +338,12 @@ def read_data_robotic_arm(flags):
     data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Robotic_Arm/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress)
 
 
-def read_data(flags):
+def read_data(flags, eval_data_all=False):
     """
     The data reader allocator function
     The input is categorized into couple of different possibilities
@@ -343,6 +353,7 @@ def read_data(flags):
     3. naval_propulsion
     4. robotic_arm
     :param flags: The input flag of the input data set
+    :param eval_data_all: The switch to turn on if you want to put all data in evaluation data
     :return:
     """
     if flags.data_set == 'meta_material':
@@ -351,18 +362,19 @@ def read_data(flags):
                                                             geoboundary=flags.geoboundary,
                                                             batch_size=flags.batch_size,
                                                             normalize_input=flags.normalize_input,
-                                                            data_dir=flags.data_dir)
+                                                            data_dir=flags.data_dir,
+                                                            eval_data_all=eval_data_all)
         # Reset the boundary is normalized
         if flags.normalize_input:
             flags.geoboundary_norm = [-1, 1, -1, 1]
     elif flags.data_set == 'gaussian_mixture':
-        train_loader, test_loader = read_data_gaussian_mixture(flags)
+        train_loader, test_loader = read_data_gaussian_mixture(flags, eval_data_all=eval_data_all)
     elif flags.data_set == 'sine_wave':
-        train_loader, test_loader = read_data_sine_wave(flags)
+        train_loader, test_loader = read_data_sine_wave(flags, eval_data_all=eval_data_all)
     elif flags.data_set == 'naval_propulsion':
-        train_loader, test_loader = read_data_naval_propulsion(flags)
+        train_loader, test_loader = read_data_naval_propulsion(flags, eval_data_all=eval_data_all)
     elif flags.data_set == 'robotic_arm':
-        train_loader, test_loader = read_data_robotic_arm(flags)
+        train_loader, test_loader = read_data_robotic_arm(flags, eval_data_all=eval_data_all)
     else:
         sys.exit("Your flags.data_set entry is not correct, check again!")
     return train_loader, test_loader
