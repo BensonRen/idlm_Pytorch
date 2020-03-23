@@ -230,7 +230,7 @@ class Network(object):
                     if self.best_validation_loss < self.flags.stop_threshold:
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
                               (epoch, self.best_validation_loss))
-                        return None
+                        break
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)

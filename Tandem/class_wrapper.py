@@ -372,7 +372,7 @@ class Network(object):
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
                               (epoch, self.best_validation_loss))
                         self.log.close()
-                        return None
+                        break
 
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
