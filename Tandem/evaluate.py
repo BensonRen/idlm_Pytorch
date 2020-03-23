@@ -68,6 +68,16 @@ def evaluate_all(models_dir="models"):
     return None
 
 
+def evaluate_different_dataset(multi_flag, eval_data_all):
+     """
+     This function is to evaluate all different datasets in the model with one function call
+     """
+     data_set_list = ["meta_material","gaussian_model_0310","robotic_armreg0.0005trail_0_complexity_swipe_layer300_num6","sine_wave"]
+     for eval_model in data_set_list:
+        useless_flags = flag_reader.read_flag()
+        useless_flags.eval_model = eval_model
+        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all)
+
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
     useless_flags = flag_reader.read_flag()
@@ -75,7 +85,8 @@ if __name__ == '__main__':
     print(useless_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
-    evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
+    #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
+    evaluate_different_dataset(multi_flag=False, eval_data_all=True)
     #evaluate_from_model(useless_flags.eval_model)
     #evaluate_all("")
 

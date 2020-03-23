@@ -33,8 +33,9 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     if (model_dir.startswith("models")):
         model_dir = model_dir[7:]
         print("after removing prefix models/, now model_dir is:", model_dir)
+    print(model_dir)
     flags = load_flags(os.path.join("models", model_dir))
-    flags.eval_model = eval_flags.eval_model                    # Reset the eval mode
+    flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.05
@@ -53,7 +54,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/time_evaluation/Backprop/sine_wave', save_all=True)
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/sine_wave', save_all=True)
     else:
         pred_file, truth_file = ntwk.evaluate()
 
@@ -72,16 +73,27 @@ def evaluate_all(models_dir="models"):
             evaluate_from_model(os.path.join(models_dir, file))
     return None
 
+def evaluate_different_dataset(multi_flag, eval_data_all):
+     """
+     This function is to evaluate all different datasets in the model with one function call
+     """
+     data_set_list = ["robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6","sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8","gaussian_mixturereg0.0005trail_1_backward_complexity_swipe_layer60_num9"]
+     for eval_model in data_set_list:
+        useless_flags = flag_reader.read_flag()
+        useless_flags.eval_model = eval_model
+        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all)
+
 
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
     eval_flags = flag_reader.read_flag()
 
-    print(eval_flags.eval_model)
+    #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
-    evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
+    evaluate_from_model(eval_flags.eval_model, multi_flag=True)
+    #evaluate_different_dataset(multi_flag=False, eval_data_all=True)
+    #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)
 

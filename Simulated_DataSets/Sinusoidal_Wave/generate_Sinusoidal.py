@@ -13,7 +13,7 @@ x_dimension = 3         # Current version only support 2 dimension due to visual
 y_dimension = 2         # Current version only support 2 dimension due to visualization issue
 x_low = -1
 x_high = 1
-num_sample_dimension = 40
+num_sample_dimension = 20
 f = 2
 
 def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):

@@ -237,7 +237,7 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     return train_loader, test_loader
 
 
-def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=1234, test_ratio=0.2):
+def get_data_into_loaders(data_x, data_y, batch_size, DataSetClass, rand_seed=1234, test_ratio=0.02):
     """
     Helper function that takes structured data_x and data_y into dataloaders
     :param data_x: the structured x data
@@ -293,7 +293,7 @@ def read_data_gaussian_mixture(flags, eval_data_all=False):
     data_y = np.squeeze(data_y)                             # Squeeze since this is a 1 column label
     data_x = normalize_np(data_x)
     if eval_data_all:
-        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class, test_ratio=0.999)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
 
 

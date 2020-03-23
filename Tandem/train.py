@@ -40,12 +40,25 @@ def training_from_flag(flags):
     # put_param_into_folder(ntwk.ckpt_dir)
 
 
+def retrain_different_dataset():
+     """
+     This function is to evaluate all different datasets in the model with one function call
+     """
+     from utils.helper_functions import load_flags
+     data_set_list = ["meta_material","gaussian_model_0310","robotic_armreg0.0005trail_0_complexity_swipe_layer300_num6","sine_wave"]
+     for eval_model in data_set_list:
+        flags = load_flags(os.path.join("models", eval_model))
+        flags.model_name = "retrain_time_eval" + flags.model_name
+        training_from_flag(flags)
+
+
 if __name__ == '__main__':
     # Read the parameters to be set
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    training_from_flag(flags)
+    # training_from_flag(flags)
 
-
+    # Do the retraining for all the data set to get the training 
+    retrain_different_dataset()
 

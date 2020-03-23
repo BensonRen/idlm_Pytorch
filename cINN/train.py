@@ -39,15 +39,28 @@ def training_from_flag(flags):
 
     #evaluate_from_model(ntwk.model_name)
 
-if __name__ == '__main__':
-    torch.manual_seed(1)
-    torch.cuda.manual_seed(1)
 
+def retrain_different_dataset():
+     """
+     This function is to evaluate all different datasets in the model with one function call
+     """
+     from utils.helper_functions import load_flags
+     data_set_list = ["robotic_armcouple_layer_num6trail_0", "sine_wavecouple_layer_num8trail_0",
+                        "meta_materialcouple_layer_num5trail_1", "gaussian_mixturecouple_layer_num6trail_1"]
+     for eval_model in data_set_list:
+        flags = load_flags(os.path.join("models", eval_model))
+        flags.model_name = "retrain_time_eval" + flags.model_name
+        training_from_flag(flags)
+
+
+if __name__ == '__main__':
+    # torch.manual_seed(1)
+    # torch.cuda.manual_seed(1)
     # Read the parameters to be set
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    training_from_flag(flags)
+    # training_from_flag(flags)
 
-
-
+    # Do the retraining for all the data set to get the training 
+    retrain_different_dataset()
