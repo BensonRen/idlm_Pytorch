@@ -43,6 +43,7 @@ def retrain_different_dataset():
      """
      from utils.helper_functions import load_flags
      data_set_list = ["robotic_armcouple_layer_num5dim_total4", "sine_wavecouple_layer_num6dim_total5"]
+     #data_set_list = ["robotic_armcouple_layer_num5dim_total4", "sine_wavecouple_layer_num6dim_total5"]
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("models", eval_model))
         flags.model_name = "retrain_time_eval" + flags.model_name

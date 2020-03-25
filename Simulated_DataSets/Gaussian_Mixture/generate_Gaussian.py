@@ -26,9 +26,12 @@ def plotData(data_x, data_y, save_dir='generated_gaussian_scatter.png', eval_mod
     :return: None
     """
     f = plt.figure(figsize=[15,15])
-    if eval_mode:
-        data_x *= cluster_distance_to_center + in_class_variance
-    plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y, s=1)
+    if 'Tandem' in save_dir:
+        plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y, s=100,cmap='brg')
+    else: 
+        if eval_mode:
+            data_x *= cluster_distance_to_center + in_class_variance
+        plt.scatter(data_x[:, 0], data_x[:, 1], c=data_y, s=5,cmap='brg')
     plt.title(save_dir, fontsize=15)
     plt.xlabel('x1')
     plt.xlabel('x2')

@@ -588,3 +588,33 @@ def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=Fa
         plt.savefig(os.path.join(data_dir, data_name + save_name + '.png'))
 
 
+def plotGaussian():
+    # Plotting the gaussian plots
+    import pandas as pd
+    from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import plotData
+    import numpy as np
+    import os
+    data_dir = '/work/sr365/multi_eval'
+    for dirs in os.listdir(data_dir):
+        print("entering :", dirs)
+        print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
+        print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
+        if not os.path.isdir(os.path.join(data_dir, dirs)):
+            continue
+        for subdirs in os.listdir(os.path.join(data_dir, dirs)):
+            if 'gaussian' in subdirs:                          
+                for subfiles in os.listdir(os.path.join(data_dir, dirs, subdirs)):
+                    if 'inference0' not in subfiles:
+                        continue;
+                    if 'Ypred' in subfiles:
+                        filename = os.path.join(data_dir, dirs, subdirs, subfiles)
+                        data_y = pd.read_csv(filename, header=None, sep=' ').values.astype('float')
+                        if 'Backprop' in dirs:
+                            data_y = np.argmax(data_y,axis=1)
+                        data_y = np.ravel(data_y)
+                        print("shape of data_y", np.shape(data_y))
+                    if 'Xpred' in subfiles:
+                        filename = os.path.join(data_dir, dirs, subdirs, subfiles)
+                        data_x = pd.read_csv(filename, header=None, sep=' ').values
+                        print("shape of data_x", np.shape(data_x))
+                plotData(data_x, data_y, save_dir=dirs+'generated_gaussian_inference0.png',eval_mode=True)
