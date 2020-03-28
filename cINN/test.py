@@ -1,5 +1,6 @@
 import torch
 from utils import plotsAnalysis
+
 if __name__ == '__main__':
     #plotsAnalysis.HeatMapBVL('num_layers','num_unit','layer vs unit Heat Map',save_name='linear_complexity_heatmap.png',
     #                            HeatMap_dir='models/',feature_1_name='linear_b',feature_2_name='linear_unit')
@@ -24,7 +25,7 @@ if __name__ == '__main__':
 
 
 
-
+"""
     # Plotting the gaussian plots
     import pandas as pd
     from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import plotData
@@ -54,4 +55,4 @@ if __name__ == '__main__':
                         data_x = pd.read_csv(filename, header=None, sep=' ').values
                         print("shape of data_x", np.shape(data_x))
                 plotData(data_x, data_y, save_dir=dirs+'generated_gaussian_inference0.png',eval_mode=True)
-
+"""
