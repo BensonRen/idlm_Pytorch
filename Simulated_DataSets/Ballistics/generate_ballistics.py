@@ -6,21 +6,22 @@ The simulated cluster would be similar to the artifical data set from the INN Be
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-
+import warnings
 
 # Define some constants
 k = 0.9
 g = 1
 m = 0.5
-num_samples = 20000
+num_samples = 20
 
-def determine_final_position(x, final_pos_return=False):
+def determine_final_position(x, final_pos_return=False, use_minimizer=False):
     """
     The function to determine the final y position of a ballistic movement which starts at (x1, x2) and throw at angle
     of x3 and initial velocity of x4, y is the horizontal position of the ball when hitting ground
     :param x: (N,4) numpy array
     :param final_pos_return: The flag to return the final position list for each point in each time steps, for debuggin
     purpose and should be turned off during generation
+    :param use_minimizer: The flag to use a minimizer to solve the function to get time y
     :return: (N, 1) numpy array of y value
     """
     # Get the shape N
@@ -30,24 +31,38 @@ def determine_final_position(x, final_pos_return=False):
     output = np.zeros([N, 1])
 
     # Initialize the guess for time steps
-    time_list = np.arange(0, 30, 0.0001)
+    t_max = 100
+    t_interval = 0.0001
+    time_list = np.arange(0, t_max, t_interval)
 
     if final_pos_return:
         final_pos_list = []
 
     for i in range(N):
+        print("Solving for the sample number", i)
         # Separate the x into subsets for simplicity
         x1, x2, x3, x4 = x[i, 0], x[i, 1], x[i, 2], x[i, 3]
 
-        final_pos = Position_at_time_T(x1, x2, x3, x4, time_list)
+        final_pos = Position_at_time_T(time_list, x1, x2, x3, x4)
 
         # Final time step
-        time = np.argmin(np.abs(final_pos[:, 1]))
-        y = final_pos[time, 0]
+        time = np.argmin(final_pos[:, 1])
+        final_x = final_pos[time, 0]
 
-        err = np.abs(final_pos[time, 1])
-        assert err < 0.001, 'Your time solution is not accurate enough, current accuracy is {} at time step {}'.format(err, time)
-        output[i] = y
+        final_y = final_pos[time, 1]
+        if final_y > 0.001:
+            warnings.warn('Your time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
+            print('Your time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
+        # If the minimizer is used
+        if use_minimizer:
+            time_minimizer = solve_by_minimizer(x1, x2, x3, x4)
+            x_minimizer = Position_at_time_T(time_minimizer, x1, x2, x3, x4)[:, 0]
+            y_minimizer = Position_at_time_T(time_minimizer, x1, x2, x3, x4)[:, 1]
+            print('Using a minimizer, the time= {} with x={} y={}'.format(time_minimizer, x_minimizer, y_minimizer)) 
+            print('In contrast linear, the time= {} with x={} y={}'.format(time*t_interval, final_x, final_y)) 
+
+        print("final_x = ", final_x, "final_y= ", final_y)
+        output[i] = final_x
         if final_pos_return:
             final_pos_list.append(final_pos)
     if final_pos_return:
@@ -56,24 +71,68 @@ def determine_final_position(x, final_pos_return=False):
         return output
 
 
-def Position_at_time_T(x1, x2, x3, x4, t):
+def solve_by_minimizer(x1, x2, x3, x4):
+    """
+    This function is to solve the instable function solving for linear spacing method.
+    It calls the scipy.minimizer to solve for the Y = 0 point
+    """
+    from scipy.optimize import minimize
+    # Initial gues of the answer
+    t0 = 5
+    res = minimize(Abs_Pos_y_at_time_T, t0,args=(x1,x2,x3,x4),options={'disp': True})
+    result = np.copy(res.x)
+    return result
+
+
+def Abs_Pos_y_at_time_T(t, x1, x2, x3, x4):
+    # Get the initial velocity information
+    v1 = x4 * np.cos(x3)
+    v2 = x4 * np.sin(x3)
+    if len(np.shape(t)) < 1:  # For the case of it is a number input
+        print("This t is not a long list")
+        N = 1 
+    else:
+        N = len(t)
+    output = np.zeros([N, 2])   # Initialize the output
+    exponential_part = np.exp(-k*t/m) - 1
+    output[:, 0] = x1 - v1 * m / k * exponential_part
+    output[:, 1] = x2 - m / k / k * ((g*m + v2 * k)  * exponential_part + g*t*k)
+    # Set all the positions after hitting ground to be 1
+    output[:, 1] = np.abs(output[:,1])
+    #hit_ground = output[:, 1] < 0
+    #output[hit_ground, 1] = 1
+    return output[:, 1]
+
+
+    return Position_at_time_T(t, x1, x2, x3, x4)[:, 1]
+
+
+def Position_at_time_T(t, x1, x2, x3, x4):
     """
     infer the position of the trajectory at time x given input
     :param x1: x initial position, single number
     :param x2: y initial positio, single numbern
     :param x3: angle of thro, single numberw
     :param x4: velocity of thro, single numberw
-    :param t: (N x 1) numpy array of time steps
-    :return: (N X 2) numpy array of postions
+    :param t: (N x 1) or (int) numpy array of time steps
+    :return: (N X 2) or (int) numpy array of positions
     """
     # Get the initial velocity information
     v1 = x4 * np.cos(x3)
     v2 = x4 * np.sin(x3)
-    N = np.shape(t)[0]      # get the shape of input
+    if len(np.shape(t)) < 1:  # For the case of it is a number input
+        print("This t is not a long list")
+        N = 1 
+    else:
+        N = len(t)
     output = np.zeros([N, 2])   # Initialize the output
     exponential_part = np.exp(-k*t/m) - 1
     output[:, 0] = x1 - v1 * m / k * exponential_part
     output[:, 1] = x2 - m / k / k * ((g*m + v2 * k)  * exponential_part + g*t*k)
+    # Set all the positions after hitting ground to be 1
+    output[:, 1] = np.abs(output[:,1])
+    #hit_ground = output[:, 1] < 0
+    #output[hit_ground, 1] = 1
     return output
 
 
@@ -97,21 +156,22 @@ def plot_trajectory(x):
     :return: one single plot of all the N trajectories
     """
     # Get the trajectory first
-    y, final_postitions = determine_final_position(x, final_pos_return=True)
+    y, final_positions = determine_final_position(x, final_pos_return=True)
     f = plt.figure()
-    plt.plot([0, 20], [0, 0],'r--', label="horitonal line")
+    plt.plot([0, 10], [0, 0],'r--', label="horitonal line")
     for i in range(len(y)):
-        plt.plot(final_postitions[i][:, 0], final_postitions[i][:, 1], label=str(i))
+        before_hit_ground = np.argmin(final_positions[i][:, 1])
+        plt.plot(final_positions[i][:before_hit_ground, 0], final_positions[i][:before_hit_ground, 1], label=str(i))
     plt.legend()
-    plt.ylim(bottom=0)
-    plt.xlim([-1, 10])
+    #plt.ylim(bottom=0)
+    #plt.xlim([-1, 10])
     plt.title("trajectory plot for ballistic data set")
     plt.savefig('k={} m={} g={} Trajectory_plot.png'.format(k,m,g))
 
 
 if __name__ == '__main__':
     X = generate_random_x()
-    y = determine_final_position(X)
-    # plot_trajectory(X)
+    y = determine_final_position(X, use_minimizer=True)
+    plot_trajectory(X)
     np.savetxt('data_x.csv', X, delimiter=',')
     np.savetxt('data_y.csv', y, delimiter=',')

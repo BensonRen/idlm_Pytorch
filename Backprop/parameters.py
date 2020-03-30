@@ -4,9 +4,10 @@ Params for Back propagation model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
+DATA_SET = 'ballistics'
 
 # Model Architectural Params for meta_material data Set
 USE_LORENTZ = False
@@ -16,7 +17,7 @@ USE_LORENTZ = False
 #CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [2, 60, 60, 60, 60, 60, 60, 4]                 # Dimension of data set cross check with data generator
+LINEAR = [4, 100, 100, 100, 100, 1]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
@@ -48,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"
+EVAL_MODEL = "ballisticsreg0.005trail_5_complexity_swipe_layer150_num6"

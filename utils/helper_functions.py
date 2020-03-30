@@ -16,6 +16,7 @@ import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
 from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
+from Simulated_DataSets.Ballistics.generate_ballistics import determine_final_position
 
 # 1
 def get_Xpred(path, name=None):
@@ -229,13 +230,13 @@ def simulator_robotic(Xpred):
 
 
 # 12
-def simulator_naval(Xpred):
+def simulator_ballistics(Xpred):
     """
-    The simulator function for naval dataset
+    The simulator function for ballistics dataset
     :param Xpred: The Xpred output from model
     :return:
     """
-    return None
+    return determine_final_position(Xpred, use_minimizer=True)
 
 
 # 13
@@ -256,6 +257,8 @@ def simulator(data_set, Xpred):
         return simulator_naval(Xpred)
     elif data_set == 'robotic_arm':
         return simulator_robotic(Xpred)
+    elif data_set == 'ballistics':
+        return simulator_ballistics(Xpred)
     else:
         sys.exit("In Simulator: Your data_set entry is not correct, check again!")
 

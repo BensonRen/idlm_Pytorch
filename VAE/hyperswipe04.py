@@ -45,7 +45,7 @@ if __name__ == '__main__':
     #        flags.kl_coeff = kl_coeff
 
 
-    unit_list = [500, 1000]
+    unit_list = [30, 50, 100, 500]
     for layer_num in range(5, 10):
         for unit in unit_list:
             flags = flag_reader.read_flag()  	            # setting the base case
@@ -57,7 +57,7 @@ if __name__ == '__main__':
             linear_e[-1] = flags.dim_z * 2
             flags.linear_d = linear_d
             flags.linear_e = linear_e
-            for i in range(1):
+            for i in range(2):
                 flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i)
                 print(flags.model_name)
                 train.training_from_flag(flags)

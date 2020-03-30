@@ -280,6 +280,20 @@ def normalize_np(x):
     return x
 
 
+def read_data_ballistics(flags, eval_data_all=False):
+    """
+    Data reader function for the ballistic data set
+    :param flags: Input flags
+    :return train_loader and test_loader in pytorch data set format (unnormalized)
+    """
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Ballistics/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class, test_ratio=0.999)
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class)
+
+
 def read_data_gaussian_mixture(flags, eval_data_all=False):
     """
     Data reader function for the gaussian mixture data set
@@ -352,6 +366,7 @@ def read_data(flags, eval_data_all=False):
     2. sine_wave
     3. naval_propulsion
     4. robotic_arm
+    5. ballistics
     :param flags: The input flag of the input data set
     :param eval_data_all: The switch to turn on if you want to put all data in evaluation data
     :return:
@@ -375,6 +390,8 @@ def read_data(flags, eval_data_all=False):
         train_loader, test_loader = read_data_naval_propulsion(flags, eval_data_all=eval_data_all)
     elif flags.data_set == 'robotic_arm':
         train_loader, test_loader = read_data_robotic_arm(flags, eval_data_all=eval_data_all)
+    elif flags.data_set == 'ballistics':
+        train_loader, test_loader = read_data_ballistics(flags, eval_data_all=eval_data_all)
     else:
         sys.exit("Your flags.data_set entry is not correct, check again!")
     return train_loader, test_loader

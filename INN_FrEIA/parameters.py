@@ -4,20 +4,22 @@ The parameter file storing the parameters for INN Model
 
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-DATA_SET = 'gaussian_mixture'
+# DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
+DATA_SET = 'ballistics'
 
 # Architectural Params
-DIM_Z = 1
-DIM_X = 2
+DIM_Z = 3
+DIM_X = 4
 DIM_Y = 1
-DIM_TOT = 5
+DIM_TOT = 8
 COUPLE_LAYER_NUM = 8
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
-LINEAR_SE = [150, 150, 150, 150, DIM_Y]                                              # Linear units for spectra encoder
+#LINEAR_SE = [150, 150, 150, 150, DIM_Y]                                              # Linear units for spectra encoder
+LINEAR_SE = []                                              # Linear units for spectra encoder
 CONV_OUT_CHANNEL_SE = []
 CONV_KERNEL_SIZE_SE = []
 CONV_STRIDE_SE = []
@@ -39,10 +41,10 @@ OPTIM = "Adam"
 REG_SCALE = 5e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4096
-EVAL_STEP = 2
+EVAL_STEP = 20
 GRAD_CLAMP = 15
 TRAIN_STEP = 300
-VERB_STEP = 1
+VERB_STEP = 10
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9

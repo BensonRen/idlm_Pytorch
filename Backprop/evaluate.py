@@ -54,7 +54,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/sine_wave', save_all=True)
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/' + flags.data_set, save_all=True)
     else:
         pred_file, truth_file = ntwk.evaluate()
 
@@ -92,8 +92,8 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
-    evaluate_different_dataset(multi_flag=False, eval_data_all=True)
+    evaluate_from_model(eval_flags.eval_model, multi_flag=True)
+    #evaluate_different_dataset(multi_flag=False, eval_data_all=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)
