@@ -432,6 +432,9 @@ def MeanAvgnMinMSEvsTry(data_dir):
         if 'Ypred' in files:
             print(files)
             Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
+            if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
+                Yp = np.reshape(Yp, [-1, 1])
+            print("shape of Ypred file is", np.shape(Yp))
             Ypred_list.append(Yp)
 
     # Calculate the large MSE matrix
@@ -521,23 +524,50 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
                 # Put them into dictionary
                 avg_dict[dirs] = mse_avg_list
                 min_dict[dirs] = mse_min_list
-        
-    def plotDict(dict, name, logy=False):
+
+    # Create the evaluation time in second dictionary for plotting
+    eval_time_dict_robotic_arm = {"Backprop": 2.84, "Tandem":0.17, "VAE":0.25, "INN":0.40, "cINN":0.79, "Random":0.1}
+    eval_time_dict_sine_wave = {"Backprop": 7.19, "Tandem":0.55, "VAE":0.80, "INN":0.95, "cINN":3.16, "Random":0.1}
+    eval_time_dict_meta_material = {"Backprop": 96.47, "Tandem":0.55, "VAE":0.26, "INN":None, "cINN":0.27, "Random":0.1}
+    eval_time_dict_ballistics = {"Backprop": None, "Tandem":0.17, "VAE":0.25, "INN":None, "cINN":0.79, "Random": 0.1}
+    time_in_s_table = {"robotic_arm":        eval_time_dict_robotic_arm,
+                        "sine_wave":            eval_time_dict_sine_wave,
+                        "meta_material":        eval_time_dict_meta_material,
+                        "ballistics":           eval_time_dict_ballistics}
+       
+    def plotDict(dict, name, logy=False, time_in_s_table=None):
+        """
+        :param name: the name to save the plot
+        :param dict: the dictionary to plot
+        :param logy: use log y scale
+        :param time_in_s_table: a dictionary of dictionary which stores the averaged evaluation time
+                in seconds to convert the graph
+        """
+        color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", "INN":"k", "Random": "y"}
         f = plt.figure()
-        x_axis = np.arange(len(mse_avg_list))
         for key in sorted(dict.keys()):
-            plt.plot(x_axis, dict[key], label=key)
+            x_axis = np.arange(len(dict[key])).astype('float')
+            if time_in_s_table is not None:
+                x_axis *= time_in_s_table[data_name][key]
+            print(key)
+            plt.plot(x_axis, dict[key],c=color_dict[key], label=key)
         if logy:
             ax = plt.gca()
             ax.set_yscale('log')
         plt.legend()
-        plt.xlabel('inference time')
+        if time_in_s_table is not None:
+            plt.xlabel('inference time (s)')
+        else:
+            plt.xlabel('# of inference made')
         plt.ylabel('mse error')
+        plt.xlim([0, 1000])
         plt.title(data_name + 'performance plot')
         plt.savefig(os.path.join(data_dir, data_name + save_name + name))
         plt.close('all')
-    plotDict(avg_dict, '_avg.png')
-    plotDict(min_dict, '_min.png')
+    #plotDict(avg_dict, '_avg.png')
+    #plotDict(min_dict, '_min.png')
+    plotDict(avg_dict, '_avglog_time.png', logy=True, time_in_s_table=time_in_s_table)
+    plotDict(min_dict, '_minlog_time.png', logy=True, time_in_s_table=time_in_s_table)
     plotDict(avg_dict, '_avglog.png', logy=True)
     plotDict(min_dict, '_minlog.png', logy=True)
 

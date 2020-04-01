@@ -15,8 +15,8 @@ DIM_Z = 5
 DIM_X = 4 
 DIM_Y = 1
 DIM_SPEC = None
-LINEAR_D = [DIM_Y + DIM_Z, 100, 100, 100,    DIM_X]           # Linear units for Decoder
-LINEAR_E = [DIM_Y + DIM_X, 100, 100, 100,  2*DIM_Z]                   # Linear units for Encoder
+LINEAR_D = [DIM_Y + DIM_Z, 50, 50, 50, 50,    DIM_X]           # Linear units for Decoder
+LINEAR_E = [DIM_Y + DIM_X, 50, 50, 50, 50,  2*DIM_Z]                   # Linear units for Encoder
 LINEAR_SE = []                      # Linear units for spectra encoder
 CONV_OUT_CHANNEL_SE = []
 CONV_KERNEL_SIZE_SE = []
@@ -33,7 +33,7 @@ REG_SCALE = 5e-3
 BATCH_SIZE = 256
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
-TRAIN_STEP = 300
+TRAIN_STEP = 3000
 VERB_STEP = 1
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
@@ -54,4 +54,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "gaussian_mixturekl_coeff0.04lr0.01reg0.005"
+EVAL_MODEL = "ballisticskl_coeff0.5lr0.001reg0.005"

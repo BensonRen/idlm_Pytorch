@@ -89,8 +89,8 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
+    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     # evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    evaluate_all("models/ballistic/")
+    #evaluate_all("models/ballistic/")
     #evaluate_different_dataset(multi_flag=False, eval_data_all=True)
 

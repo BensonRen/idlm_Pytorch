@@ -25,7 +25,7 @@ LOAD_FORWARD_CKPT_DIR = None
 #CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [4, 150, 150, 150, 150, 1]
+LINEAR_F = [4, 1000, 1000, 1000, 1000, 1000, 1000, 1]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
@@ -51,7 +51,7 @@ STOP_THRESHOLD = 1e-5
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = 'robotic_armreg0.0005trail_0_complexity_swipe_layer300_num6'
+EVAL_MODEL = 'ballisticsreg0.005trail_2_complexity_swipe_layer50_num8'
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]

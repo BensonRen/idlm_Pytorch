@@ -64,4 +64,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "robotic_armcouple_layer_num5dim_total4"
+EVAL_MODEL = "ballisticscouple_layer_num9dim_total6"

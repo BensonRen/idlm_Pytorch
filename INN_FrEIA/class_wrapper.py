@@ -441,13 +441,14 @@ class Network(object):
                 np.savetxt(fxp, Xpred, fmt='%.3f')
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/time_evaluation/INN/robotic_arm'):
+    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/INN/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result
         :return:
         """
         tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
+        save_dir += self.flags.data_set
         for i in range(time):
             self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
             tk.record(i)

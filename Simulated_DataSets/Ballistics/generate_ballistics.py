@@ -9,10 +9,18 @@ import math
 import warnings
 
 # Define some constants
-k = 0.9
-g = 1
-m = 0.5
-num_samples = 20
+k = 0.25
+g = 9.81
+m = 0.2
+
+##############################
+# Previous data distribution #
+##############################
+#k=0.9
+#m=0.5
+#g=1
+
+num_samples = 20000
 
 def determine_final_position(x, final_pos_return=False, use_minimizer=False):
     """
@@ -50,9 +58,9 @@ def determine_final_position(x, final_pos_return=False, use_minimizer=False):
         final_x = final_pos[time, 0]
 
         final_y = final_pos[time, 1]
-        if final_y > 0.001:
-            warnings.warn('Your time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
-            print('Your time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
+        if final_y > 0.001 and not use_minimizer:
+            warnings.warn('Your linear spaced time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
+            print('Your linear spaced time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
         # If the minimizer is used
         if use_minimizer:
             time_minimizer = solve_by_minimizer(x1, x2, x3, x4)
@@ -60,6 +68,10 @@ def determine_final_position(x, final_pos_return=False, use_minimizer=False):
             y_minimizer = Position_at_time_T(time_minimizer, x1, x2, x3, x4)[:, 1]
             print('Using a minimizer, the time= {} with x={} y={}'.format(time_minimizer, x_minimizer, y_minimizer)) 
             print('In contrast linear, the time= {} with x={} y={}'.format(time*t_interval, final_x, final_y)) 
+            if y_minimizer > 0.001:
+                warnings.warn('Your scipy minimizer solution is not accurate enough')
+                print('Your scipy minimizer solution is not accurate enough')
+                
 
         print("final_x = ", final_x, "final_y= ", final_y)
         output[i] = final_x
@@ -78,8 +90,8 @@ def solve_by_minimizer(x1, x2, x3, x4):
     """
     from scipy.optimize import minimize
     # Initial gues of the answer
-    t0 = 5
-    res = minimize(Abs_Pos_y_at_time_T, t0,args=(x1,x2,x3,x4),options={'disp': True})
+    t0 = 20
+    res = minimize(Abs_Pos_y_at_time_T, t0,args=(x1,x2,x3,x4),options={'disp': False},bounds=[(0,None)],tol=1e-4)
     result = np.copy(res.x)
     return result
 
@@ -169,9 +181,23 @@ def plot_trajectory(x):
     plt.savefig('k={} m={} g={} Trajectory_plot.png'.format(k,m,g))
 
 
+
+def generate_1000_random_x(save_dir='/work/sr365/multi_eval/Random/ballistics/'):
+    """
+    Generate the random solutions for comparisons
+    """
+    for i in range(1000):
+        Xpred_save_name = save_dir + 'ballistics_Xpred_random_guess_inference' + str(i) + '.csv'
+        Ypred_save_name = Xpred_save_name.replace('Xpred','Ypred')
+        Xpred = generate_random_x()
+        Ypred = determine_final_position(Xpred, use_minimizer=True)
+        np.savetxt(Xpred_save_name, Xpred, delimiter=' ')
+        np.savetxt(Ypred_save_name, Ypred, delimiter=' ')
+
 if __name__ == '__main__':
     X = generate_random_x()
     y = determine_final_position(X, use_minimizer=True)
-    plot_trajectory(X)
+    #plot_trajectory(X)
     np.savetxt('data_x.csv', X, delimiter=',')
     np.savetxt('data_y.csv', y, delimiter=',')
+    #generate_1000_random_x()
