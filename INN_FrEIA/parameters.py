@@ -28,7 +28,7 @@ CONV_STRIDE_SE = []
 #CONV_STRIDE_SE = [1, 1, 2]
 
 # Loss ratio
-LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
+LAMBDA_MSE = 0.1             # The Loss factor of the MSE loss (reconstruction loss)
 LAMBDA_Z = 300.             # The Loss factor of the latent dimension (converging to normal distribution)
 LAMBDA_REV = 400.           # The Loss factor of the reverse transformation (let x converge to input distribution)
 ZEROS_NOISE_SCALE = 5e-2          # The noise scale to add to

@@ -206,19 +206,25 @@ class Network(object):
                 ################
                 self.optm.zero_grad()                               # Zero the gradient first
                 ypred = self.model(x)                               # Get the Ypred
-                y_without_pad = torch.cat((y[:, :dim_z], y[:, -dim_y:]), dim=1)
+                #y_without_pad = torch.cat((y[:, :dim_z], y[:, -dim_y:]), dim=1)
 
                 # Do the same thing for ypred
-                y_block_grad = torch.cat((ypred[:, :dim_z], ypred[:, -dim_y:]), dim=1)
+                #y_block_grad = torch.cat((ypred[:, :dim_z], ypred[:, -dim_y:]), dim=1)
 
                 # Do the MSE loss for reconstruction, Doesn't compare z part (only pad and y itself)
                 MSE_loss_y = self.make_loss(logit=ypred[:, dim_z:], labels=y[:, dim_z:])
 
                 # Get the MMD loss for latent
-                MMD_loss_latent = self.MMD(y_block_grad, y_without_pad)
-                Forward_loss = self.flags.lambda_mse * MSE_loss_y + self.flags.lambda_z * MMD_loss_latent
+                #MMD_loss_latent = self.MMD(y_block_grad, y_without_pad)
+                #Forward_loss = self.flags.lambda_mse * MSE_loss_y + self.flags.lambda_z * MMD_loss_latent
+
+                # Use the maximum likelihood method
+                log_det = self.model.log_jacobian(x=x)
+                Forward_loss = 0.5 * (MSE_loss_y / self.flags.lambda_mse + torch.mean(torch.square(z))) - log_det
                 Forward_loss.backward()
 
+                """
+                For a maximum likelihood method, there is no inverse step
                 #################
                 # Backward step #
                 #################
@@ -253,7 +259,7 @@ class Network(object):
                                 loss_factor * self.flags.lambda_rev * MMD_loss_x
 
                 Backward_loss.backward()
-
+                """
                 ######################
                 #  Gradient Clipping #
                 ######################
@@ -274,9 +280,9 @@ class Network(object):
                 # Record the training loss to the tensorboard
                 self.log.add_scalar('Loss/total_train', train_avg_loss, epoch)
                 self.log.add_scalar('Loss/MSE_y_train', MSE_loss_y, epoch)
-                self.log.add_scalar('Loss/MSE_x_train', MSE_loss_x, epoch)
-                self.log.add_scalar('Loss/MMD_z_train', MMD_loss_latent, epoch)
-                self.log.add_scalar('Loss/MMD_x_train', MMD_loss_x, epoch)
+                #self.log.add_scalar('Loss/MSE_x_train', MSE_loss_x, epoch)
+                #self.log.add_scalar('Loss/MMD_z_train', MMD_loss_latent, epoch)
+                #self.log.add_scalar('Loss/MMD_x_train', MMD_loss_x, epoch)
 
                 # Set to Evaluation Mode
                 self.model.eval()
