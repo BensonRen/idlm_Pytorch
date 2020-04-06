@@ -57,11 +57,11 @@ if __name__ == '__main__':
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    # training_from_flag(flags)
+    training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    for i in range(10):
-        retrain_different_dataset()
+    #for i in range(10):
+    #    retrain_different_dataset()
 
 
 

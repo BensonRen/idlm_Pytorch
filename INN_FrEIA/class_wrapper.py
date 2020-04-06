@@ -220,7 +220,8 @@ class Network(object):
 
                 # Use the maximum likelihood method
                 log_det = self.model.log_jacobian(x=x)
-                Forward_loss = 0.5 * (MSE_loss_y / self.flags.lambda_mse + torch.mean(torch.square(z))) - log_det
+                #print("The log determinant is", log_det)
+                Forward_loss = 0.5 * (MSE_loss_y / self.flags.lambda_mse + torch.mean(torch.pow(z,2))) - torch.mean(log_det)
                 Forward_loss.backward()
 
                 """
@@ -271,7 +272,10 @@ class Network(object):
                 #########################
                 self.optm.step()                                    # Move one step the optimizer
 
-                train_loss += Backward_loss + Forward_loss                                  # Aggregate the loss
+                # L2 + MMD training
+                #train_loss += Backward_loss + Forward_loss                                  # Aggregate the loss
+                # MLE training
+                train_loss += Forward_loss                               
 
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
@@ -322,18 +326,21 @@ class Network(object):
                     ################
                     self.optm.zero_grad()  # Zero the gradient first
                     ypred = self.model(x)  # Get the Ypred
-                    y_without_pad = torch.cat((y[:, :dim_z], y[:, -dim_y:]), dim=1)
+                    #y_without_pad = torch.cat((y[:, :dim_z], y[:, -dim_y:]), dim=1)
 
                     # Do the same thing for ypred
-                    y_block_grad = torch.cat((ypred[:, :dim_z], ypred[:, -dim_y:]), dim=1)
+                    #y_block_grad = torch.cat((ypred[:, :dim_z], ypred[:, -dim_y:]), dim=1)
 
                     # Do the MSE loss for reconstruction, Doesn't compare z part (only pad and y itself)
                     MSE_loss_y = self.make_loss(logit=ypred[:, dim_z:], labels=y[:, dim_z:])
 
                     # Get the MMD loss for latent
-                    MMD_loss_latent = self.MMD(y_block_grad, y_without_pad)
-                    Forward_loss = self.flags.lambda_mse * MSE_loss_y + self.flags.lambda_z * MMD_loss_latent
-
+                    #MMD_loss_latent = self.MMD(y_block_grad, y_without_pad)
+                    #Forward_loss = self.flags.lambda_mse * MSE_loss_y + self.flags.lambda_z * MMD_loss_latent
+                    log_det = self.model.log_jacobian(x=x)
+                    #print("The log determinant is", log_det)
+                    Forward_loss = 0.5 * (MSE_loss_y / self.flags.lambda_mse + torch.mean(torch.pow(z,2))) - torch.mean(log_det)
+                    """
                     #################
                     # Backward step #
                     #################
@@ -369,6 +376,8 @@ class Network(object):
 
 
                     test_loss += Backward_loss + Forward_loss  # Aggregate the loss
+                    """
+                    test_loss += Forward_loss
                 # Aggregate the other loss (in np form)
 
                 # Record the testing loss to the tensorboard
@@ -376,9 +385,9 @@ class Network(object):
 
                 self.log.add_scalar('Loss/total_test', test_avg_loss, epoch)
                 self.log.add_scalar('Loss/MSE_y_test', MSE_loss_y, epoch)
-                self.log.add_scalar('Loss/MSE_x_test', MSE_loss_x, epoch)
-                self.log.add_scalar('Loss/MMD_z_test', MMD_loss_latent, epoch)
-                self.log.add_scalar('Loss/MMD_x_test', MMD_loss_x, epoch)
+                #self.log.add_scalar('Loss/MSE_x_test', MSE_loss_x, epoch)
+                #self.log.add_scalar('Loss/MMD_z_test', MMD_loss_latent, epoch)
+                #self.log.add_scalar('Loss/MMD_x_test', MMD_loss_x, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))

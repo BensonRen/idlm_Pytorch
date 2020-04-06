@@ -282,6 +282,7 @@ class Network(object):
         :return:
         """
         tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
+        save_dir += self.flags.data_set
         for i in range(time):
             self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
             tk.record(i)

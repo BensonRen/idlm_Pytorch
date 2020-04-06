@@ -25,7 +25,7 @@ LOAD_FORWARD_CKPT_DIR = None
 #CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [4, 1000, 1000, 1000, 1000, 1000, 1000, 1]
+LINEAR_F = [4, 50, 50, 50, 50, 50, 1]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []

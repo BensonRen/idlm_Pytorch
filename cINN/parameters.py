@@ -63,4 +63,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL ="ballisticscouple_layer_num6trail_0" 
+EVAL_MODEL = "ballisticscouple_layer_num6trail_2"

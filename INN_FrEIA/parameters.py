@@ -43,12 +43,12 @@ BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
 GRAD_CLAMP = 15
-TRAIN_STEP = 300
+TRAIN_STEP = 1000
 VERB_STEP = 10
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
-STOP_THRESHOLD = 1e-4
+STOP_THRESHOLD = -float('inf')
 
 # Data specific params
 X_RANGE = [i for i in range(2, 10 )]

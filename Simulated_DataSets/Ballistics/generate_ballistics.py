@@ -20,7 +20,7 @@ m = 0.2
 #m=0.5
 #g=1
 
-num_samples = 20000
+num_samples = 10000
 
 def determine_final_position(x, final_pos_return=False, use_minimizer=False):
     """
@@ -58,6 +58,7 @@ def determine_final_position(x, final_pos_return=False, use_minimizer=False):
         final_x = final_pos[time, 0]
 
         final_y = final_pos[time, 1]
+        best_y = final_y
         if final_y > 0.001 and not use_minimizer:
             warnings.warn('Your linear spaced time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
             print('Your linear spaced time solution is not accurate enough, current accuracy is {} at time step {} and y is {}'.format(final_y, time*t_interval, final_x))
@@ -68,13 +69,19 @@ def determine_final_position(x, final_pos_return=False, use_minimizer=False):
             y_minimizer = Position_at_time_T(time_minimizer, x1, x2, x3, x4)[:, 1]
             print('Using a minimizer, the time= {} with x={} y={}'.format(time_minimizer, x_minimizer, y_minimizer)) 
             print('In contrast linear, the time= {} with x={} y={}'.format(time*t_interval, final_x, final_y)) 
-            if y_minimizer > 0.001:
-                warnings.warn('Your scipy minimizer solution is not accurate enough')
-                print('Your scipy minimizer solution is not accurate enough')
+            print('We choose the best solution among the two, which is {}'.format(best_y))
+            best_y = min(final_y, y_minimizer)
+
+            if best_y > 0.001:
+                warnings.warn('Your scipy minimizer solution and the linear spaced time solution are both not accurate enough')
+                print('Your scipy minimizer solution and the linear spaced time solution are both not accurate enough')
                 
 
-        print("final_x = ", final_x, "final_y= ", final_y)
-        output[i] = final_x
+        #print("final_x = ", final_x, "final_y= ", final_y)
+        if best_y == final_y:
+            output[i] = final_x
+        else:
+            output[i] = x_minimizer
         if final_pos_return:
             final_pos_list.append(final_pos)
     if final_pos_return:

@@ -49,4 +49,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballisticsreg0.005trail_5_complexity_swipe_layer150_num6"
+EVAL_MODEL = "ballisticsreg0.0005trail_2_complexity_swipe_layer50_num6"
