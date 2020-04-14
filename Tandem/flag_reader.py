@@ -21,6 +21,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # Data_Set parameter
     parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
+    parser.add_argument('--test-ratio', default=TEST_RATIO, type=float, help='the ratio of the test set')
     # Forward model architecture hyper parameters
     parser.add_argument('--load-forward-ckpt-dir', type=str, default=LOAD_FORWARD_CKPT_DIR, help='To load the forward training result and provide the directory')
     parser.add_argument('--linear-f', type=list, default=LINEAR_F, help='The fc layers units for forward model')

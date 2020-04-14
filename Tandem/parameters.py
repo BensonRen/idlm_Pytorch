@@ -8,6 +8,7 @@ Hyper-parameters of the Tandem model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 DATA_SET = 'ballistics'
+TEST_RATIO = 0.05
 
 # Model Architecture parameters
 #LOAD_FORWARD_CKPT_DIR = 'pre_trained_forward/'
@@ -41,17 +42,17 @@ REG_SCALE = 1e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 1024
 EVAL_STEP = 20
-TRAIN_STEP = 300
+TRAIN_STEP = 500
 VERB_STEP = 20
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
-STOP_THRESHOLD = 1e-5
+STOP_THRESHOLD = -1 #-1 means dont stop
 
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = 'ballisticsreg0.005trail_2_complexity_swipe_layer50_num8'
+EVAL_MODEL = 'ballisticsreg0.005trail_0_complexity_swipe_layer50_num7'
 
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]

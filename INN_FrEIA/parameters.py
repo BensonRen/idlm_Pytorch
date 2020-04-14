@@ -9,13 +9,14 @@ The parameter file storing the parameters for INN Model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 DATA_SET = 'ballistics'
+TEST_RATIO = 0.05
 
 # Architectural Params
 DIM_Z = 3
 DIM_X = 4
 DIM_Y = 1
 DIM_TOT = 8
-COUPLE_LAYER_NUM = 8
+COUPLE_LAYER_NUM = 6
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
 #LINEAR_SE = [150, 150, 150, 150, DIM_Y]                                              # Linear units for spectra encoder
@@ -43,8 +44,8 @@ BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
 GRAD_CLAMP = 15
-TRAIN_STEP = 1000
-VERB_STEP = 10
+TRAIN_STEP = 500
+VERB_STEP = 50
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
@@ -64,4 +65,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballisticscouple_layer_num9dim_total6"
+EVAL_MODEL = "ballistics_Jakob"

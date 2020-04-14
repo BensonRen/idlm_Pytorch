@@ -450,8 +450,9 @@ class Network(object):
                     #np.savetxt(fypp, Ypre_pred, fmt='%.3f')
                 else:
                     Xpred = self.model_b(spectra)
-                    Ypred = self.model_f(Xpred)
-                    np.savetxt(fyp, Ypred.cpu().data.numpy(), fmt='%.3f')
+                    #Ypred = self.model_f(Xpred)
+                    Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
+                    np.savetxt(fyp, Ypred, fmt='%.3f')
                     np.savetxt(fxp, Xpred.cpu().data.numpy(), fmt='%.3f')
                     np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
                 print("Ypred shape", np.shape(Ypred))

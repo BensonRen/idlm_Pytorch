@@ -9,6 +9,7 @@ The parameter file storing the parameters for VAE Model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 DATA_SET = 'ballistics'
+TEST_RATIO = 0.05
 
 # Architectural Params
 DIM_Z = 5 
@@ -33,7 +34,7 @@ REG_SCALE = 5e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
-TRAIN_STEP = 1000
+TRAIN_STEP = 500
 VERB_STEP = 1
 LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying

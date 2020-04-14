@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from utils.helper_functions import simulator
 
 def compare_truth_pred(pred_file, truth_file):
     """
@@ -18,6 +19,13 @@ def compare_truth_pred(pred_file, truth_file):
     pred = np.loadtxt(pred_file, delimiter=' ')
     truth = np.loadtxt(truth_file, delimiter=' ')
     print("in compare truth pred function in eval_help package, your shape of pred file is", np.shape(pred))
+    # Due to Ballistics dataset gives some non-real results (labelled -999)
+    valid_index = pred != -999
+    if (np.sum(valid_index) != len(valid_index)):
+        print("Your dataset should be ballistics and there are non-valid points in your prediction!")
+        print('number of non-valid points is {}'.format(len(valid_index) - np.sum(valid_index)))
+    pred = pred[valid_index]
+    truth = truth[valid_index]
     # This is for the edge case of ballistic, where y value is 1 dimensional which cause dimension problem
     if len(np.shape(pred)) == 1:
         pred = np.reshape(pred, [-1,1])
@@ -60,3 +68,17 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
         plt.savefig(os.path.join(os.path.abspath(''), 'data',
                              '{}.png'.format(eval_model_str)))
         print('(Avg MSE={:.4e})'.format(np.mean(mse)))
+
+
+def eval_from_simulator(Xpred_file, flags):
+    """
+    Evaluate using simulators from pred_file and return a new file with simulator results
+    :param Xpred_file: The prediction file with the Xpred in its name
+    :param data_set: The name of the dataset
+    """
+    Xpred = np.loadtxt(Xpred_file, delimiter=' ')
+    Ypred = simulator(flags.data_set, Xpred)
+    Ypred_file = Xpred_file.replace('Xpred', 'Ypred_Simulated')
+    np.savetxt(Ypred_file, Ypred)
+    Ytruth_file = Xpred_file.replace('Xpred','Ytruth')
+    plotMSELossDistrib(Ypred_file, Ytruth_file, flags)

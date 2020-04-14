@@ -50,11 +50,11 @@ if __name__ == '__main__':
     # dim_tot & #couple_layer #
     ###########################
 
-    lambda_mse_list = [0.01]
-    for dim_tot in range(4, 8):
-        for couple_layer in range(6,7):
+    lambda_mse_list = [0.0005]
+    for dim_tot in range(4, 6):
+        for couple_layer in range(6, 7):
             for lambda_mse in lambda_mse_list:
-                for i in range(3):
+                for i in range(4):
                     flags = flag_reader.read_flag()  	            # setting the base case\
                     flags.lambda_mse = lambda_mse
                     flags.dim_tot = dim_tot

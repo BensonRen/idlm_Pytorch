@@ -8,6 +8,7 @@ Params for Back propagation model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 DATA_SET = 'ballistics'
+TEST_RATIO = 0.002
 
 # Model Architectural Params for meta_material data Set
 USE_LORENTZ = False
@@ -29,7 +30,7 @@ REG_SCALE = 1e-3
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 1000
 EVAL_STEP = 20
-TRAIN_STEP = 300
+TRAIN_STEP = 500
 BACKPROP_STEP = 300
 LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
@@ -49,4 +50,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballisticsreg0.0005trail_2_complexity_swipe_layer50_num6"
+EVAL_MODEL = "ballisticsreg0.0005trail_0_complexity_swipe_layer500_num5"

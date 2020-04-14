@@ -16,7 +16,7 @@ import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
 from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
-from Simulated_DataSets.Ballistics.generate_ballistics import determine_final_position
+from Simulated_DataSets.Ballistics.Inverse_ballistics_original import InverseBallisticsModel
 
 # 1
 def get_Xpred(path, name=None):
@@ -236,8 +236,8 @@ def simulator_ballistics(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
-    return determine_final_position(Xpred, use_minimizer=True)
-
+    IB = InverseBallisticsModel()
+    return IB.forward_process(Xpred, output_full=True) 
 
 # 13
 def simulator(data_set, Xpred):

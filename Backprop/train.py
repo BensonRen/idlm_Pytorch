@@ -60,8 +60,8 @@ if __name__ == '__main__':
 
     # Call the train from flag function
     # training_from_flag(flags)
-
+    print(type(flags))
     # Do the retraining for all the data set to get the training 
-    for i in range(10):
-        retrain_different_dataset()
+    #for i in range(10):
+    #    retrain_different_dataset()
 

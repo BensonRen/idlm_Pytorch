@@ -20,7 +20,7 @@ m = 0.2
 #m=0.5
 #g=1
 
-num_samples = 10000
+num_samples = 128000
 
 def determine_final_position(x, final_pos_return=False, use_minimizer=False):
     """
@@ -205,6 +205,6 @@ if __name__ == '__main__':
     X = generate_random_x()
     y = determine_final_position(X, use_minimizer=True)
     #plot_trajectory(X)
-    np.savetxt('data_x.csv', X, delimiter=',')
-    np.savetxt('data_y.csv', y, delimiter=',')
+    np.savetxt('data_x_large.csv', X, delimiter=',')
+    np.savetxt('data_y_large.csv', y, delimiter=',')
     #generate_1000_random_x()

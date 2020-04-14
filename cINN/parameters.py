@@ -9,9 +9,10 @@ The parameter file storing the parameters for INN Model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 DATA_SET = 'ballistics'
+TEST_RATIO = 0.05
 
 # Architectural Params
-DIM_Z = 8
+DIM_Z = 4
 DIM_X = 4
 DIM_Y = 1
 COUPLE_LAYER_NUM = 8
@@ -37,8 +38,8 @@ Y_NOISE_SCALE = 1e-1
 
 # Optimization params
 OPTIM = "Adam"
-REG_SCALE = 5e-3
-BATCH_SIZE = 256
+REG_SCALE = 2e-5
+BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
 GRAD_CLAMP = 15
@@ -63,4 +64,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballisticscouple_layer_num6trail_2"
+EVAL_MODEL = "ballistics_Ben_version"

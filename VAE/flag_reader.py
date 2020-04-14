@@ -21,6 +21,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # Data_Set parameter
     parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
+    parser.add_argument('--test-ratio', default=TEST_RATIO, type=float, help='the ratio of the test set')
     # VAE model architecture hyper parameters
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
     parser.add_argument('--dim-x', default=DIM_X, type=int, help='dimension of the latent variable x')

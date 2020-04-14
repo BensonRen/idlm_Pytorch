@@ -44,6 +44,8 @@ def INN(flags):
 def subnet_fc(c_in, c_out):
     return nn.Sequential(nn.Linear(c_in, 512), nn.ReLU(), nn.Linear(512,512),nn.ReLU(),
                          nn.Linear(512,  c_out))
+    #return nn.Sequential(nn.Linear(c_in, 160), nn.ReLU(), nn.Linear(160,160),nn.ReLU(),
+    #                     nn.Linear(160,  c_out))
 
 # Can only take 2 input.... Due to the restriction of the framework used
 
