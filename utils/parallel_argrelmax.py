@@ -12,10 +12,10 @@ def torch_argrelmax(input_tensor):
     down_kernel = torch.tensor([0, 1, -1]).view(1,1,-1)
     up_branch = F.conv1d(input=input_tensor, weight=up_kernel, stride=1, bias=None, padding=1)
     down_branch = F.conv1d(input=input_tensor, weight=down_kernel, stride=1, bias=None, padding=1)
-    return F.relu(up_branch) * F.relu(down_branch)
+    return 1 * (F.relu(up_branch) * F.relu(down_branch) != 0)
 
 
 if __name__ == '__main__':
-    a = torch.tensor([0,1,2,3,2,1,2,1]).view(1,1,-1)
+    a = torch.tensor([0,10,20,30,20,10,20,10,20,30,40,50,1]).view(1,1,-1)
     print(a)
     print(torch_argrelmax(a))
