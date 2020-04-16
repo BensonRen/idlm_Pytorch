@@ -280,28 +280,38 @@ class Network(object):
         #print("shape of target_spectra_expand", np.shape(target_spectra_expand))
         #print("shape of geometry_eval", np.shape(geometry_eval))
         Best_MSE_list = []
+        Avg_MSE_list = []
         Xpred_best = None
         Best_MSE = 999
+        save_all_Best_MSE_list = np.ones([self.flags.eval_batch_size, 1]) * 999
+        save_all_Xpred_best = np.zeros_like(geometry_eval.cpu().data.numpy())
+        save_all_Ypred_best = None
+        # Define the full loss matrix, real means simulator loss, fake means NN loss
+        Full_loss_matrix_real = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
+        Full_loss_matrix_fake = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
+
         for i in range(self.flags.backprop_step):
             # Make the initialization from [-1, 1]
             geometry_eval_input = geometry_eval * 2 - 1
-            self.optm_eval.zero_grad()                               # Zero the gradient first
-            logit = self.model(geometry_eval_input)                      # Get the output
+            self.optm_eval.zero_grad()                                  # Zero the gradient first
+            logit = self.model(geometry_eval_input)                     # Get the output
             loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
-            loss.backward()                           # Calculate the Gradient
+            loss.backward()                                             # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
             
             ###################################
             # evaluate through simulator part #
             ###################################
             Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy())
-            if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+            if len(np.shape(Ypred)) == 1:                           # If this is the ballistics dataset where it only has 1d y'
                 Ypred = np.reshape(Ypred, [-1, 1])
             # Get the MSE list of these
             MSE_list = np.mean(np.square(Ypred - target_spectra_expand.cpu().data.numpy()), axis=1)
             # Get the best and the index of it
             best_MSE_in_batch = np.min(MSE_list)
+            avg_MSE_in_batch = np.mean(MSE_list)
             Best_MSE_list.append(best_MSE_in_batch)
+            Avg_MSE_list.append(avg_MSE_in_batch)
             best_estimate_index = np.argmin(MSE_list)
             if best_MSE_in_batch < Best_MSE:
                 # Update the best one
@@ -309,9 +319,35 @@ class Network(object):
                 # Get the best Xpred
                 Xpred_best = np.reshape(np.copy(geometry_eval_input.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
                 Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
-            
-             
+            # If choose the record the process
+            if save_all: 
+                # In the first epoch this is none, assign value to this
+                if save_all_Ypred_best is None:
+                    save_all_Ypred_best = Ypred
+                # Record the trails that gets better
+                #print("shape of MSE_list", np.shape(MSE_list))
+                #print("shape of save_all_best", np.shape(save_all_Best_MSE_list))
+                MSE_list = np.reshape(MSE_list, [-1, 1])
+                better_index = save_all_Best_MSE_list > MSE_list
+                # Update those MSE that is better now
+                save_all_Best_MSE_list = np.where(better_index, MSE_list, save_all_Best_MSE_list)
+                save_all_Xpred_best = np.where(better_index, geometry_eval_input.cpu().data.numpy(), save_all_Xpred_best)
+                save_all_Ypred_best = np.where(better_index, Ypred, save_all_Ypred_best)
+                #print("shape of best MSE List", np.shape(save_all_Best_MSE_list))
+                #print("shape of Xpred best", np.shape(save_all_Xpred_best))
+                #print("shape of Ypred best", np.shape(save_all_Ypred_best))
 
+            # record the full loss matrix
+            Full_loss_matrix_real[:, i] = np.squeeze(MSE_list)
+            Real_MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
+            Full_loss_matrix_fake[:, i] = np.copy(Real_MSE_list)
+            
+            # Learning rate decay upon plateau
+            self.lr_scheduler.step(loss.data)
+            """
+            ##########################################
+            # Old version before change to simulator #
+            ##########################################
             # check periodically to stop and print stuff
             if i % self.flags.eval_step == 0:
                 print("loss at inference step{} : {}".format(i, loss.data))     # Print loss
@@ -320,12 +356,14 @@ class Network(object):
                 if loss.data < self.flags.stop_threshold:                       # Check if stop
                     print("Loss is lower than threshold{}, inference stop".format(self.flags.stop_threshold))
                     break
-
-            # Learning rate decay upon plateau
-            self.lr_scheduler.step(loss.data)
+            """
         
-        # Save the Best_MSE list
-        np.savetxt('best_mse_list{}.csv'.format(ind), Best_MSE_list)
+        # Save the Best_MSE list for first few to sample
+        if ind < 20:
+            np.savetxt('best_mse/best_mse_list{}.csv'.format(ind), Best_MSE_list)
+            np.savetxt('best_mse/avg_mse_list{}.csv'.format(ind), Avg_MSE_list)
+            np.savetxt('best_mse/full_loss_mat_real{}.csv'.format(ind), Full_loss_matrix_real)
+            np.savetxt('best_mse/full_loss_mat_fake{}.csv'.format(ind), Full_loss_matrix_fake)
 
         if save_all:
             for i in range(len(geometry_eval_input.cpu().data.numpy())):
@@ -333,15 +371,15 @@ class Network(object):
                 Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
                 Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
                 # 2 options: simulator/logit
-                Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy())
-                if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
-                    Ypred = np.reshape(Ypred, [-1, 1])
-                ypred = np.reshape(Ypred[i,:], [1, -1])
-                #ypred = np.reshape(logit.cpu().data.numpy()[i,:], [1, -1])
-                xpred = np.reshape(geometry_eval_input.cpu().data.numpy()[i,:], [1, -1])
+                #Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy())
+                #if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                #    Ypred = np.reshape(Ypred, [-1, 1])
+                #ypred = np.reshape(Ypred[i,:], [1, -1])
+                ##ypred = np.reshape(logit.cpu().data.numpy()[i,:], [1, -1])
+                #xpred = np.reshape(geometry_eval_input.cpu().data.numpy()[i,:], [1, -1])
                 with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, ypred, fmt='%.3f')
-                    np.savetxt(fxp, xpred, fmt='%.3f')
+                    np.savetxt(fyp, save_all_Ypred_best[i, :], fmt='%.3f')
+                    np.savetxt(fxp, save_all_Xpred_best[i, :], fmt='%.3f')
        
         """
         ###########################

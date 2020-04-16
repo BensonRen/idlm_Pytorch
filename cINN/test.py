@@ -6,9 +6,9 @@ if __name__ == '__main__':
     #                            HeatMap_dir='models/',feature_1_name='linear_b',feature_2_name='linear_unit')
     plotsAnalysis.MeanAvgnMinMSEvsTry_all('/work/sr365/multi_eval')
     #plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='ballistics')
-    plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='sine_wave')
+    #plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='sine_wave')
     plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='robotic_arm')
-    plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='meta_material')
+    #plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='meta_material')
 
 
 

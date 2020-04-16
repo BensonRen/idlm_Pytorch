@@ -33,6 +33,13 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
+    # Set up the test_ratio
+    if flags.data_set == 'ballistics':
+        flags.test_ratio = 0.001
+    elif flags.data_set == 'sine_wave':
+        flags.test_ratio = 0.1
+    elif flags.data_set == 'robotic_arm':
+        flags.test_ratio = 0.1
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")

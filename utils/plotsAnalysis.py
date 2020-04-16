@@ -424,6 +424,8 @@ def MeanAvgnMinMSEvsTry(data_dir):
     :return:
     """
     # Read Ytruth file
+    if not os.path.isdir(data_dir): 
+        return
     Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, delimiter=' ').values
     print("shape of ytruth is", np.shape(Yt))
     # Get all the Ypred into list
@@ -438,9 +440,15 @@ def MeanAvgnMinMSEvsTry(data_dir):
             Ypred_list.append(Yp)
 
     # Calculate the large MSE matrix
-    mse_mat = np.zeros([len(Ypred_list), len(Ypred_list[0])])
+    mse_mat = np.zeros([len(Ypred_list), len(Yt)])
     print("shape of mse_mat is", np.shape(mse_mat))
     for ind, yp in enumerate(Ypred_list):
+        return None# If their shape dont match because of the format issue sometimes, try reshape them
+        if np.shape(yp) != np.shape(Yt):
+            print("Your Ypred file shape does not match your ytruth, however, we are trying to reshape your ypred file into the Ytruth file shape")
+            yp = np.reshape(yp, np.shape(Yt))
+            if ind == 1:
+                print(np.shape(yp))
         mse = np.mean(np.square(yp - Yt), axis=1)
         mse_mat[ind, :] = mse
     print("shape of the yp is", np.shape(yp)) 
@@ -543,7 +551,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         :param time_in_s_table: a dictionary of dictionary which stores the averaged evaluation time
                 in seconds to convert the graph
         """
-        color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", "INN":"k", "Random": "y"}
+        color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", "INN":"k", "Random": "y","cINN_Jakob": "violet"}
         f = plt.figure()
         for key in sorted(dict.keys()):
             x_axis = np.arange(len(dict[key])).astype('float')
@@ -566,8 +574,8 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         plt.close('all')
     #plotDict(avg_dict, '_avg.png')
     #plotDict(min_dict, '_min.png')
-    plotDict(avg_dict, '_avglog_time.png', logy=True, time_in_s_table=time_in_s_table)
-    plotDict(min_dict, '_minlog_time.png', logy=True, time_in_s_table=time_in_s_table)
+    #plotDict(avg_dict, '_avglog_time.png', logy=True, time_in_s_table=time_in_s_table)
+    #plotDict(min_dict, '_minlog_time.png', logy=True, time_in_s_table=time_in_s_table)
     plotDict(avg_dict, '_avglog.png', logy=True)
     plotDict(min_dict, '_minlog.png', logy=True)
 

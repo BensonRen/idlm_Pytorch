@@ -97,11 +97,11 @@ class InverseBallisticsModel():
         xs, ys = self.trajectories_from_parameters(x)
         y_final, valid_index = self.impact_from_trajectories(xs, ys)
         y_final = y_final[:,None]
-        print("This is forward process, the shape of output y is:", np.shape(y_final))
+        #print("This is forward process, the shape of output y is:", np.shape(y_final))
         if output_full:
             output = -999 * np.ones(len(x))
             z = 0
-            print("output is ", output)
+            #print("output is ", output)
             for i in valid_index:
                 output[i] = y_final[z]
                 z = z + 1

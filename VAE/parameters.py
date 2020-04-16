@@ -55,4 +55,4 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballistics_3M_parameter_mse0.12"
+EVAL_MODEL = "ballistics_3M_mse_best"
