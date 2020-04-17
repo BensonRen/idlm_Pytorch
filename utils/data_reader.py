@@ -280,6 +280,17 @@ def normalize_np(x):
     return x
 
 
+def read_data_sine_test_1d(flags):
+    """
+    Data reader function for testing sine wave 1d data (1d to 1d)
+    :param flags: Input flags
+    """
+    data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Sine_test/')
+    data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class_1d_to_1d, test_ratio=flags.test_ratio)
+  
+
 def read_data_ballistics(flags, eval_data_all=False):
     """
     Data reader function for the ballistic data set
@@ -416,6 +427,20 @@ class MetaMaterialDataSet(Dataset):
 
     def __getitem__(self, ind):
         return self.ftr[ind, :], self.lbl[ind, :]
+
+
+class SimulatedDataSet_class_1d_to_1d(Dataset):
+    """ The simulated Dataset Class for classification purposes"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.len = len(x)
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, ind):
+        return self.x[ind], self.y[ind]
 
 
 class SimulatedDataSet_class(Dataset):
