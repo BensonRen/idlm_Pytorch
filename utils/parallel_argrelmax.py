@@ -6,16 +6,19 @@ Note that this local minima has to be strictly larger than both sides (no flat a
 """
 import torch
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 def torch_argrelmax(input_tensor):
-    up_kernel = torch.tensor([-1, 1, 0]).view(1,1,-1)
-    down_kernel = torch.tensor([0, 1, -1]).view(1,1,-1)
-    up_branch = F.conv1d(input=input_tensor, weight=up_kernel, stride=1, bias=None, padding=1)
-    down_branch = F.conv1d(input=input_tensor, weight=down_kernel, stride=1, bias=None, padding=1)
+    up_kernel = torch.tensor([-1, 1, 0], dtype=torch.float).view(1, 1, -1)
+    down_kernel = torch.tensor([0, 1, -1], dtype=torch.float).view(1, 1, -1)
+    huge_padding = 9999999. * torch.ones([np.shape(input_tensor)[0], 1, 1])
+    padded_tensor = torch.cat([huge_padding, input_tensor, huge_padding], dim=2)
+    up_branch = F.conv1d(input=padded_tensor, weight=up_kernel, stride=1, bias=None, padding=0)
+    down_branch = F.conv1d(input=padded_tensor, weight=down_kernel, stride=1, bias=None, padding=0)
     return 1 * (F.relu(up_branch) * F.relu(down_branch) != 0)
 
 
 if __name__ == '__main__':
-    a = torch.tensor([0,10,20,30,20,10,20,10,20,30,40,50,1]).view(1,1,-1)
+    a = torch.tensor([100,10,20,30,20,10,20,10,20,30,40,50,1,2], dtype=torch.float).view(2,1,-1)
     print(a)
     print(torch_argrelmax(a))
