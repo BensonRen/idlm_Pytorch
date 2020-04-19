@@ -13,7 +13,7 @@ x_dimension = 1         # Current version only support 2 dimension due to visual
 y_dimension = 1         # Current version only support 2 dimension due to visualization issue
 x_low = -1
 x_high = 1
-num_sample_dimension = 20000
+num_sample_dimension = 2000
 f = 1
 
 def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):
@@ -47,7 +47,7 @@ def getYfromX(x):
     #    data_y[:, 0] += sin(f*np.pi*x[:, i])
     #    data_y[:, 1] += cos(f*np.pi*x[:, i])
     #    # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
-    return sin(x) 
+    return sin(np.pi*f*x) 
 
 if __name__ == '__main__':
     #xx = []

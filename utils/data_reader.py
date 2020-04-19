@@ -280,7 +280,7 @@ def normalize_np(x):
     return x
 
 
-def read_data_sine_test_1d(flags):
+def read_data_sine_test_1d(flags, eval_data_all=False):
     """
     Data reader function for testing sine wave 1d data (1d to 1d)
     :param flags: Input flags
@@ -288,6 +288,8 @@ def read_data_sine_test_1d(flags):
     data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Sine_test/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
+    if eval_data_all:
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class_1d_to_1d, test_ratio=0.99)
     return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class_1d_to_1d, test_ratio=flags.test_ratio)
   
 
@@ -403,7 +405,9 @@ def read_data(flags, eval_data_all=False):
     elif flags.data_set == 'robotic_arm':
         train_loader, test_loader = read_data_robotic_arm(flags, eval_data_all=eval_data_all)
     elif flags.data_set == 'ballistics':
-        train_loader, test_loader = read_data_ballistics(flags, eval_data_all=eval_data_all)
+        train_loader, test_loader = read_data_ballistics(flags,  eval_data_all=eval_data_all)
+    elif flags.data_set == 'sine_test_1d':
+        train_loader, test_loader = read_data_sine_test_1d(flags, eval_data_all=eval_data_all)
     else:
         sys.exit("Your flags.data_set entry is not correct, check again!")
     return train_loader, test_loader

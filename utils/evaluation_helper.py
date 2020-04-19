@@ -19,15 +19,15 @@ def compare_truth_pred(pred_file, truth_file):
     pred = np.loadtxt(pred_file, delimiter=' ')
     truth = np.loadtxt(truth_file, delimiter=' ')
     print("in compare truth pred function in eval_help package, your shape of pred file is", np.shape(pred))
-    # Due to Ballistics dataset gives some non-real results (labelled -999)
-    valid_index = pred != -999
-    if (np.sum(valid_index) != len(valid_index)):
-        print("Your dataset should be ballistics and there are non-valid points in your prediction!")
-        print('number of non-valid points is {}'.format(len(valid_index) - np.sum(valid_index)))
-    pred = pred[valid_index]
-    truth = truth[valid_index]
-    # This is for the edge case of ballistic, where y value is 1 dimensional which cause dimension problem
     if len(np.shape(pred)) == 1:
+        # Due to Ballistics dataset gives some non-real results (labelled -999)
+        valid_index = pred != -999
+        if (np.sum(valid_index) != len(valid_index)):
+            print("Your dataset should be ballistics and there are non-valid points in your prediction!")
+            print('number of non-valid points is {}'.format(len(valid_index) - np.sum(valid_index)))
+        pred = pred[valid_index]
+        truth = truth[valid_index]
+        # This is for the edge case of ballistic, where y value is 1 dimensional which cause dimension problem
         pred = np.reshape(pred, [-1,1])
         truth = np.reshape(truth, [-1,1])
     mae = np.mean(np.abs(pred-truth), axis=1)

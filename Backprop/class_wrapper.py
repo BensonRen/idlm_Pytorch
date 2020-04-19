@@ -74,7 +74,7 @@ class Network(object):
         print(model)
         return model
 
-    def make_loss(self, logit=None, labels=None):
+    def make_loss(self, logit=None, labels=None, G=None):
         """
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
@@ -87,6 +87,10 @@ class Network(object):
         #if self.flags.data_set != 'gaussian_mixture':
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         BDY_loss = 0
+        if G is not None:
+            relu = torch.nn.ReLU()
+            BDY_loss_all = relu(torch.abs(G) - 1)
+            BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
@@ -258,51 +262,68 @@ class Network(object):
                 Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind)
                 tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
-                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, Ypred, fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fxt, geometry.cpu().data.numpy())
+                np.savetxt(fyt, spectra.cpu().data.numpy())
+                np.savetxt(fyp, Ypred)
+                np.savetxt(fxp, Xpred)
         return Ypred_file, Ytruth_file
 
-    def evaluate_one(self, target_spectra, save_dir='data/', save_all=False, ind=None):
-        print("evaluate_one gets save_dir:", save_dir)
+    def evaluate_one(self, target_spectra, save_dir='data/', save_all=False, ind=None, save_misc=False):
+        """
+        The function which being called during evaluation and evaluates one target y using # different trails
+        :param target_spectra: The target spectra/y to backprop to 
+        :param save_dir: The directory to save to when save_all flag is true
+        :param save_all: The multi_evaluation where each trail is monitored (instad of the best) during backpropagation
+        :param ind: The index of this target_spectra in the batch
+        :param save_misc: The flag to print misc information for degbugging purposes, usually printed to best_mse
+        :return: Xpred_best: The 1 single best Xpred corresponds to the best Ypred that is being backproped 
+        :return: Ypred_best: The 1 singe best Ypred that is reached by backprop
+        :return: MSE_list: The list of MSE at the last stage
+        """
+
+        # Initialize the geometry_eval or the initial guess xs
         if torch.cuda.is_available():                                   # Initialize UNIFORM RANDOM NUMBER
             geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
         else:
             geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True) 
         
+        # Set up the learning schedule and optimizer
         self.optm_eval = self.make_optimizer_eval(geometry_eval)
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
+        
         # expand the target spectra to eval batch size
         target_spectra_expand = target_spectra.expand([self.flags.eval_batch_size, -1])
-        # Start backprop
-        #print("shape of logit", np.shape(logit))
-        #print("shape of target_spectra_expand", np.shape(target_spectra_expand))
-        #print("shape of geometry_eval", np.shape(geometry_eval))
-        Best_MSE_list = []
-        Avg_MSE_list = []
-        Xpred_best = None
-        Best_MSE = 999
-        save_all_Best_MSE_list = np.ones([self.flags.eval_batch_size, 1]) * 999
-        save_all_Xpred_best = np.zeros_like(geometry_eval.cpu().data.numpy())
-        save_all_Ypred_best = None
-        # Define the full loss matrix, real means simulator loss, fake means NN loss
-        Full_loss_matrix_real = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
-        Full_loss_matrix_fake = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
-
+        
+        # If saving misc files, initialize them
+        if save_misc:
+            Best_MSE_list = []
+            Avg_MSE_list = []
+            Xpred_best = None
+            Best_MSE = 999
+            # Define the best MSE list and place holder for Best Xpred Ypreds
+            save_all_Best_MSE_list = np.ones([self.flags.eval_batch_size, 1]) * 999
+            save_all_Xpred_best = np.zeros_like(geometry_eval.cpu().data.numpy())
+            save_all_Ypred_best = None
+            # Define the full loss matrix, real means simulator loss, fake means NN loss
+            Full_loss_matrix_real = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
+            Full_loss_matrix_fake = np.zeros([self.flags.eval_batch_size, self.flags.backprop_step])
+        
+        # Begin Backprop
         for i in range(self.flags.backprop_step):
-            # Make the initialization from [-1, 1]
+            # Make the initialization from [-1, 1], can only be in loop due to gradient calculator constraint
             geometry_eval_input = geometry_eval * 2 - 1
+            if save_misc and ind == 0 and i == 0:                       # save the modified initial guess
+                np.savetxt('geometry_initialization.csv',geometry_eval_input.cpu().data.numpy())
             self.optm_eval.zero_grad()                                  # Zero the gradient first
             logit = self.model(geometry_eval_input)                     # Get the output
-            loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
+            loss = self.make_loss(logit, target_spectra_expand, G=geometry_eval_input)         # Get the loss
             loss.backward()                                             # Calculate the Gradient
             self.optm_eval.step()                                       # Move one step the optimizer
             
             ###################################
             # evaluate through simulator part #
             ###################################
-            Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy())
+            Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
             if len(np.shape(Ypred)) == 1:                           # If this is the ballistics dataset where it only has 1d y'
                 Ypred = np.reshape(Ypred, [-1, 1])
             # Get the MSE list of these
@@ -362,8 +383,8 @@ class Network(object):
         if ind < 20:
             np.savetxt('best_mse/best_mse_list{}.csv'.format(ind), Best_MSE_list)
             np.savetxt('best_mse/avg_mse_list{}.csv'.format(ind), Avg_MSE_list)
-            np.savetxt('best_mse/full_loss_mat_real{}.csv'.format(ind), Full_loss_matrix_real)
-            np.savetxt('best_mse/full_loss_mat_fake{}.csv'.format(ind), Full_loss_matrix_fake)
+            #np.savetxt('best_mse/full_loss_mat_real{}.csv'.format(ind), Full_loss_matrix_real)
+            #np.savetxt('best_mse/full_loss_mat_fake{}.csv'.format(ind), Full_loss_matrix_fake)
 
         if save_all:
             for i in range(len(geometry_eval_input.cpu().data.numpy())):
@@ -371,33 +392,34 @@ class Network(object):
                 Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
                 Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
                 # 2 options: simulator/logit
-                #Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy())
+                #Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
                 #if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
                 #    Ypred = np.reshape(Ypred, [-1, 1])
                 #ypred = np.reshape(Ypred[i,:], [1, -1])
                 ##ypred = np.reshape(logit.cpu().data.numpy()[i,:], [1, -1])
                 #xpred = np.reshape(geometry_eval_input.cpu().data.numpy()[i,:], [1, -1])
                 with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, save_all_Ypred_best[i, :], fmt='%.3f')
-                    np.savetxt(fxp, save_all_Xpred_best[i, :], fmt='%.3f')
+                    np.savetxt(fyp, save_all_Ypred_best[i, :])
+                    np.savetxt(fxp, save_all_Xpred_best[i, :])
        
-        """
+        
         ###########################
         # Old version of Backprop #
         ###########################
         # Get the best performing one, 2 possibility, logit / simulator
-        Ypred = simulator(self.flags.data_set, geometry_eval.cpu().data.numpy()) 
+        #Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy()) 
         if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
             Ypred = np.reshape(Ypred, [-1, 1])
-        #MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
-        MSE_list = np.mean(np.square(Ypred - target_spectra_expand.cpu().data.numpy()), axis=1)
+        MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
+        #MSE_list = np.mean(np.square(Ypred - target_spectra_expand.cpu().data.numpy()), axis=1)
         #print("shape of MSE list", np.shape(MSE_list))
         best_estimate_index = np.argmin(MSE_list)
         #print("best_estimate_index = ", best_estimate_index, " best error is ", MSE_list[best_estimate_index])
         Xpred_best = np.reshape(np.copy(geometry_eval_input.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
-        Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
+        Ypred_best = np.reshape(np.copy(logit.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
+        #Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
         #print("the shape of Xpred_best is", np.shape(Xpred_best))
-        """
+        
         return Xpred_best, Ypred_best, MSE_list
 
 
@@ -419,7 +441,7 @@ class Network(object):
             Xpred_tensor = Xpred_tensor.cuda()
         with open(Ypred_file, 'a') as fyp:
             Ypred = self.model(Xpred_tensor)
-            np.savetxt(fyp, Ypred.cpu().data.numpy(), fmt='%.3f')
+            np.savetxt(fyp, Ypred.cpu().data.numpy())
 
         Ytruth_file = Ypred_file.replace('Ypred', 'Ytruth')
         return Ypred_file, Ytruth_file

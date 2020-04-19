@@ -8,7 +8,7 @@ Params for Back propagation model
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
-DATA_SET = 'test_sine_1d'
+DATA_SET = 'sine_test_1d'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set
@@ -27,13 +27,13 @@ CONV_STRIDE = []
 
 # Optimizer Params
 OPTIM = "Adam"
-REG_SCALE = 1e-3
-BATCH_SIZE = 256
+REG_SCALE = 2e-2
+BATCH_SIZE = 200
 EVAL_BATCH_SIZE = 1000
 EVAL_STEP = 20
-TRAIN_STEP = 100
+TRAIN_STEP = 300
 BACKPROP_STEP = 300
-LEARN_RATE = 1e-2
+LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
 STOP_THRESHOLD = 1e-5
@@ -51,4 +51,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
+EVAL_MODEL = "20200419_141921"

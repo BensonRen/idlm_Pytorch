@@ -4,10 +4,10 @@ Params for Back propagation model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
-DATA_SET = 'ballistics'
+# DATA_SET = 'ballistics'
 TEST_RATIO = 0.002
 
 # Model Architectural Params for meta_material data Set
@@ -50,4 +50,6 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
+#EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"
+#EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
+EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"

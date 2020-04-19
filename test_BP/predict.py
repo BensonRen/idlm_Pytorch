@@ -68,4 +68,5 @@ def predict_all(models_dir="data"):
 
 
 if __name__ == '__main__':
-    predict_all('/work/sr365/multi_eval/Random/meta_material')
+    predict_from_model('models/20200419_114504','data/range_3_full_Xpred.csv') 
+    #predict_all('/work/sr365/multi_eval/Random/meta_material')

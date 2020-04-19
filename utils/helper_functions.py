@@ -17,6 +17,7 @@ from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_
 from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
 from Simulated_DataSets.Ballistics.Inverse_ballistics_original import InverseBallisticsModel
+from Simulated_DataSets.Sine_test import generate_sine_test_1d
 
 # 1
 def get_Xpred(path, name=None):
@@ -239,6 +240,10 @@ def simulator_ballistics(Xpred):
     IB = InverseBallisticsModel()
     return IB.forward_process(Xpred, output_full=True) 
 
+# 12.5
+def simulator_sine_test_1d(Xpred):
+    return generate_sine_test_1d.getYfromX(Xpred)
+
 # 13
 def simulator(data_set, Xpred):
     """
@@ -259,6 +264,8 @@ def simulator(data_set, Xpred):
         return simulator_robotic(Xpred)
     elif data_set == 'ballistics':
         return simulator_ballistics(Xpred)
+    elif data_set == 'sine_test_1d':
+        return simulator_sine_test_1d(Xpred)
     else:
         sys.exit("In Simulator: Your data_set entry is not correct, check again!")
 
