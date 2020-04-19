@@ -284,7 +284,8 @@ class Network(object):
 
         # Initialize the geometry_eval or the initial guess xs
         if torch.cuda.is_available():                                   # Initialize UNIFORM RANDOM NUMBER
-            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
+            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]],
+                                       requires_grad=True, device='cuda')
         else:
             geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True) 
         
@@ -312,7 +313,7 @@ class Network(object):
         # Begin Backprop
         for i in range(self.flags.backprop_step):
             # Make the initialization from [-1, 1], can only be in loop due to gradient calculator constraint
-            geometry_eval_input = geometry_eval * 2 - 1
+            geometry_eval_input = initialize_from_uniform_to_dataset_distrib(geometry_eval)
             if save_misc and ind == 0 and i == 0:                       # save the modified initial guess
                 np.savetxt('geometry_initialization.csv',geometry_eval_input.cpu().data.numpy())
             self.optm_eval.zero_grad()                                  # Zero the gradient first
@@ -403,6 +404,25 @@ class Network(object):
         Xpred_best = np.reshape(np.copy(geometry_eval_input.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
         Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
         return Xpred_best, Ypred_best, MSE_list
+
+
+    def initialize_from_uniform_to_dataset_distrib(self, geometry_eval):
+        """
+        since the initialization of the backprop is uniform from [0,1], this function transforms that distribution
+        to suitable prior distribution for each dataset
+        :param geometry_eval:
+        :return: The transformed initial guess
+        """
+        if self.flags.data_set == 'sine_wave':
+            geometry_eval_input = geometry_eval * 2 - 1
+        elif self.flags.data_set == 'robotic_arm':
+            geometry_eval_input = geometry_eval * np.array([2.203, 2.0826, 1.1, 32]) + np.array([-1.1314, 0.4710, 0.1570, 2])
+        elif self.flags.data_set == 'ballistics':
+            geometry_eval_input = geometry_eval * np.array([1.8797, 3.70, 3.82, 3.78]) + np.array([-0.87, -1.87, -1.915, -1.73])
+        else:
+            sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
+
+        return geometry_eval_input
 
 
     def predict(self, Xpred_file):
