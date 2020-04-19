@@ -409,9 +409,10 @@ class Network(object):
     def initialize_from_uniform_to_dataset_distrib(self, geometry_eval):
         """
         since the initialization of the backprop is uniform from [0,1], this function transforms that distribution
-        to suitable prior distribution for each dataset
-        :param geometry_eval:
-        :return: The transformed initial guess
+        to suitable prior distribution for each dataset. The numbers are accquired from statistics of min and max
+        of the X prior given in the training set and data generation process
+        :param geometry_eval: The input uniform distribution from [0,1]
+        :return: The transformed initial guess from prior distribution
         """
         if self.flags.data_set == 'sine_wave':
             geometry_eval_input = geometry_eval * 2 - 1
