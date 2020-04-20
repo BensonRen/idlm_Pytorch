@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
+def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_misc=False, MSE_Simulator=False):
 
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
@@ -38,11 +38,11 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.001
+        flags.test_ratio = 0.01
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.05
     elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.0002
+        flags.test_ratio = 0.01
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.05
     flags.eval_batch_size = eval_flags.eval_batch_size
@@ -60,9 +60,10 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/' + flags.data_set, save_all=True)
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/' + flags.data_set, save_all=True,
+                                                save_misc=save_misc, MSE_Simulator=MSE_Simulator)
     else:
-        pred_file, truth_file = ntwk.evaluate()
+        pred_file, truth_file = ntwk.evaluate(save_misc=save_misc, MSE_Simulator=MSE_Simulator)
 
     # Plot the MSE distribution
     plotMSELossDistrib(pred_file, truth_file, flags)
@@ -98,7 +99,7 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model)
+    evaluate_from_model(eval_flags.eval_model, save_misc=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
     #evaluate_different_dataset(multi_flag=True, eval_data_all=False)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)

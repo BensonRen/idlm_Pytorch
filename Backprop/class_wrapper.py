@@ -226,7 +226,7 @@ class Network(object):
         self.log.close()
         tk.record(1)                    # Record at the end of the training
 
-    def evaluate(self, save_dir='data/', save_all=False):
+    def evaluate(self, save_dir='data/', save_all=False, MSE_Simulator=False, save_misc=False):
         self.load()                             # load the model as constructed
         try:
             bs = self.flags.backprop_step         # for previous code that did not incorporate this
@@ -259,7 +259,8 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind)
+                Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind,
+                                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc)
                 tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy())
@@ -313,7 +314,7 @@ class Network(object):
         # Begin Backprop
         for i in range(self.flags.backprop_step):
             # Make the initialization from [-1, 1], can only be in loop due to gradient calculator constraint
-            geometry_eval_input = initialize_from_uniform_to_dataset_distrib(geometry_eval)
+            geometry_eval_input = self.initialize_from_uniform_to_dataset_distrib(geometry_eval)
             if save_misc and ind == 0 and i == 0:                       # save the modified initial guess
                 np.savetxt('geometry_initialization.csv',geometry_eval_input.cpu().data.numpy())
             self.optm_eval.zero_grad()                                  # Zero the gradient first
@@ -416,15 +417,16 @@ class Network(object):
         """
         if self.flags.data_set == 'sine_wave':
             geometry_eval_input = geometry_eval * 2 - 1
-        elif self.flags.data_set == 'robotic_arm':
-            geometry_eval_input = geometry_eval * np.array([2.203, 2.0826, 1.1, 32]) + np.array([-1.1314, 0.4710, 0.1570, 2])
         elif self.flags.data_set == 'ballistics':
-            geometry_eval_input = geometry_eval * np.array([1.8797, 3.70, 3.82, 3.78]) + np.array([-0.87, -1.87, -1.915, -1.73])
+            geometry_eval_input = geometry_eval * torch.tensor([2.203, 2.0826, 1.1, 32], requires_grad=False, device='cuda') + torch.tensor([-1.1314, 0.4710, 0.1570, 2], requires_grad=False, device='cuda')
+        elif self.flags.data_set == 'robotic_arm':
+            geometry_eval_input = geometry_eval * torch.tensor([1.8797, 3.70, 3.82, 3.78], requires_grad=False, device='cuda') + torch.tensor([-0.87, -1.87, -1.915, -1.73], requires_grad=False, device='cuda')
         else:
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 
         return geometry_eval_input
 
+    
 
     def predict(self, Xpred_file):
         """
