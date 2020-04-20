@@ -88,10 +88,14 @@ class Network(object):
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         BDY_loss = 0
         if G is not None:
-            X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
-            X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
+            if self.flags.data_set != 'ballistics':                 # For non-ballisitcs dataset
+                X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
+                X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
+            else:                                                   # For ballistics dataset
+                X_mean = [0, 1.5, np.radians(40.5), 18]
+                X_range = [1.5, 1.5, 1.1, 32]
             relu = torch.nn.ReLU()
-            BDY_loss_all = relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5*self.build_tensor(X_range))
+            BDY_loss_all = relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
@@ -101,8 +105,8 @@ class Network(object):
         #    return criterion(logit, labels.long())
 
 
-    def build_tensor(self, nparray):
-        return torch.tensor(nparray, requires_grad=False, device='cuda', dtype=torch.float)
+    def build_tensor(self, nparray, requires_grad=False):
+        return torch.tensor(nparray, requires_grad=requires_grad, device='cuda', dtype=torch.float)
 
 
     def make_optimizer(self):
@@ -291,13 +295,7 @@ class Network(object):
         """
 
         # Initialize the geometry_eval or the initial guess xs
-        if torch.cuda.is_available():                                   # Initialize UNIFORM RANDOM NUMBER
-            geometry_eval = self.initialize_geometry_eval()
-            #geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]],
-            #                           requires_grad=True, device='cuda')
-        else:
-            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True) 
-        
+        geometry_eval = self.initialize_geometry_eval()
         # Set up the learning schedule and optimizer
         self.optm_eval = self.make_optimizer_eval(geometry_eval)
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
@@ -415,6 +413,24 @@ class Network(object):
         return Xpred_best, Ypred_best, MSE_list
 
 
+    def initialize_geometry_eval(self):
+        """
+        Initialize the geometry eval according to different dataset
+        :return: The initialized geometry eval
+        """
+        if self.flags.data_set == 'ballistics':
+            bs = self.flags.eval_batch_size
+            numpy_geometry = np.zeros([bs, self.flags.linear[0]])
+            numpy_geometry[:, 0] = np.random.normal(0, 0.25, size=[bs, 2])
+            numpy_geometry[:, 1] = np.random.normal(1.5, 0.25, size=[bs, 2])
+            numpy_geometry[:, 2] = np.radians(np.random.uniform(9, 72, size=[bs, 1]))
+            numpy_geometry[:, 3] = np.random.poisson(15, size=[bs, 1])
+            geomtry_eval = self.build_tensor(numpy_geometry, requires_grad=True)
+        else:
+            geomtry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
+
+        return geomtry_eval
+
     def initialize_from_uniform_to_dataset_distrib(self, geometry_eval):
         """
         since the initialization of the backprop is uniform from [0,1], this function transforms that distribution
@@ -432,9 +448,9 @@ class Network(object):
         if self.flags.data_set == 'sine_wave' or self.flags.data_set == 'meta_material':
             return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
         elif self.flags.data_set == 'ballistics':
-            return np.array([2.203, 2.0826, 1.1, 32]), np.array([-1.1314, 0.4710, 0.1570, 2]), np.array([1.07, 2.56, 1.26, 34])
+            return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':
-            return np.array([1.8797, 3.70, 3.82, 3.78]), np.array([-0.87, -1.87, -1.915, -1.73]), np.array([1.018, 1.834, 1.897, 2.053])
+            return np.array([1.88, 3.7, 3.82, 3.78]), np.array([-0.87, -1.87, -1.92, -1.73]), np.array([1.018, 1.834, 1.897, 2.053])
         else:
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 
