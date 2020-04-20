@@ -88,8 +88,10 @@ class Network(object):
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         BDY_loss = 0
         if G is not None:
+            X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
+            X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
             relu = torch.nn.ReLU()
-            BDY_loss_all = relu(torch.abs(G) - 1)
+            BDY_loss_all = relu(torch.abs(G - torch.tensor(X_mean)) - 0.5*torch.tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
@@ -415,18 +417,22 @@ class Network(object):
         :param geometry_eval: The input uniform distribution from [0,1]
         :return: The transformed initial guess from prior distribution
         """
-        if self.flags.data_set == 'sine_wave':
-            geometry_eval_input = geometry_eval * 2 - 1
-        elif self.flags.data_set == 'ballistics':
-            geometry_eval_input = geometry_eval * torch.tensor([2.203, 2.0826, 1.1, 32], requires_grad=False, device='cuda') + torch.tensor([-1.1314, 0.4710, 0.1570, 2], requires_grad=False, device='cuda')
-        elif self.flags.data_set == 'robotic_arm':
-            geometry_eval_input = geometry_eval * torch.tensor([1.8797, 3.70, 3.82, 3.78], requires_grad=False, device='cuda') + torch.tensor([-0.87, -1.87, -1.915, -1.73], requires_grad=False, device='cuda')
-        else:
-            sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
-
+        X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
+        geometry_eval_input = geometry_eval * torch.tensor(X_range, requires_grad=False, device='cuda')\
+                              + torch.tensor(X_lower_bound, requires_grad=False, device='cuda')
         return geometry_eval_input
 
     
+    def get_boundary_lower_bound_uper_bound(self):
+        if self.flags.data_set == 'sine_wave' or self.flags.data_set == 'meta_material':
+            return [2, 2, 2], [-1, -1, -1], [1, 1, 1]
+        elif self.flags.data_set == 'ballistics':
+            return [2.203, 2.0826, 1.1, 32], [-1.1314, 0.4710, 0.1570, 2], [1.07, 2.56, 1.26, 34]
+        elif self.flags.data_set == 'robotic_arm':
+            return [1.8797, 3.70, 3.82, 3.78], [-0.87, -1.87, -1.915, -1.73], [1.018, 1.834, 1.897, 2.053]
+        else:
+            sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
+
 
     def predict(self, Xpred_file):
         """
