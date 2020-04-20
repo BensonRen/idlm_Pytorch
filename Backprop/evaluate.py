@@ -38,7 +38,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.01
+        flags.test_ratio = 0.001
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.05
     elif flags.data_set == 'robotic_arm':

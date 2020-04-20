@@ -91,7 +91,7 @@ class Network(object):
             X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
             X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
             relu = torch.nn.ReLU()
-            BDY_loss_all = relu(torch.abs(G - torch.tensor(X_mean)) - 0.5*torch.tensor(X_range))
+            BDY_loss_all = relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5*self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
@@ -99,6 +99,11 @@ class Network(object):
         #else:                           # This is cross entropy loss where data is categorical
         #    criterion = nn.CrossEntropyLoss()
         #    return criterion(logit, labels.long())
+
+
+    def build_tensor(self, nparray):
+        return torch.tensor(nparray, requires_grad=False, device='cuda', dtype=torch.float)
+
 
     def make_optimizer(self):
         """
@@ -287,8 +292,9 @@ class Network(object):
 
         # Initialize the geometry_eval or the initial guess xs
         if torch.cuda.is_available():                                   # Initialize UNIFORM RANDOM NUMBER
-            geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]],
-                                       requires_grad=True, device='cuda')
+            geometry_eval = self.initialize_geometry_eval()
+            #geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]],
+            #                           requires_grad=True, device='cuda')
         else:
             geometry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True) 
         
@@ -418,18 +424,17 @@ class Network(object):
         :return: The transformed initial guess from prior distribution
         """
         X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
-        geometry_eval_input = geometry_eval * torch.tensor(X_range, requires_grad=False, device='cuda')\
-                              + torch.tensor(X_lower_bound, requires_grad=False, device='cuda')
+        geometry_eval_input = geometry_eval * self.build_tensor(X_range) + self.build_tensor(X_lower_bound)
         return geometry_eval_input
 
     
     def get_boundary_lower_bound_uper_bound(self):
         if self.flags.data_set == 'sine_wave' or self.flags.data_set == 'meta_material':
-            return [2, 2, 2], [-1, -1, -1], [1, 1, 1]
+            return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
         elif self.flags.data_set == 'ballistics':
-            return [2.203, 2.0826, 1.1, 32], [-1.1314, 0.4710, 0.1570, 2], [1.07, 2.56, 1.26, 34]
+            return np.array([2.203, 2.0826, 1.1, 32]), np.array([-1.1314, 0.4710, 0.1570, 2]), np.array([1.07, 2.56, 1.26, 34])
         elif self.flags.data_set == 'robotic_arm':
-            return [1.8797, 3.70, 3.82, 3.78], [-0.87, -1.87, -1.915, -1.73], [1.018, 1.834, 1.897, 2.053]
+            return np.array([1.8797, 3.70, 3.82, 3.78]), np.array([-0.87, -1.87, -1.915, -1.73]), np.array([1.018, 1.834, 1.897, 2.053])
         else:
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 
