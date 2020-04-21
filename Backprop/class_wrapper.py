@@ -237,7 +237,7 @@ class Network(object):
         self.log.close()
         tk.record(1)                    # Record at the end of the training
 
-    def evaluate(self, save_dir='data/', save_all=False, MSE_Simulator=False, save_misc=False):
+    def evaluate(self, save_dir='data/', save_all=False, MSE_Simulator=False, save_misc=False, save_Simulator_Ypred=False):
         self.load()                             # load the model as constructed
         try:
             bs = self.flags.backprop_step         # for previous code that did not incorporate this
@@ -271,7 +271,7 @@ class Network(object):
                     spectra = spectra.cuda()
                 # Initialize the geometry first
                 Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind,
-                                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc)
+                                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc, save_Simulator_Ypred=save_Simulator_Ypred)
                 tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy())
@@ -280,7 +280,7 @@ class Network(object):
                 np.savetxt(fxp, Xpred)
         return Ypred_file, Ytruth_file
 
-    def evaluate_one(self, target_spectra, save_dir='data/', MSE_Simulator=False ,save_all=False, ind=None, save_misc=False):
+    def evaluate_one(self, target_spectra, save_dir='data/', MSE_Simulator=False ,save_all=False, ind=None, save_misc=False, save_Simulator_Ypred=False):
         """
         The function which being called during evaluation and evaluates one target y using # different trails
         :param target_spectra: The target spectra/y to backprop to 
@@ -356,6 +356,7 @@ class Network(object):
                 Full_loss_matrix_fake[:, i] = np.copy(Real_MSE_list)
 
             if save_all:
+                """
                 # In the first epoch this is none, assign value to this
                 if save_all_Ypred_best is None:
                     save_all_Ypred_best = Ypred
@@ -365,7 +366,7 @@ class Network(object):
                 save_all_Best_MSE_list = np.where(better_index, MSE_list, save_all_Best_MSE_list)
                 save_all_Xpred_best = np.where(better_index, geometry_eval_input.cpu().data.numpy(), save_all_Xpred_best)
                 save_all_Ypred_best = np.where(better_index, Ypred, save_all_Ypred_best)
-
+                """
             # update weights and learning rate scheduler
             if i != self.flags.backprop_step - 1:
                 self.optm_eval.step()  # Move one step the optimizer
@@ -385,14 +386,12 @@ class Network(object):
                 Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
                 # 2 options: simulator/logit
                 #Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
-                #if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
-                #    Ypred = np.reshape(Ypred, [-1, 1])
-                #ypred = np.reshape(Ypred[i,:], [1, -1])
-                ##ypred = np.reshape(logit.cpu().data.numpy()[i,:], [1, -1])
-                #xpred = np.reshape(geometry_eval_input.cpu().data.numpy()[i,:], [1, -1])
+                Ypred = logit.cpu().data.numpy()
+                if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                    Ypred = np.reshape(Ypred, [-1, 1])
                 with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, save_all_Ypred_best[i, :])
-                    np.savetxt(fxp, save_all_Xpred_best[i, :])
+                    np.savetxt(fyp, Ypred[i, :])
+                    np.savetxt(fxp, Xpred[i, :])
        
         #############################
         # After BP, choose the best #
@@ -409,6 +408,10 @@ class Network(object):
         MSE_list = np.mean(np.square(Ypred - target_spectra_expand.cpu().data.numpy()), axis=1)
         best_estimate_index = np.argmin(MSE_list)
         Xpred_best = np.reshape(np.copy(geometry_eval_input.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
+        if save_Simulator_Ypred:
+            Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
+            if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                Ypred = np.reshape(Ypred, [-1, 1])
         Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
         return Xpred_best, Ypred_best, MSE_list
 
@@ -421,10 +424,10 @@ class Network(object):
         if self.flags.data_set == 'ballistics':
             bs = self.flags.eval_batch_size
             numpy_geometry = np.zeros([bs, self.flags.linear[0]])
-            numpy_geometry[:, 0] = np.random.normal(0, 0.25, size=[bs, 2])
-            numpy_geometry[:, 1] = np.random.normal(1.5, 0.25, size=[bs, 2])
-            numpy_geometry[:, 2] = np.radians(np.random.uniform(9, 72, size=[bs, 1]))
-            numpy_geometry[:, 3] = np.random.poisson(15, size=[bs, 1])
+            numpy_geometry[:, 0] = np.random.normal(0, 0.25, size=[bs,])
+            numpy_geometry[:, 1] = np.random.normal(1.5, 0.25, size=[bs,])
+            numpy_geometry[:, 2] = np.radians(np.random.uniform(9, 72, size=[bs,]))
+            numpy_geometry[:, 3] = np.random.poisson(15, size=[bs,])
             geomtry_eval = self.build_tensor(numpy_geometry, requires_grad=True)
         else:
             geomtry_eval = torch.rand([self.flags.eval_batch_size, self.flags.linear[0]], requires_grad=True, device='cuda')
