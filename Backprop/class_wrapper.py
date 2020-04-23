@@ -412,6 +412,25 @@ class Network(object):
             if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
                 Ypred = np.reshape(Ypred, [-1, 1])
         Ypred_best = np.reshape(np.copy(Ypred[best_estimate_index, :]), [1, -1])
+
+        ######################
+        # Test code on 04.23 #
+        ######################
+        """
+        As one of the attempts to make Backprop better (or maybe as before), this saves all the Xpred and Ypred made 
+        after the backpropagation and then try to visualize them afterwards
+        """
+        if save_misc:
+            np.savetxt('visualize_final/point{}_Xpred.csv'.format(ind), geometry_eval_input.cpu().data.numpy())
+            Ypred = logit.cpu().data.numpy()
+            if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                Ypred = np.reshape(Ypred, [-1, 1])
+            np.savetxt('visualize_final/point{}_Ypred.csv'.format(ind), Ypred)
+            Ypred_Simulator = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
+            if len(np.shape(Ypred_Simulator)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                Ypred = np.reshape(Ypred_Simulator, [-1, 1])
+            np.savetxt('visualize_final/point{}_Ypred_Simulator.csv'.format(ind), Ypred_Simulator)
+
         return Xpred_best, Ypred_best, MSE_list
 
 
