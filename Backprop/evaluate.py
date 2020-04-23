@@ -38,11 +38,11 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.001
+        flags.test_ratio = 0.01
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.05
     elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.01
+        flags.test_ratio = 0.1
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.01
     flags.eval_batch_size = eval_flags.eval_batch_size
@@ -80,7 +80,7 @@ def evaluate_all(models_dir="models"):
             evaluate_from_model(os.path.join(models_dir, file))
     return None
 
-def evaluate_different_dataset(multi_flag, eval_data_all):
+def evaluate_different_dataset(multi_flag, eval_data_all, save_Simulator_Ypred=False):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
@@ -89,7 +89,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
-        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all)
+        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all, save_Simulator_Ypred=save_Simulator_Ypred)
 
 
 if __name__ == '__main__':
@@ -99,10 +99,10 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True)
+    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=True)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
-    #evaluate_different_dataset(multi_flag=True, eval_data_all=False)
+    #evaluate_different_dataset(multi_flag=True, eval_data_all=False, save_Simulator_Ypred=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)

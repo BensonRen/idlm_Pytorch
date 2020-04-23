@@ -425,6 +425,8 @@ def MeanAvgnMinMSEvsTry(data_dir):
     """
     # Read Ytruth file
     if not os.path.isdir(data_dir): 
+        print("Your data_dir is not a folder in MeanAvgnMinMSEvsTry function")
+        print("Your data_dir is:", data_dir)
         return
     Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, delimiter=' ').values
     print("shape of ytruth is", np.shape(Yt))
@@ -432,7 +434,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
     Ypred_list = []
     for files in os.listdir(data_dir):
         if 'Ypred' in files:
-            print(files)
+            #print(files)
             Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
             if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
                 Yp = np.reshape(Yp, [-1, 1])
@@ -443,9 +445,10 @@ def MeanAvgnMinMSEvsTry(data_dir):
     mse_mat = np.zeros([len(Ypred_list), len(Yt)])
     print("shape of mse_mat is", np.shape(mse_mat))
     for ind, yp in enumerate(Ypred_list):
-        return None# If their shape dont match because of the format issue sometimes, try reshape them
         if np.shape(yp) != np.shape(Yt):
             print("Your Ypred file shape does not match your ytruth, however, we are trying to reshape your ypred file into the Ytruth file shape")
+            print("shape of the Yp is", np.shape(yp))
+            print("shape of the Yt is", np.shape(Yt))
             yp = np.reshape(yp, np.shape(Yt))
             if ind == 1:
                 print(np.shape(yp))
@@ -488,9 +491,9 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        #if 'Backprop' in dirs or 
+        #if this is not a folder 
         if not os.path.isdir(os.path.join(data_dir, dirs)):
-            print("enters folder", dirs)
+            print("This is not a folder", dirs)
             continue
         for subdirs in os.listdir(os.path.join(data_dir, dirs)):
             if 'gaussian' in subdirs or os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_avg_list.txt')):                               # Dont do for gaussian first and if this has been done
@@ -518,7 +521,6 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        # if 'Backprop' in dirs or
         if not os.path.isdir(os.path.join(data_dir, dirs)):
             print("skipping due to it is not a directory")
             continue;
@@ -592,11 +594,9 @@ def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=Fa
     """
     eval_time_dict = {}
     for dirs in os.listdir(data_dir):
-        # Dont include Backprop for now and check if it is a directory
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        # if 'Backprop' in dirs or
         if not os.path.isdir(os.path.join(data_dir, dirs)):
             print("skipping due to it is not a directory")
             continue;

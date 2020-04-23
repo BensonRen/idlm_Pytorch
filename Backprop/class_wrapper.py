@@ -354,11 +354,9 @@ class Network(object):
                 Full_loss_matrix_real[:, i] = np.squeeze(MSE_list)
                 Real_MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
                 Full_loss_matrix_fake[:, i] = np.copy(Real_MSE_list)
-
-            if save_all:
+                
                 """
-                # In the first epoch this is none, assign value to this
-                if save_all_Ypred_best is None:
+            if save_all and  chose_middle_value:
                     save_all_Ypred_best = Ypred
                 # Record the trails that gets better
                 better_index = save_all_Best_MSE_list > MSE_list
@@ -385,13 +383,14 @@ class Network(object):
                 Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
                 Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
                 # 2 options: simulator/logit
-                #Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
-                Ypred = logit.cpu().data.numpy()
+                Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
+                if not save_Simulator_Ypred:            # The default is the simulator Ypred output
+                    Ypred = logit.cpu().data.numpy()
                 if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
                     Ypred = np.reshape(Ypred, [-1, 1])
                 with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
                     np.savetxt(fyp, Ypred[i, :])
-                    np.savetxt(fxp, Xpred[i, :])
+                    np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[i, :])
        
         #############################
         # After BP, choose the best #

@@ -1,9 +1,0 @@
-Anaconda3 3.5.2
-/hpc/home/sr365/.conda/envs/BenICMLTorch/lib/python3.7/site-packages/sklearn/utils/deprecation.py:144: FutureWarning: The sklearn.neighbors.kde module is  deprecated in version 0.22 and will be removed in version 0.24. The corresponding classes / functions should instead be imported from sklearn.neighbors. Anything that cannot be imported from sklearn.neighbors is now part of the private API.
-  warnings.warn(message, FutureWarning)
-Traceback (most recent call last):
-  File "evaluate.py", line 102, in <module>
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True)
-  File "evaluate.py", line 66, in evaluate_from_model
-    pred_file, truth_file = ntwk.evaluate(save_misc=save_misc, MSE_Simulator=MSE_Simulator, save_Simulator_Ypred=save_Simultor_Ypred)
-NameError: name 'save_Simultor_Ypred' is not defined

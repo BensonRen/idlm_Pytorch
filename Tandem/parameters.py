@@ -14,7 +14,6 @@ TEST_RATIO = 0.05
 #LOAD_FORWARD_CKPT_DIR = 'pre_trained_forward/'
 LOAD_FORWARD_CKPT_DIR = None
 
-#LOAD_FORWARD_CKPT_DIR = None
 #LINEAR_F = [8, 1000, 1000, 1000, 1000, 150]
 #CONV_OUT_CHANNEL_F = [4, 4, 4]
 #CONV_KERNEL_SIZE_F = [8, 5, 5]
@@ -26,7 +25,7 @@ LOAD_FORWARD_CKPT_DIR = None
 #CONV_STRIDE_B = [1, 1, 2]
 
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [4, 50, 50, 50, 50, 50, 1]
+LINEAR_F = [4, 500, 500, 500, 1]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
