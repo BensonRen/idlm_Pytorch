@@ -266,12 +266,12 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 Xpred = self.model.inference(spectra).cpu().data.numpy()
-                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fxt, geometry.cpu().data.numpy())
+                np.savetxt(fyt, spectra.cpu().data.numpy())
+                np.savetxt(fxp, Xpred)
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
-                    np.savetxt(fyp, Ypred, fmt='%.3f')
+                    np.savetxt(fyp, Ypred)
         return Ypred_file, Ytruth_file
     
     

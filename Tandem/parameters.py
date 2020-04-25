@@ -51,8 +51,7 @@ STOP_THRESHOLD = -1 #-1 means dont stop
 # Running specific parameter
 USE_CPU_ONLY = False
 DETAIL_TRAIN_LOSS_FORWARD = True
-EVAL_MODEL = 'ballisticsreg0.005trail_0_complexity_swipe_layer50_num7'
-
+EVAL_MODEL = 'ballisticsreg0.005trail_1_complexity_swipe_layer50_num7'
 # Data-specific parameters
 X_RANGE = [i for i in range(2, 10 )]
 Y_RANGE = [i for i in range(10 , 2011 )]

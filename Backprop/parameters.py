@@ -50,6 +50,6 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-#EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"
-EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
+EVAL_MODEL = "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8"
+#EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
 #EVAL_MODEL = "ballisticsreg0.0005trail_0_complexity_swipe_layer500_num5"

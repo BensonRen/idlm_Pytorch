@@ -450,10 +450,10 @@ class Network(object):
                 Xpred = self.model(y_cat, rev=True)
                 Xpred = Xpred[:, :dim_x].cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)
-                np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, Ypred, fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fxt, x.cpu().data.numpy())
+                np.savetxt(fyt, y.cpu().data.numpy())
+                np.savetxt(fyp, Ypred)
+                np.savetxt(fxp, Xpred)
         return Ypred_file, Ytruth_file
 
     def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/INN/'):

@@ -38,9 +38,9 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.01
+        flags.test_ratio = 0.0001
     elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.05
+        flags.test_ratio = 0.125
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=True)
+    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=True)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
     #evaluate_different_dataset(multi_flag=True, eval_data_all=False, save_Simulator_Ypred=True)

@@ -301,18 +301,18 @@ class Network(object):
                     x = x.cuda()
                     y = y.cuda()
                 Xpred = self.model(z, y, rev=True).cpu().data.numpy()
-                np.savetxt(fxt, x.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fxt, x.cpu().data.numpy())
+                np.savetxt(fxp, Xpred)
                 if self.flags.data_set == 'gaussian_mixture':
-                    np.savetxt(fyt, y_prev, fmt='%.3f')
+                    np.savetxt(fyt, y_prev)
                 else:
-                    np.savetxt(fyt, y.cpu().data.numpy(), fmt='%.3f')
+                    np.savetxt(fyt, y.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
-                    np.savetxt(fyp, Ypred, fmt='%.3f')
+                    np.savetxt(fyp, Ypred)
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/cINN/'):
+    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/cINN_Jakob/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result

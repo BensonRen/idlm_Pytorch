@@ -64,4 +64,5 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballistics_Ben_version"
+#EVAL_MODEL = "ballistics_Ben_version"
+EVAL_MODEL = "ballistics_Jakob_version"

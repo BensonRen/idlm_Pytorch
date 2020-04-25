@@ -313,7 +313,7 @@ class Network(object):
                 G_out = self.model_b(spectra)  # Get the geometry prediction
                 # print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
-                loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
+                loss = self.make_loss(S_out, spectra)#, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_b.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
@@ -346,7 +346,7 @@ class Network(object):
                         spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                     G_out = self.model_b(spectra)  # Get the geometry prediction
                     S_out = self.model_f(G_out)  # Get the spectra prediction
-                    loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
+                    loss = self.make_loss(S_out, spectra)#, G=G_out)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
@@ -436,25 +436,25 @@ class Network(object):
                 if cuda:
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
-                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set == 'gaussian_mixture':
                     Xpred = self.model_b(spectra)
                     #Ypre_pred = self.model_f(Xpred).cpu().data.numpy()
                     Xpred = Xpred.cpu().data.numpy()
                     Ypred = simulator(self.flags.data_set, Xpred)
                     #Ysim_truth = simulator(self.flags.data_set, geometry.cpu().data.numpy())
-                    #np.savetxt(fyst, Ysim_truth, fmt='%.3f')
-                    np.savetxt(fyp, Ypred, fmt='%.3f')
-                    np.savetxt(fxp, Xpred, fmt='%.3f')
-                    np.savetxt(fyt, spectra_origin, fmt='%.3f')
-                    #np.savetxt(fypp, Ypre_pred, fmt='%.3f')
+                    #np.savetxt(fyst, Ysim_truth)
+                    np.savetxt(fyp, Ypred)
+                    np.savetxt(fxp, Xpred)
+                    np.savetxt(fyt, spectra_origin)
+                    #np.savetxt(fypp, Ypre_pred)
                 else:
                     Xpred = self.model_b(spectra)
                     #Ypred = self.model_f(Xpred)
                     Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
-                    np.savetxt(fyp, Ypred, fmt='%.3f')
-                    np.savetxt(fxp, Xpred.cpu().data.numpy(), fmt='%.3f')
-                    np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
+                    np.savetxt(fyp, Ypred)
+                    np.savetxt(fxp, Xpred.cpu().data.numpy())
+                    np.savetxt(fyt, spectra.cpu().data.numpy())
                 print("Ypred shape", np.shape(Ypred))
                 print("Xpred shape", np.shape(Xpred))
                 print("Xtruth shape",np.shape(geometry))

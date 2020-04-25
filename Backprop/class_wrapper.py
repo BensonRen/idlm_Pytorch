@@ -274,6 +274,9 @@ class Network(object):
                                                         MSE_Simulator=MSE_Simulator, save_misc=save_misc, save_Simulator_Ypred=save_Simulator_Ypred)
                 tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
+                if save_misc:
+                    np.savetxt('visualize_final/point{}_Xtruth.csv'.format(ind), geometry.cpu().data.numpy())
+                    np.savetxt('visualize_final/point{}_Ytruth.csv'.format(ind), spectra.cpu().data.numpy())
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
@@ -421,6 +424,7 @@ class Network(object):
         after the backpropagation and then try to visualize them afterwards
         """
         if save_misc:
+            # Save the Xpred, Ypred, Ypred_Simulator, Ytruth, Xtruth
             np.savetxt('visualize_final/point{}_Xpred.csv'.format(ind), geometry_eval_input.cpu().data.numpy())
             Ypred = logit.cpu().data.numpy()
             if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
