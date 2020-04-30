@@ -432,18 +432,41 @@ def MeanAvgnMinMSEvsTry(data_dir):
     print("shape of ytruth is", np.shape(Yt))
     # Get all the Ypred into list
     Ypred_list = []
-    for files in os.listdir(data_dir):
-        if 'Ypred' in files:
-            #print(files)
-            Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
-            if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
-                Yp = np.reshape(Yp, [-1, 1])
-            print("shape of Ypred file is", np.shape(Yp))
-            Ypred_list.append(Yp)
-
+    
+    #################################
+    # Special handling for Backprop #
+    #################################
+    if 'Backprop' in data_dir:
+        l, w = np.shape(Yt)
+        Ypred_mat = np.zeros([l, 1000, w])
+        check_full = np.zeros(l)                                     # Safety check for completeness
+        for files in os.listdir(data_dir):
+            if 'Ypred' in files:
+                #print(files)
+                Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
+                if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
+                    Yp = np.reshape(Yp, [-1, 1])
+                #print("shape of Ypred file is", np.shape(Yp))
+                number = int(files.split('inference')[-1][:-4])
+                Ypred_mat[number, :, :] = Yp
+                check_full[number] = 1
+        assert np.sum(check_full) == l, 'Your list is not complete'
+        # Finished fullfilling the Ypred mat, now fill in the Ypred list as before
+        for i in range(1000):
+            Ypred_list.append(Ypred_mat[:, i, :])
+    else:
+        for files in os.listdir(data_dir):
+            if 'Ypred' in files:
+                #print(files)
+                Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
+                if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
+                    Yp = np.reshape(Yp, [-1, 1])
+                print("shape of Ypred file is", np.shape(Yp))
+                Ypred_list.append(Yp)
     # Calculate the large MSE matrix
     mse_mat = np.zeros([len(Ypred_list), len(Yt)])
     print("shape of mse_mat is", np.shape(mse_mat))
+    
     for ind, yp in enumerate(Ypred_list):
         if np.shape(yp) != np.shape(Yt):
             print("Your Ypred file shape does not match your ytruth, however, we are trying to reshape your ypred file into the Ytruth file shape")
@@ -452,8 +475,27 @@ def MeanAvgnMinMSEvsTry(data_dir):
             yp = np.reshape(yp, np.shape(Yt))
             if ind == 1:
                 print(np.shape(yp))
-        mse = np.mean(np.square(yp - Yt), axis=1)
-        mse_mat[ind, :] = mse
+        # For special case yp = -999, it is out of numerical simulator
+        print("shape of np :", np.shape(yp))
+        print("shape of Yt :", np.shape(Yt))
+        if np.shape(yp)[1] == 1:                        # If this is ballistics
+            print("this is ballistics dataset, checking the -999 situation now")
+            valid_index = yp[:, 0] != -999
+            print("shape of valid flag :", np.shape(valid_index))
+            valid_num = np.sum(valid_index)
+            yp = yp[valid_index, :]
+            Yt_valid = Yt[valid_index, :]
+            print("shape of np after valid :", np.shape(yp))
+            print("shape of Yt after valid :", np.shape(Yt_valid))
+            mse = np.mean(np.square(yp - Yt_valid), axis=1)
+            if valid_num == len(valid_index):
+                mse_mat[ind, :] = mse
+            else:
+                mse_mat[ind, :valid_num] = mse
+                mse_mat[ind, valid_num:] = np.mean(mse)
+        else:
+            mse = np.mean(np.square(yp - Yt), axis=1)
+            mse_mat[ind, :] = mse
     print("shape of the yp is", np.shape(yp)) 
     print("shape of mse is", np.shape(mse))
 
@@ -466,6 +508,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
         mse_min_list[i] = np.mean(np.min(mse_mat[:i+1, :], axis=0))
 
     # Save the list down for further analysis
+    np.savetxt(os.path.join(data_dir, 'mse_mat.csv'), mse_mat, delimiter=' ')
     np.savetxt(os.path.join(data_dir, 'mse_avg_list.txt'), mse_avg_list, delimiter=' ')
     np.savetxt(os.path.join(data_dir, 'mse_min_list.txt'), mse_min_list, delimiter=' ')
 
@@ -521,7 +564,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if not os.path.isdir(os.path.join(data_dir, dirs)):
+        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'Backprop' in dirs:
             print("skipping due to it is not a directory")
             continue;
         for subdirs in os.listdir((os.path.join(data_dir, dirs))):
@@ -553,13 +596,17 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         :param time_in_s_table: a dictionary of dictionary which stores the averaged evaluation time
                 in seconds to convert the graph
         """
-        color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", "INN":"k", "Random": "y","cINN_Jakob": "violet"}
+        color_dict = {"Backprop_1000_from_2000":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
+                        "INN":"k", "Random": "y","cINN_Jakob": "violet",
+                        "Backprop_1000_from_1000": "grey", "Backprop_1000_from_4000": "olive"}
         f = plt.figure()
         for key in sorted(dict.keys()):
             x_axis = np.arange(len(dict[key])).astype('float')
             if time_in_s_table is not None:
                 x_axis *= time_in_s_table[data_name][key]
+            print("printing", name)
             print(key)
+            print(dict[key])
             plt.plot(x_axis, dict[key],c=color_dict[key], label=key)
         if logy:
             ax = plt.gca()

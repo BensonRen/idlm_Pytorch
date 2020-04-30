@@ -380,20 +380,36 @@ class Network(object):
             #np.savetxt('best_mse/full_loss_mat_real{}.csv'.format(ind), Full_loss_matrix_real)
             #np.savetxt('best_mse/full_loss_mat_fake{}.csv'.format(ind), Full_loss_matrix_fake)
 
+        
         if save_all:
-            for i in range(len(geometry_eval_input.cpu().data.numpy())):
-                saved_model_str = self.saved_model.replace('/', '_') + 'inference' + str(i)
-                Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
-                Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
-                # 2 options: simulator/logit
-                Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
-                if not save_Simulator_Ypred:            # The default is the simulator Ypred output
-                    Ypred = logit.cpu().data.numpy()
-                if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
-                    Ypred = np.reshape(Ypred, [-1, 1])
-                with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                    np.savetxt(fyp, Ypred[i, :])
-                    np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[i, :])
+            #######################################################
+            # Choose the top 1,000 points from Backprop solutions #
+            #######################################################
+            mse_loss = np.reshape(np.sum(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1), [-1, 1])
+            #print("shape of mse_loss", np.shape(mse_loss))
+            mse_loss = np.concatenate((mse_loss, np.reshape(np.arange(self.flags.eval_batch_size), [-1, 1])), axis=1)
+            #print("shape of mse_loss", np.shape(mse_loss))
+            loss_sort = mse_loss[mse_loss[:, 0].argsort(kind='mergesort')]                         # Sort the loss list
+            #print("shape of loss_sort is:", np.shape(loss_sort))
+            #print("print loss_srt", loss_sort)
+            #print(loss_sort)
+            good_index = loss_sort[:1000, 1].astype('int')                        # Get the indexs
+            #print("good index", good_index)
+            #for i in range(1000):
+            saved_model_str = self.saved_model.replace('/', '_') + 'inference' + str(ind)
+            Ypred_file = os.path.join(save_dir, 'test_Ypred_point{}.csv'.format(saved_model_str))
+            Xpred_file = os.path.join(save_dir, 'test_Xpred_point{}.csv'.format(saved_model_str))
+            # 2 options: simulator/logit
+            Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
+            #print("shape of Ypred is", np.shape(Ypred))
+            #print("shape of good index is", np.shape(good_index))
+            if not save_Simulator_Ypred:            # The default is the simulator Ypred output
+                Ypred = logit.cpu().data.numpy()
+            if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                Ypred = np.reshape(Ypred, [-1, 1])
+            with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
+                np.savetxt(fyp, Ypred[good_index, :])
+                np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[good_index, :])
        
         #############################
         # After BP, choose the best #
@@ -405,7 +421,7 @@ class Network(object):
 
         if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
             Ypred = np.reshape(Ypred, [-1, 1])
-
+        
         # calculate the MSE list and get the best one
         MSE_list = np.mean(np.square(Ypred - target_spectra_expand.cpu().data.numpy()), axis=1)
         best_estimate_index = np.argmin(MSE_list)

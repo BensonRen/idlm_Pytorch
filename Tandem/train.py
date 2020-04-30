@@ -36,7 +36,7 @@ def training_from_flag(flags):
     ntwk.train()
 
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct
-    write_flags_and_BVE(flags, ntwk.best_validation_loss, ntwk.ckpt_dir)
+    write_flags_and_BVE(flags, ntwk.best_validation_loss, ntwk.ckpt_dir, forward_best_loss=ntwk.best_forward_validation_loss)
     # put_param_into_folder(ntwk.ckpt_dir)
 
 
@@ -58,9 +58,10 @@ if __name__ == '__main__':
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    # training_from_flag(flags)
+    for i in range(10):
+        training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    for i in range(10):
-        retrain_different_dataset()
+    #for i in range(10):
+    #    retrain_different_dataset()
 

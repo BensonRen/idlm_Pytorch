@@ -303,12 +303,12 @@ class InverseBallisticsDataset(Dataset):
 
 # In[89]:
 
-"""
+
 if __name__ == '__main__':
     pass
 
     model = InverseBallisticsModel()
-    train_data = InverseBallisticsDataset(model, 100, None, suffix='train')
+    train_data = InverseBallisticsDataset(model, 12800, None, suffix='train')
     train_loader = train_data.get_dataloader(100)
     
     with open("data_x.csv", 'a') as file_x, open("data_y.csv",'a') as file_y:
@@ -322,7 +322,7 @@ if __name__ == '__main__':
             #print(x, y)
             #break
 
-
+"""
 # ### Read the input files
 
 # In[31]:

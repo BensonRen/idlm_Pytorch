@@ -166,16 +166,19 @@ def load_flags(save_dir, save_file="flags.obj"):
 
 
 # 8
-def write_flags_and_BVE(flags, best_validation_loss, save_dir):
+def write_flags_and_BVE(flags, best_validation_loss, save_dir, forward_best_loss=None):
     """
     The function that is usually executed at the end of the training where the flags and the best validation loss are recorded
     They are put in the folder that called this function and save as "parameters.txt"
     This parameter.txt is also attached to the generated email
     :param flags: The flags struct containing all the parameters
     :param best_validation_loss: The best_validation_loss recorded in a training
+    :param forard_best_loss: The forward best loss only applicable for Tandem model
     :return: None
     """
     flags.best_validation_loss = best_validation_loss  # Change the y range to be acceptable long string
+    if forward_best_loss is not None:
+        flags.best_forward_validation_loss = forward_best_loss
     # To avoid terrible looking shape of y_range
     yrange = flags.y_range
     # yrange_str = str(yrange[0]) + ' to ' + str(yrange[-1])

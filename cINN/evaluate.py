@@ -35,7 +35,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
 
     # Set up the test_ratio
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.001
+        flags.test_ratio = 0.5
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.1
     elif flags.data_set == 'robotic_arm':
@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model)
-    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
+    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=True)
     #evaluate_all("models/ballistics")

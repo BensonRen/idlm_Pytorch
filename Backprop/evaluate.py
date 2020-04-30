@@ -38,7 +38,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.0001
+        flags.test_ratio = 0.078
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.125
     elif flags.data_set == 'robotic_arm':
@@ -60,7 +60,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/' + flags.data_set, save_all=True,
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop_1000_from_1000/' + flags.data_set, save_all=True,
                                                 save_misc=save_misc, MSE_Simulator=MSE_Simulator,save_Simulator_Ypred=save_Simulator_Ypred)
     else:
         pred_file, truth_file = ntwk.evaluate(save_misc=save_misc, MSE_Simulator=MSE_Simulator, save_Simulator_Ypred=save_Simulator_Ypred)
@@ -80,7 +80,7 @@ def evaluate_all(models_dir="models"):
             evaluate_from_model(os.path.join(models_dir, file))
     return None
 
-def evaluate_different_dataset(multi_flag, eval_data_all, save_Simulator_Ypred=False):
+def evaluate_different_dataset(multi_flag, eval_data_all, save_Simulator_Ypred=False, MSE_Simulator=False):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
@@ -89,7 +89,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all, save_Simulator_Ypred=F
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
-        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all, save_Simulator_Ypred=save_Simulator_Ypred)
+        evaluate_from_model(useless_flags.eval_model, multi_flag=multi_flag, eval_data_all=eval_data_all, save_Simulator_Ypred=save_Simulator_Ypred, MSE_Simulator=MSE_Simulator)
 
 
 if __name__ == '__main__':
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=True)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
-    #evaluate_different_dataset(multi_flag=True, eval_data_all=False, save_Simulator_Ypred=True)
+    #evaluate_different_dataset(multi_flag=True, eval_data_all=False, save_Simulator_Ypred=True, MSE_Simulator=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)

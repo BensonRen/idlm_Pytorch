@@ -102,8 +102,14 @@ class Network(object):
             BDY_loss = BDY_loss.cuda()
         # Boundary loss of the geometry_eval to be less than 1
         if G is not None:
+            if self.flags.data_set != 'ballistics':                 # For non-ballisitcs dataset
+                X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
+                X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
+            else:                                                   # For ballistics dataset
+                X_mean = [0, 1.5, np.radians(40.5), 15/34]
+                X_range = [1., 1., 1.0, 10/34]
             relu = torch.nn.ReLU()
-            BDY_loss_all = relu(torch.abs(G) - 1)
+            BDY_loss_all = 100 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.Boundary_loss = BDY_loss
         #if self.flags.data_set != 'gaussian_mixture':
@@ -114,6 +120,21 @@ class Network(object):
         #else:  # This is cross entropy loss where data is categorical
         #    criterion = nn.CrossEntropyLoss()
         #    return torch.add(BDY_loss, criterion(logit, labels.long()))
+
+    def build_tensor(self, nparray, requires_grad=False):
+        return torch.tensor(nparray, requires_grad=requires_grad, device='cuda', dtype=torch.float)
+
+    def get_boundary_lower_bound_uper_bound(self):
+        if self.flags.data_set == 'sine_wave':
+            return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
+        elif self.flags.data_set == 'ballistics':
+            return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
+        elif self.flags.data_set == 'robotic_arm':
+            return np.array([1.88, 3.7, 3.82, 3.78]), np.array([-0.87, -1.87, -1.92, -1.73]), np.array([1.018, 1.834, 1.897, 2.053])
+        elif self.flags.data_set == 'meta_material':
+            return np.array([2,2,2,2,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1,1,1,1,1,1,1,1])
+        else:
+            sys.exit("In Tandem, during getting the boundary loss boundaries, Your data_set entry is not correct, check again!")
 
     def make_optimizer_f(self):
         """
@@ -214,6 +235,8 @@ class Network(object):
                 for j, (geometry, spectra) in enumerate(self.train_loader):
                     if self.flags.data_set == 'gaussian_mixture':
                         spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                    if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
+                        geometry[:, 3] = geometry[:, 3] / 34
                     if cuda:
                         geometry = geometry.cuda()                          # Put data onto GPU
                         spectra = spectra.cuda()                            # Put data onto GPU
@@ -239,8 +262,10 @@ class Network(object):
                     print("Doing Evaluation on the forward model now")
                     test_loss = 0
                     for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
-                        if self.flags.data_set == 'gaussian_mixture':
-                            spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                        #if self.flags.data_set == 'gaussian_mixture':
+                        #    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                        if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
+                            geometry[:, 3] = geometry[:, 3] / 34
                         if cuda:
                             geometry = geometry.cuda()
                             spectra = spectra.cuda()
@@ -302,27 +327,29 @@ class Network(object):
             train_loss = 0
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model_b.train()
-            self.model_f.train()
+            self.model_f.eval()
             for j, (geometry, spectra) in enumerate(self.train_loader):
                 if cuda:
                     geometry = geometry.cuda()  # Put data onto GPU
                     spectra = spectra.cuda()    # Put data onto GPU
                 self.optm_b.zero_grad()         # Zero the gradient first
-                if self.flags.data_set == 'gaussian_mixture':
-                    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                #if self.flags.data_set == 'gaussian_mixture':
+                #    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
+                    geometry[:, 3] = geometry[:, 3] / 34
                 G_out = self.model_b(spectra)  # Get the geometry prediction
                 # print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
-                loss = self.make_loss(S_out, spectra)#, G=G_out)  # Get the loss tensor
+                loss = self.make_loss(S_out, spectra, G=G_out)  # Get the loss tensor
                 loss.backward()  # Calculate the backward gradients
                 self.optm_b.step()  # Move one step the optimizer
                 train_loss += loss  # Aggregate the loss
                 # boundary_loss += self.Boundary_loss                   # Aggregate the BDY loss
             
             # Testing code #
-            if epoch == self.flags.train_step - 1:
-                print('Training Ypred is', S_out.cpu().data.numpy())
-                print('Training Ytruth is', spectra.cpu().data.numpy())
+            #if epoch == self.flags.train_step - 1:
+            #    print('Training Ypred is', S_out.cpu().data.numpy())
+            #    print('Training Ytruth is', spectra.cpu().data.numpy())
 
             # Calculate the avg loss of training
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
@@ -344,9 +371,11 @@ class Network(object):
                         spectra = spectra.cuda()
                     if self.flags.data_set == 'gaussian_mixture':
                         spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                    if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
+                        geometry[:, 3] = geometry[:, 3] / 34
                     G_out = self.model_b(spectra)  # Get the geometry prediction
                     S_out = self.model_f(G_out)  # Get the spectra prediction
-                    loss = self.make_loss(S_out, spectra)#, G=G_out)  # compute the loss
+                    loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
                     test_loss += loss  # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
@@ -368,7 +397,7 @@ class Network(object):
                     self.save_b()
                     print("Saving the backward model down...")
 
-                    if self.best_validation_loss < self.flags.stop_threshold:
+                    if self.best_validation_loss < -1: #self.flags.stop_threshold:
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" % \
                               (epoch, self.best_validation_loss))
                         self.log.close()
@@ -398,6 +427,9 @@ class Network(object):
             print("Ypred:", Ypred)
             print("Ypred_pred:", Ypred_pred.cpu().data.numpy())
         """
+    
+    
+    
     def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed
         cuda = True if torch.cuda.is_available() else False
@@ -406,9 +438,7 @@ class Network(object):
             self.model_f.cuda()
 
         # Set to evaluation mode for batch_norm layers
-        self.model_f.train()
-        #self.model_f.eval()
-        #self.model_b.train()
+        self.model_f.eval()
         self.model_b.eval()
 
 
@@ -430,12 +460,11 @@ class Network(object):
                 #open(Ypre_pred_file, 'a') as fypp, open(YSIM_Truth_file, 'a') as fyst:
             # Loop through the eval data and evaluate
             for ind, (geometry, spectra) in enumerate(self.test_loader):
+                """
+                Older version when we have gaussian_mixture data back then
                 if self.flags.data_set == 'gaussian_mixture':
                     spectra_origin = np.copy(spectra.cpu().data.numpy())
                     spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                if cuda:
-                    geometry = geometry.cuda()
-                    spectra = spectra.cuda()
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set == 'gaussian_mixture':
                     Xpred = self.model_b(spectra)
@@ -449,18 +478,21 @@ class Network(object):
                     np.savetxt(fyt, spectra_origin)
                     #np.savetxt(fypp, Ypre_pred)
                 else:
-                    Xpred = self.model_b(spectra)
-                    #Ypred = self.model_f(Xpred)
-                    Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
-                    np.savetxt(fyp, Ypred)
-                    np.savetxt(fxp, Xpred.cpu().data.numpy())
-                    np.savetxt(fyt, spectra.cpu().data.numpy())
-                print("Ypred shape", np.shape(Ypred))
-                print("Xpred shape", np.shape(Xpred))
-                print("Xtruth shape",np.shape(geometry))
-                #print("Ytruth:", spectra.cpu().data.numpy())
-                #print("Ypred:", Ypred.cpu().data.numpy())
-                #print("Ypred:", Ypred)
+                """
+                if cuda:
+                    geometry = geometry.cuda()
+                    spectra = spectra.cuda()
+                Xpred = self.model_b(spectra)
+                if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
+                    Xpred[:, 3] = Xpred[:, 3] * 34
+                #Ypred = self.model_f(Xpred).cpu().data.numpy()
+                Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
+                np.savetxt(fyp, Ypred)
+                np.savetxt(fxp, Xpred.cpu().data.numpy())
+                np.savetxt(fyt, spectra.cpu().data.numpy())
+                #print("Ypred shape", np.shape(Ypred))
+                #print("Xpred shape", np.shape(Xpred))
+                #print("Xtruth shape",np.shape(geometry))
         return Ypred_file, Ytruth_file
 
     def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/Tandem/'):

@@ -33,7 +33,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
 
     # Set up the test_ratio
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.001
+        flags.test_ratio = 0.1
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.1
     elif flags.data_set == 'robotic_arm':
