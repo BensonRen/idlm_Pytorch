@@ -35,11 +35,11 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
 
     # Set up the test_ratio
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.5
+        flags.test_ratio = 0.078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.1
+        flags.test_ratio = 0.125                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.1
+        flags.test_ratio = 0.2                          # 10000 in total
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")
@@ -85,8 +85,9 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ["robotic_armcouple_layer_num6trail_0", "sine_wavecouple_layer_num8trail_0",
-                        "meta_materialcouple_layer_num5trail_1", "gaussian_mixturecouple_layer_num6trail_1"]
+     #data_set_list = ["ballistics_Jakob_version"] 
+     data_set_list = ["sine_wavecouple_layer_num8trail_0",
+                      "robotic_armcouple_layer_num6trail_0"]
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
@@ -99,9 +100,9 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    #evaluate_different_dataset(multi_flag=False, eval_data_all=True)
+    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_all("models/ballistics")
 

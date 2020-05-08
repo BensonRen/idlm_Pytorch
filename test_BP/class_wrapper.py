@@ -418,14 +418,22 @@ class Network(object):
         return Xpred_best, Ypred_best, MSE_list
 
 
-    def predict(self, Xpred_file):
+    def predict(self, Xpred_file, save_prefix='', shrink_factor=1):
         """
         The prediction function, takes Xpred file and write Ypred file using trained model
         :param Xpred_file: Xpred file by (usually VAE) for meta-material
         :return: pred_file, truth_file to compare
         """
         self.load()         # load the model
-        Ypred_file = Xpred_file.replace('Xpred', 'Ypred')
+        ####################################################################
+        # Shrink the trained weight, 2020.04.30 testing Jordan's thoughts' #
+        ####################################################################
+        for p in self.model.parameters():
+            if p.requires_grad:
+                print("Original weight is:", p.data)
+                p.data = shrink_factor * p.data
+                print("Current  weight is:", p.data)
+        Ypred_file = Xpred_file.replace('Xpred', save_prefix + 'Ypred')
         Xpred = pd.read_csv(Xpred_file, header=None, delimiter=' ')     # Read the input
         Xpred.info()
         Xpred_tensor = torch.from_numpy(Xpred.values).to(torch.float)

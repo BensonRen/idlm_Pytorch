@@ -239,6 +239,11 @@ def HeatMapBVL(plot_x_name, plot_y_name, title,  save_name='HeatMap.png', HeatMa
                     if feature_2_name == 'linear_unit':                         # If comparing different linear units
                         df['linear_unit'] = eval(df[feature_1_name][0])[1]
                         df['best_validation_loss'] = get_bvl(file_path)
+                    if feature_2_name == 'kernel_second':                       # If comparing different kernel convs
+                        print(df['conv_kernel_size'])
+                        print(type(df['conv_kernel_size']))
+                        df['kernel_second'] = eval(df['conv_kernel_size'][0])[1]
+                        df['kernel_first'] = eval(df['conv_kernel_size'][0])[0]
                     df_list.append(df[[heat_value_name, feature_1_name, feature_2_name]])
                     HMpoint_list.append(HMpoint(float(df[heat_value_name][0]),eval(str(df[feature_1_name][0])),
                                                 eval(str(df[feature_2_name][0])), feature_1_name, feature_2_name))
@@ -596,8 +601,8 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         :param time_in_s_table: a dictionary of dictionary which stores the averaged evaluation time
                 in seconds to convert the graph
         """
-        color_dict = {"Backprop_1000_from_2000":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
-                        "INN":"k", "Random": "y","cINN_Jakob": "violet",
+        color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
+                        "INN":"k", "Random": "y","cINN_Jakob": "violet", "cINN_Jakob_new":"orange",
                         "Backprop_1000_from_1000": "grey", "Backprop_1000_from_4000": "olive"}
         f = plt.figure()
         for key in sorted(dict.keys()):
@@ -611,7 +616,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         if logy:
             ax = plt.gca()
             ax.set_yscale('log')
-        plt.legend()
+        plt.legend(loc=1)
         if time_in_s_table is not None:
             plt.xlabel('inference time (s)')
         else:

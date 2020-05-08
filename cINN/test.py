@@ -8,7 +8,7 @@ if __name__ == '__main__':
     plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='ballistics')
     plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='sine_wave')
     plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='robotic_arm')
-    #plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='meta_material')
+    plotsAnalysis.DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', data_name='meta_material')
 
 
 

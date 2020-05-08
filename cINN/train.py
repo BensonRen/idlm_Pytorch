@@ -45,11 +45,16 @@ def retrain_different_dataset():
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ["robotic_armcouple_layer_num6trail_0", "sine_wavecouple_layer_num8trail_0",
-                        "meta_materialcouple_layer_num5trail_1", "gaussian_mixturecouple_layer_num6trail_1"]
+     data_set_list = ["ballistics_Jakob_version"]#,
+     #                   "meta_materialcouple_layer_num5trail_1",
+     #                   "sine_wavecouple_layer_num8trail_0",
+     #                   "robotic_armcouple_layer_num6trail_0"]
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("models", eval_model))
-        flags.model_name = "retrain_time_eval" + flags.model_name
+        flags.model_name = "retrain_time_eval" + eval_model
+        flags.train_step = 500
+        flags.test_ratio = 0.2
+        flags.stop_threshold = -float('inf')
         training_from_flag(flags)
 
 
@@ -60,8 +65,8 @@ if __name__ == '__main__':
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    training_from_flag(flags)
+    #training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
     #for i in range(10):
-    #    retrain_different_dataset()
+    retrain_different_dataset()

@@ -277,6 +277,7 @@ class Network(object):
                 if save_misc:
                     np.savetxt('visualize_final/point{}_Xtruth.csv'.format(ind), geometry.cpu().data.numpy())
                     np.savetxt('visualize_final/point{}_Ytruth.csv'.format(ind), spectra.cpu().data.numpy())
+                # suppress printing to evaluate time
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
@@ -414,6 +415,7 @@ class Network(object):
         #############################
         # After BP, choose the best #
         #############################
+        print("Your MSE_Simulator status is :", MSE_Simulator)
         if MSE_Simulator:                               # If we are using Simulator as Ypred standard
             Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
         else:
@@ -486,8 +488,10 @@ class Network(object):
 
     
     def get_boundary_lower_bound_uper_bound(self):
-        if self.flags.data_set == 'sine_wave' or self.flags.data_set == 'meta_material':
+        if self.flags.data_set == 'sine_wave': 
             return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
+        elif self.flags.data_set == 'meta_material':
+            return np.array([2,2,2,2,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1,1,1,1,1,1,1,1])
         elif self.flags.data_set == 'ballistics':
             return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':

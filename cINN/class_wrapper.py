@@ -284,6 +284,7 @@ class Network(object):
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
 
+        tk = time_keeper(time_keeping_file=os.path.join(save_dir, 'evaluation time.txt'))
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
@@ -310,9 +311,10 @@ class Network(object):
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred)
+            tk.record(1)
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/cINN_Jakob/'):
+    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/cINN_Jakob_new/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result

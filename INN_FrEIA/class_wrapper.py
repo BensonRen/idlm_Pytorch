@@ -426,6 +426,7 @@ class Network(object):
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
 
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
@@ -454,6 +455,7 @@ class Network(object):
                 np.savetxt(fyt, y.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
                 np.savetxt(fxp, Xpred)
+            tk.record(1)
         return Ypred_file, Ytruth_file
 
     def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/INN/'):

@@ -454,6 +454,7 @@ class Network(object):
         #Ypre_pred_file = os.path.join(save_dir, 'test_Ypre_pred_{}.csv'.format(saved_model_str))
         #YSIM_Truth_file = os.path.join(save_dir, 'test_YSim_truth_{}.csv'.format(saved_model_str))
 
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp: #,\
@@ -486,6 +487,7 @@ class Network(object):
                 if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
                     Xpred[:, 3] = Xpred[:, 3] * 34
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
+                
                 Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
                 np.savetxt(fxp, Xpred.cpu().data.numpy())
@@ -493,6 +495,7 @@ class Network(object):
                 #print("Ypred shape", np.shape(Ypred))
                 #print("Xpred shape", np.shape(Xpred))
                 #print("Xtruth shape",np.shape(geometry))
+        tk.record(1)
         return Ypred_file, Ytruth_file
 
     def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/Tandem/'):

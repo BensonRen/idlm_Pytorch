@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def predict_from_model(pre_trained_model, Xpred_file):
+def predict_from_model(pre_trained_model, Xpred_file, shrink_factor=1, save_name=''):
     """
     Predicting interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -44,14 +44,15 @@ def predict_from_model(pre_trained_model, Xpred_file):
     print("number of trainable parameters is :")
     pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
     print(pytorch_total_params)
+    
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.predict(Xpred_file)
+    pred_file, truth_file = ntwk.predict(Xpred_file, save_prefix=save_name + 'shrink_factor' + str(shrink_factor), shrink_factor=shrink_factor)
 
     # Plot the MSE distribution
-    flags.eval_model = pred_file.replace('.','_') # To make the plot name different
-    plotMSELossDistrib(pred_file, truth_file, flags)
-    print("Evaluation finished")
+    #flags.eval_model = pred_file.replace('.','_') # To make the plot name different
+    #plotMSELossDistrib(pred_file, truth_file, flags)
+    #print("Evaluation finished")
 
 
 def predict_all(models_dir="data"):
@@ -68,5 +69,12 @@ def predict_all(models_dir="data"):
 
 
 if __name__ == '__main__':
-    predict_from_model('models/20200419_114504','data/range_3_full_Xpred.csv') 
+    #shrink_list = np.arange(0, 1, 0.01)
+    #reg_scale_list = [1e-5, 1e-4, 1e-3, 1e-2, 0.1, 0.5, 1, 5, 10]
+    reg_scale_list = [20, 50, 100, 200, 1000]
+    for reg_scale in reg_scale_list:
+    #for sf in shrink_list:
+        #predict_from_model('models/20200419_114504','data/range_3_full_Xpred.csv', shrink_factor=sf) 
+        predict_from_model('models/sine_test_1dreg{}trail_0_complexity_swipe_layer500_num5'.format(reg_scale),'data/range_3_full_Xpred.csv', save_name='reg' + str(reg_scale)) 
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
+    #predict_from_model('models/20200419_114504','data/range_3_full_Xpred.csv', shrink_factor=0.5) 
