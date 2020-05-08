@@ -54,6 +54,29 @@ def predict_from_model(pre_trained_model, Xpred_file):
     print("Evaluation finished")
 
 
+def ensemble_predict(model_list, Xpred_file):
+    """
+    This predicts the output from an ensemble of models
+    :param model_list: The list of model names to aggregate
+    :param Xpred_file: The Xpred_file that you want to predict
+    :return: The prediction Ypred_file
+    """
+    print("this is doing ensemble prediction for models :", model_list)
+    pred_list = []
+    # Get the predictions into a list of np array
+    for pre_trained_model in model_list:
+        pred_file, truth_file = predict_from_model(pre_trained_model, Xpred_file)
+        pred = np.loadtxt(pred_file, delimiter=' ')
+        pred_list.append(np.copy(np.expand_dims(pred, axis=2)))
+    # Take the mean of the predictions
+    pred_all = np.concatenate(pred_list, axis=2)
+    pred_mean = np.mean(pred_all, axis=2)
+    save_name = Xpred_file.replace('Xpred', 'Ypred_ensemble')
+    np.savetxt(save_name, pred_mean)
+
+
+
+
 def predict_all(models_dir="data"):
     """
     This function predict all the models in the models/. directory
