@@ -18,7 +18,7 @@ from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_clas
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
 from Simulated_DataSets.Ballistics.Inverse_ballistics_original import InverseBallisticsModel
 from Simulated_DataSets.Sine_test import generate_sine_test_1d
-
+from ensemble_mm.predict_ensemble import ensemble_predict_master
 # 1
 def get_Xpred(path, name=None):
     """
@@ -243,11 +243,30 @@ def simulator_ballistics(Xpred):
     IB = InverseBallisticsModel()
     return IB.forward_process(Xpred, output_full=True) 
 
-# 12.5
+# 13
 def simulator_sine_test_1d(Xpred):
     return generate_sine_test_1d.getYfromX(Xpred)
 
-# 13
+# 14
+def simulator_meta_material(Xpred):
+    """
+    The function where calls the ensemble model to work as a simulator
+    This use the prediction ensemble function in Backprop model which trained a bunch of network and predict the output averaged
+    Uses a temporary folder called useless to save and read the file
+    """
+    np.savetxt('/work/sr365/useless/Xpred.csv', Xpred)
+    # Path has to be changed for pickel to unpickel the model from checkpoint file
+    cwd = os.getcwd()
+    print("Your are currenlty in folder", cwd)
+    os.chdir('/hpc/home/sr365/Pytorch/ensemble_mm')
+    print("Now you are in folder", os.getcwd())
+    ensemble_predict_master('/hpc/home/sr365/Pytorch/ensemble_mm/models', '/work/sr365/useless/Xpred.csv')
+    os.chdir(cwd)
+    Ypred = np.loadtxt('/work/sr356/useless/Ypred_ensemble.csv', delimiter=' ')
+    return Ypred
+    
+    
+# 15
 def simulator(data_set, Xpred):
     """
     This is the simulator which takes Xpred from inference models and feed them into real data
@@ -269,11 +288,13 @@ def simulator(data_set, Xpred):
         return simulator_ballistics(Xpred)
     elif data_set == 'sine_test_1d':
         return simulator_sine_test_1d(Xpred)
+    elif data_set == 'meta_material':
+        return simulator_meta_material(Xpred)
     else:
         sys.exit("In Simulator: Your data_set entry is not correct, check again!")
 
 
-# 14
+# 16
 def normalize_eval(x, x_max, x_min):
     """
     Normalize the x into [-1, 1] range in each dimension [:, i]
@@ -287,7 +308,7 @@ def normalize_eval(x, x_max, x_min):
     return x
 
 
-# 15
+# 17
 def unnormalize_eval(x, x_max, x_min):
     """
     UnNormalize the x into [-1, 1] range in each dimension [:, i]

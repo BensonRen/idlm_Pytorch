@@ -8,9 +8,9 @@ sys.path.append('../utils/')
 # Torch
 
 # Own
-import flag_reader
-from class_wrapper import Network
-from model_maker import Backprop
+import flag_reader_ensemble
+from class_wrapper_ensemble import Network
+from model_maker_ensemble import Backprop
 from utils import data_reader
 from utils.helper_functions import load_flags
 from utils.evaluation_helper import plotMSELossDistrib
@@ -39,7 +39,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.backprop_step = eval_flags.backprop_step
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.0078                        # 12800 in total
+        flags.test_ratio = 0.078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.125                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
@@ -60,8 +60,6 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     print("number of trainable parameters is :")
     pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
     print(pytorch_total_params)
-    
-
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
@@ -106,7 +104,7 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=False)
+    #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=True)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=False)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
@@ -114,7 +112,7 @@ if __name__ == '__main__':
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)
-    #evaluate_all(models_dir="models/meta_ensemble/")
+    evaluate_all(models_dir="models/meta_ensemble/")
     
     
     # Eval META_MATERIAL

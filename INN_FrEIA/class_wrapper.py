@@ -449,12 +449,14 @@ class Network(object):
                 y_cat = torch.cat((z, pad_yz, y), dim=1)
                 # Initialize the x first
                 Xpred = self.model(y_cat, rev=True)
+                """
                 Xpred = Xpred[:, :dim_x].cpu().data.numpy()
                 Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, x.cpu().data.numpy())
                 np.savetxt(fyt, y.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
                 np.savetxt(fxp, Xpred)
+                """
             tk.record(1)
         return Ypred_file, Ytruth_file
 

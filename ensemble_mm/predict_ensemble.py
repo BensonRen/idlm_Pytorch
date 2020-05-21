@@ -8,15 +8,63 @@ sys.path.append('../utils/')
 # Torch
 
 # Own
-from Backprop import flag_reader
-from Backprop.class_wrapper import Network
-from Backprop.model_maker import Backprop
+from ensemble_mm import flag_reader_ensemble
+from ensemble_mm.class_wrapper_ensemble import Network
+from ensemble_mm.model_maker_ensemble import Backprop
 from utils import data_reader
-from utils.helper_functions import load_flags
-from utils.evaluation_helper import plotMSELossDistrib
+
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def plotMSELossDistrib(pred_file, truth_file, flags):
+    if (flags.data_set == 'gaussian_mixture'):
+        # get the prediction and truth array
+        pred = np.loadtxt(pred_file, delimiter=' ')
+        truth = np.loadtxt(truth_file, delimiter=' ')
+        # get confusion matrix
+        cm = confusion_matrix(truth, pred)
+        cm = cm / np.sum(cm)
+        # Calculate the accuracy
+        accuracy = 0
+        for i in range(len(cm)):
+            accuracy += cm[i,i]
+        print("confusion matrix is", cm)
+        # Plotting the confusion heatmap
+        f = plt.figure(figsize=[15,15])
+        plt.title('accuracy = {}'.format(accuracy))
+        sns.set(font_scale=1.4)
+        sns.heatmap(cm, annot=True)
+        eval_model_str = flags.eval_model.replace('/','_')
+        f.savefig('data/{}.png'.format(eval_model_str),annot_kws={"size": 16})
+
+    else:
+        mae, mse = compare_truth_pred(pred_file, truth_file)
+        plt.figure(figsize=(12, 6))
+        plt.hist(mse, bins=100)
+        plt.xlabel('Mean Squared Error')
+        plt.ylabel('cnt')
+        plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
+        eval_model_str = flags.eval_model.replace('/','_')
+        plt.savefig(os.path.join(os.path.abspath(''), 'data',
+                             '{}.png'.format(eval_model_str)))
+        print('(Avg MSE={:.4e})'.format(np.mean(mse)))
+
+
+def load_flags(save_dir, save_file="flags.obj"):
+    """
+    This function inflate the pickled object to flags object for reuse, typically during evaluation (after training)
+    :param save_dir: The place where the obj is located
+    :param save_file: The file name of the file, usually flags.obj
+    :return: flags
+    """
+    with open(os.path.join(save_dir, save_file), 'rb') as f:     # Open the file
+        flags = pickle.load(f)                                  # Use pickle to inflate the obj back to RAM
+    return flags
 
 
 def predict_from_model(pre_trained_model, Xpred_file):
@@ -55,7 +103,7 @@ def predict_from_model(pre_trained_model, Xpred_file):
 
     return pred_file, truth_file, flags
 
-def ensemble_predict(model_list, Xpred_file, model_dir=None):
+def ensemble_predict(model_list, Xpred_file):
     """
     This predicts the output from an ensemble of models
     :param model_list: The list of model names to aggregate
@@ -76,11 +124,8 @@ def ensemble_predict(model_list, Xpred_file, model_dir=None):
     np.savetxt(save_name, pred_mean)
 
     # saving the plot down
-    flags.eval_model = 'ensemble_plot' + Xpred_file.replace('/', '')
-    if model_dir is None:
-        plotMSELossDistrib(save_name, truth_file, flags)
-    else:
-        plotMSELossDistrib(save_name, truth_file, flags, save_dir=model_dir)
+    flags.eval_model = 'ensemble_model'
+    plotMSELossDistrib(save_name, truth_file, flags)
 
 
 
@@ -99,26 +144,14 @@ def predict_all(models_dir="data"):
 
 
 def ensemble_predict_master(model_dir, Xpred_file):
-    print("entering folder to predict:", model_dir)
     model_list = []
     for model in os.listdir(model_dir):
-        print("entering:", model)
         if os.path.isdir(os.path.join(model_dir,model)):
             model_list.append(os.path.join(model_dir, model))
-    ensemble_predict(model_list, Xpred_file, model_dir)
-
-
-def predict_ensemble_for_all(model_dir, Xpred_file_dirs):
-    for files in os.listdir(Xpred_file_dirs):
-        if 'Xpred' in files:
-            ensemble_predict_master(model_dir, os.path.join(Xpred_file_dirs, files))
+    ensemble_predict(model_list, Xpred_file)
 
 
 if __name__ == '__main__':
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
-    k_list = [5,10,15,20,25,30,35,39]
-    for k in k_list:
-        ensemble_predict_master('/work/sr365/ensemble_forward/models/top{}/'.format(k), 
-                                '/work/sr365/ensemble_forward/models/top{}/Xpred.csv'.format(k))
-    #ensemble_predict_master('/work/sr365/ensemble_forward/models', '/work/sr365/ensemble_forward/Xpred.csv')
-    #predict_ensemble_for_all('/work/sr365/models_trained/Backprop/meta_kernel_swipe/t2', '/work/sr365/useless/')  
+    ensemble_predict_master('/work/sr365/models_trained/Backprop/meta_kernel_swipe/t2', '/work/sr365/ensemble_forward/Xpred.csv')
+    

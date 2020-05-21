@@ -65,4 +65,6 @@ NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
-EVAL_MODEL = "ballistics_Jakob"
+#EVAL_MODEL = "ballistics_Jakob"
+EVAL_MODEL = "robotic_armcouple_layer_num5dim_total4"
+#EVAL_MODEL = "sine_wavecouple_layer_num6dim_total5"

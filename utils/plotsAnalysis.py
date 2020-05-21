@@ -452,6 +452,8 @@ def MeanAvgnMinMSEvsTry(data_dir):
                 if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
                     Yp = np.reshape(Yp, [-1, 1])
                 #print("shape of Ypred file is", np.shape(Yp))
+                number_str = files.split('inference')[-1][:-4]
+                print(number_str)
                 number = int(files.split('inference')[-1][:-4])
                 Ypred_mat[number, :, :] = Yp
                 check_full[number] = 1
@@ -551,11 +553,12 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
     return None
 
 
-def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'): # Depth=2 now based on current directory structure
+def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot', gif_flag=False): # Depth=2 now based on current directory structure
     """
     The function to draw the aggregate plot for Mean Average and Min MSEs
     :param data_dir: The mother directory to call
     :param data_name: The data set name
+    :param git_flag: Plot are to be make a gif
     :return:
     """
     # Predefined name of the avg lists
@@ -569,7 +572,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'Backprop' in dirs:
+        if not os.path.isdir(os.path.join(data_dir, dirs)):# or 'Backprop' in dirs:
             print("skipping due to it is not a directory")
             continue;
         for subdirs in os.listdir((os.path.join(data_dir, dirs))):
@@ -593,17 +596,19 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
                         "meta_material":        eval_time_dict_meta_material,
                         "ballistics":           eval_time_dict_ballistics}
        
-    def plotDict(dict, name, logy=False, time_in_s_table=None):
+    def plotDict(dict, name, logy=False, time_in_s_table=None, plot_points=50, avg_dict=None):
         """
         :param name: the name to save the plot
         :param dict: the dictionary to plot
         :param logy: use log y scale
         :param time_in_s_table: a dictionary of dictionary which stores the averaged evaluation time
                 in seconds to convert the graph
+        :param plot_points: Number of points to be plot
+        :param avg_dict: The average dict for plotting the starting point
         """
         color_dict = {"Backprop":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
                         "INN":"k", "Random": "y","cINN_Jakob": "violet", "cINN_Jakob_new":"orange",
-                        "Backprop_1000_from_1000": "grey", "Backprop_1000_from_4000": "olive"}
+                        "Backprop_top1000": "grey", "Backprop_1000_from_4000": "olive"}
         f = plt.figure()
         for key in sorted(dict.keys()):
             x_axis = np.arange(len(dict[key])).astype('float')
@@ -612,7 +617,10 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
             print("printing", name)
             print(key)
             print(dict[key])
-            plt.plot(x_axis, dict[key],c=color_dict[key], label=key)
+            plt.plot(x_axis[:plot_points], dict[key][:plot_points],c=color_dict[key], label=key)
+            # This is for plotting the averaged value in the first round
+            #if avg_dict is not  None:
+            #    plt.plot(0, avg_dict[key][0], '*', c=color_dict[key], label='Avg=%.3f' % avg_dict[key][0])
         if logy:
             ax = plt.gca()
             ax.set_yscale('log')
@@ -622,7 +630,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         else:
             plt.xlabel('# of inference made')
         plt.ylabel('mse error')
-        plt.xlim([0, 1000])
+        #plt.xlim([0, 1000])
         plt.title(data_name + 'performance plot')
         plt.savefig(os.path.join(data_dir, data_name + save_name + name))
         plt.close('all')
@@ -630,8 +638,18 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
     #plotDict(min_dict, '_min.png')
     #plotDict(avg_dict, '_avglog_time.png', logy=True, time_in_s_table=time_in_s_table)
     #plotDict(min_dict, '_minlog_time.png', logy=True, time_in_s_table=time_in_s_table)
-    plotDict(avg_dict, '_avglog.png', logy=True)
-    plotDict(min_dict, '_minlog.png', logy=True)
+    #plotDict(avg_dict, '_avglog.png', logy=True)
+    plotDict(min_dict,'_minlog.png', logy=True, avg_dict=avg_dict)
+    
+    # if plot gifs
+    if not gif_flag:
+        return
+    else:
+        for i in range(2,20,1):
+            plotDict(min_dict, str(i), logy=True, plot_points=i)
+        for i in range(20,1000,20):
+            plotDict(min_dict, str(i), logy=True, plot_points=i)
+
 
 
 def DrawEvaluationTime(data_dir, data_name, save_name='evaluation_time', logy=False, limit=1000):

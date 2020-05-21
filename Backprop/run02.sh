@@ -12,7 +12,7 @@ export LD_LIBRARY_PATH=/opt/apps/rhel7/cudnn/lib64:$LD_LIBRARY_PATH
 # add my library path
 export PYTHONPATH=$PYTHONPATH:/hpc/home/sr365/Pytorch
 # execute my file
-# python hyperswipe02.py
-python train.py
+python hyperswipe04.py
+# python train.py
 # python test.py
 # python evaluate.py

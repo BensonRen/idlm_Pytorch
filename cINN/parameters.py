@@ -65,6 +65,8 @@ NORMALIZE_INPUT = True
 # Running specific params
 USE_CPU_ONLY = False
 #EVAL_MODEL = "ballistics_Ben_version"
-#EVAL_MODEL = "ballistics_Jakob_version"
-EVAL_MODEL = "robotic_armcouple_layer_num6trail_0"
+EVAL_MODEL = "ballistics_Jakob_version"
+#EVAL_MODEL = "robotic_armcouple_layer_num6trail_0"
+#EVAL_MODEL = "sine_wave"
+#EVAL_MODEL = "models/meta_materials/meta_materialcouple_layer_num13trail_1"
 #EVAL_MODEL = "retrain_time_evalballistics_Jakob_version"

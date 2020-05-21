@@ -35,21 +35,23 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
 
     # Set up the test_ratio
     if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.078                        # 12800 in total
+        flags.test_ratio = 0.0078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
         flags.test_ratio = 0.125                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.2                          # 10000 in total
+        flags.test_ratio = 0.1                          # 10000 in total
+    else:
+        flags.test_ratio = 0.05                         # 20000 in total for Meta material
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")
 
     # Make Network
     ntwk = Network(cINN, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    print(model_dir)
     print("number of trainable parameters is :")
     pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
     print(pytorch_total_params)
-
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
@@ -101,8 +103,8 @@ if __name__ == '__main__':
     print(useless_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_from_model(useless_flags.eval_model)
-    #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
+    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
-    #evaluate_all("models/ballistics")
+    #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    #evaluate_all("models/meta_materials")
 

@@ -36,7 +36,7 @@ def compare_truth_pred(pred_file, truth_file):
     return mae, mse
 
 
-def plotMSELossDistrib(pred_file, truth_file, flags):
+def plotMSELossDistrib(pred_file, truth_file, flags, save_dir='data/'):
     if (flags.data_set == 'gaussian_mixture'):
         # get the prediction and truth array
         pred = np.loadtxt(pred_file, delimiter=' ')
@@ -55,7 +55,7 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
         sns.set(font_scale=1.4)
         sns.heatmap(cm, annot=True)
         eval_model_str = flags.eval_model.replace('/','_')
-        f.savefig('data/{}.png'.format(eval_model_str),annot_kws={"size": 16})
+        f.savefig(save_dir + '{}.png'.format(eval_model_str),annot_kws={"size": 16})
 
     else:
         mae, mse = compare_truth_pred(pred_file, truth_file)
@@ -65,7 +65,7 @@ def plotMSELossDistrib(pred_file, truth_file, flags):
         plt.ylabel('cnt')
         plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
         eval_model_str = flags.eval_model.replace('/','_')
-        plt.savefig(os.path.join(os.path.abspath(''), 'data',
+        plt.savefig(os.path.join(save_dir,
                              '{}.png'.format(eval_model_str)))
         print('(Avg MSE={:.4e})'.format(np.mean(mse)))
 
