@@ -30,6 +30,8 @@ class Network(object):
         self.model_fn = model_fn                                # The model maker function
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
+            if saved_model.startswith('models/'):
+                saved_model = saved_model.replace('models/','')
             self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
@@ -394,7 +396,7 @@ class Network(object):
             #print("shape of loss_sort is:", np.shape(loss_sort))
             #print("print loss_srt", loss_sort)
             #print(loss_sort)
-            exclude_top = 10
+            exclude_top = 0
             good_index = loss_sort[exclude_top:1000+exclude_top, 1].astype('int')                        # Get the indexs
             #print("good index", good_index)
             #for i in range(1000):

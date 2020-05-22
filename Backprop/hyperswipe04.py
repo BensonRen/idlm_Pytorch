@@ -10,7 +10,7 @@ if __name__ == '__main__':
     linear_unit_list = [1000]
     #linear_unit_list = [1000, 500, 300, 150]
     #reg_scale_list = [3e-5, 4e-5, 5e-5]
-    reg_scale_list = [5e-6, 1e-5, 2e-5,]
+    reg_scale_list = [5e-6, 1e-5]
     #reg_scale_list = [5e-4]
     for linear_unit in linear_unit_list:
         # Setting the loop for setting the parameter
@@ -22,7 +22,7 @@ if __name__ == '__main__':
             #flags.linear = linear
             for reg_scale in reg_scale_list:
                 flags.reg_scale = reg_scale
-                for j in range(5):
+                for j in range(2):
                         flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_forward_swipe" +  str(i)
                         train.training_from_flag(flags)
 

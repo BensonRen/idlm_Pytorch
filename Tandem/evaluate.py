@@ -38,6 +38,8 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
         flags.test_ratio = 0.125                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1                          # 10000 in total
+    elif flags.data_set == 'meta_material':             # Test the eval part
+        flags.test_ratio = 0
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -90,9 +92,9 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model, multi_flag=False)
-    evaluate_from_model(useless_flags.eval_model, multi_flag=True)
+    evaluate_from_model(useless_flags.eval_model, multi_flag=False)
+    #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_from_model(useless_flags.eval_model)
-    #evaluate_all("models/sine_wave")
+    #evaluate_all("models/robotic_arm")

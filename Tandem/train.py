@@ -62,8 +62,8 @@ if __name__ == '__main__':
     flags = flag_reader.read_flag()
 
     # Call the train from flag function
-    for i in range(20):
-        training_from_flag(flags)
+    #for i in range(20):
+    training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
     #for i in range(10):

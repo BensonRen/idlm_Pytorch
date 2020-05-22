@@ -488,10 +488,11 @@ class Network(object):
                     Xpred[:, 3] = Xpred[:, 3] * 34
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
                 
-                Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
-                np.savetxt(fyp, Ypred)
                 np.savetxt(fxp, Xpred.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
+                if self.flags.data_set != 'meta_material':
+                    Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
+                    np.savetxt(fyp, Ypred)
                 #print("Ypred shape", np.shape(Ypred))
                 #print("Xpred shape", np.shape(Xpred))
                 #print("Xtruth shape",np.shape(geometry))

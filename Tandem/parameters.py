@@ -4,9 +4,9 @@ Hyper-parameters of the Tandem model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
@@ -27,14 +27,14 @@ CONV_STRIDE_B = [1, 1, 2]
 
 """
 # Model Architectural Params for gaussian mixture dataset
-LINEAR_F = [3, 1000, 1000, 1000, 1000, 1000, 1000, 2]
-#LINEAR_F = [4, 300, 300, 2]
+#LINEAR_F = [3, 1000, 1000, 1000, 1000, 1000, 1000, 2]
+LINEAR_F = [4, 300, 300, 2]
 CONV_OUT_CHANNEL_F = []
 CONV_KERNEL_SIZE_F = []
 CONV_STRIDE_F = []
 
-LINEAR_B = [2, 500, 500, 500, 500, 500, 3]
-#LINEAR_B = [2, 300, 300, 300, 300, 4]
+#LINEAR_B = [2, 500, 500, 500, 500, 500, 3]
+LINEAR_B = [2, 300, 300, 300, 300, 4]
 CONV_OUT_CHANNEL_B = []
 CONV_KERNEL_SIZE_B = []
 CONV_STRIDE_B = []
@@ -66,7 +66,7 @@ GEOBOUNDARY = [30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
 
-#EVAL_MODEL = 'robotic_arm'
+#EVAL_MODEL = 'robotic_armreg0.0001trail_1_complexity_swipe_layer500_num5'
 #EVAL_MODEL = 'ballistics'
-#EVAL_MODEL = 'meta_materialreg0.0001trail_0_complexity_swipe_layer250_num6'
-EVAL_MODEL = 'sine_wavereg0.0005trail_0_complexity_swipe_layer500_num8'
+EVAL_MODEL = 'meta_materialreg0.0005trail_1_complexity_swipe_layer250_num7'
+#EVAL_MODEL = 'sine_wavereg0.0005trail_0_complexity_swipe_layer500_num8'

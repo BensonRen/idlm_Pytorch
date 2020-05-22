@@ -468,7 +468,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
                 Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
                 if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
                     Yp = np.reshape(Yp, [-1, 1])
-                print("shape of Ypred file is", np.shape(Yp))
+                #print("shape of Ypred file is", np.shape(Yp))
                 Ypred_list.append(Yp)
     # Calculate the large MSE matrix
     mse_mat = np.zeros([len(Ypred_list), len(Yt)])
@@ -505,14 +505,23 @@ def MeanAvgnMinMSEvsTry(data_dir):
             mse_mat[ind, :] = mse
     print("shape of the yp is", np.shape(yp)) 
     print("shape of mse is", np.shape(mse))
-
+    
+    # Shuffle array and average results
+    shuffle_number = 50
     # Calculate the min and avg from mat
-    mse_min_list = np.zeros(len(Ypred_list))
-    mse_avg_list = np.zeros(len(Ypred_list))
+    mse_min_list = np.zeros([len(Ypred_list), shuffle_number])
+    mse_avg_list = np.zeros([len(Ypred_list), shuffle_number])
+    
+    for shuf in range(shuffle_number):
+        rng = np.random.default_rng()
+        rng.shuffle(mse_mat)
+        for i in range(len(Ypred_list)):
+            mse_avg_list[i, shuf] = np.mean(mse_mat[:i+1, :])
+            mse_min_list[i, shuf] = np.mean(np.min(mse_mat[:i+1, :], axis=0))
+    # Average the shuffled result
+    mse_avg_list = np.mean(mse_avg_list, axis=1)
+    mse_min_list = np.mean(mse_min_list, axis=1)
 
-    for i in range(len(Ypred_list)):
-        mse_avg_list[i] = np.mean(mse_mat[:i+1, :])
-        mse_min_list[i] = np.mean(np.min(mse_mat[:i+1, :], axis=0))
 
     # Save the list down for further analysis
     np.savetxt(os.path.join(data_dir, 'mse_mat.csv'), mse_mat, delimiter=' ')
