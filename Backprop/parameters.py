@@ -30,7 +30,7 @@ REG_SCALE = 5e-4
 BATCH_SIZE = 1024
 EVAL_BATCH_SIZE = 4000
 EVAL_STEP = 20
-TRAIN_STEP = 700
+TRAIN_STEP = 500
 BACKPROP_STEP = 300
 LEARN_RATE = 5e-4
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
@@ -39,11 +39,13 @@ STOP_THRESHOLD = 1e-5
 
 # Data specific Params
 X_RANGE = [i for i in range(2, 10 )]
-Y_RANGE = [i for i in range(10 , 2011 )]
+#Y_RANGE = [i for i in range(10 , 2011 )]                       # Real Meta-material dataset range
+Y_RANGE = [i for i in range(10 , 310 )]                         # Artificial Meta-material dataset
 FORCE_RUN = True
 MODEL_NAME = None 
-#DATA_DIR = '../'
-DATA_DIR = '/work/sr365/'
+#DATA_DIR = '../'                                               # All simulated simple dataset
+#DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
+DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True

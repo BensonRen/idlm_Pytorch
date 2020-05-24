@@ -43,13 +43,14 @@ STOP_THRESHOLD = -float('inf')
 
 # Data specific params
 X_RANGE = [i for i in range(2, 10 )]
-Y_RANGE = [i for i in range(10 , 2011 )]
+#Y_RANGE = [i for i in range(10 , 2011 )]                       # Real Meta-material dataset range
+Y_RANGE = [i for i in range(10 , 310 )]                         # Artificial Meta-material dataset
 FORCE_RUN = True
 MODEL_NAME  = None
 # MODEL_NAME  = 'dim_z_2 + wBN + 100 + lr1e-3 + reg5e-3'
-DATA_DIR = '/work/sr365/'      # For server usage
-#DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'                # For Omar useage
-#DATA_DIR = '../'                # For local useage
+#DATA_DIR = '../'                                               # All simulated simple dataset
+#DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
+DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 

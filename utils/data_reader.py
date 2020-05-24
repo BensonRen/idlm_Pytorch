@@ -223,8 +223,8 @@ def read_data_meta_material( x_range, y_range, geoboundary,  batch_size=128,
     assert np.shape(ftrTrain)[0] == np.shape(lblTrain)[0]
     assert np.shape(ftrTest)[0] == np.shape(lblTest)[0]
 
-    #Normalize the data if instructed using boundary
-    if normalize_input:
+    #Normalize the data if instructed using boundary and the current numbers are larger than 1
+    if normalize_input and np.max(np.max(ftrTrain)) > 30:
         ftrTrain[:,0:4] = (ftrTrain[:,0:4] - (geoboundary[0] + geoboundary[1]) / 2)/(geoboundary[1] - geoboundary[0]) * 2
         ftrTest[:,0:4] = (ftrTest[:,0:4] - (geoboundary[0] + geoboundary[1]) / 2)/(geoboundary[1] - geoboundary[0]) * 2
         ftrTrain[:,4:] = (ftrTrain[:,4:] - (geoboundary[2] + geoboundary[3]) / 2)/(geoboundary[3] - geoboundary[2]) * 2

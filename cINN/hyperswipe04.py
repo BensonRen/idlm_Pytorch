@@ -31,7 +31,7 @@ if __name__ == '__main__':
     #                    flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
     #                    train.training_from_flag(flags)
     for i in range(2): 
-        for couple_layer in range(5,10):
+        for couple_layer in range(10,20):
             flags = flag_reader.read_flag()  	            # setting the base case
             flags.couple_layer_num = couple_layer
             flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + \

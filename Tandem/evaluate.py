@@ -39,7 +39,8 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1                          # 10000 in total
     elif flags.data_set == 'meta_material':             # Test the eval part
-        flags.test_ratio = 0
+        flags.test_ratio = 0.999
+        flags.geoboundary = [30, 55, 42, 52] 
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)

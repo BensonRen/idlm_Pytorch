@@ -116,15 +116,17 @@ def predict_ensemble_for_all(model_dir, Xpred_file_dirs):
 
 
 if __name__ == '__main__':
-    #predict_all('/work/sr365/multi_eval/Random/meta_material')
     """
-    k_list = [5,10,15,20,25,30,35,39]
+    #predict_all('/work/sr365/multi_eval/Random/meta_material')
+    k_list = [5,10,15,19]
     for k in k_list:
-        ensemble_predict_master('/work/sr365/ensemble_forward/models/top{}/'.format(k), 
-                                '/work/sr365/ensemble_forward/models/top{}/Xpred.csv'.format(k))
+        ensemble_predict_master('/work/sr365/new_data_investigation/MM_augmented/top{}/'.format(k), 
+                                '/work/sr365/new_data_investigation/MM_augmented/top{}/Xpred.csv'.format(k))
                                 """
-    predict_from_model("models/meta_material_prev_best",
-                        "/hpc/home/sr365/Pytorch/Tandem/data/test_Xpred_meta_materialreg0.0005trail_1_complexity_swipe_layer250_num7.csv")
+    ensemble_predict_master('/work/sr365/new_data_investigation/MM_both_augmented_ensemble/', 
+                            '/work/sr365/new_data_investigation/MM_both_augmented_ensemble/Xpred.csv')
+    #predict_from_model("models/meta_material_prev_best",
+    #                    "/hpc/home/sr365/Pytorch/Tandem/data/test_Xpred_meta_materialreg0.0005trail_1_complexity_swipe_layer250_num7.csv")
    
     #ensemble_predict_master('/work/sr365/ensemble_forward/models', '/work/sr365/ensemble_forward/Xpred.csv')
     #predict_ensemble_for_all('/work/sr365/models_trained/Backprop/meta_kernel_swipe/t2', '/work/sr365/useless/')  

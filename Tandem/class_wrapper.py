@@ -132,7 +132,7 @@ class Network(object):
         elif self.flags.data_set == 'robotic_arm':
             return np.array([1.88, 3.7, 3.82, 3.78]), np.array([-0.87, -1.87, -1.92, -1.73]), np.array([1.018, 1.834, 1.897, 2.053])
         elif self.flags.data_set == 'meta_material':
-            return np.array([2,2,2,2,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1,1,1,1,1,1,1,1])
+            return np.array([2.272,2.272,2.272,2.272,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1.272,1.272,1.272,1.272,1,1,1,1])
         else:
             sys.exit("In Tandem, during getting the boundary loss boundaries, Your data_set entry is not correct, check again!")
 
@@ -490,9 +490,11 @@ class Network(object):
                 
                 np.savetxt(fxp, Xpred.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
+                np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
                     np.savetxt(fyp, Ypred)
+                
                 #print("Ypred shape", np.shape(Ypred))
                 #print("Xpred shape", np.shape(Xpred))
                 #print("Xtruth shape",np.shape(geometry))

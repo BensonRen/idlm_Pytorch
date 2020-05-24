@@ -403,17 +403,22 @@ class Network(object):
             saved_model_str = self.saved_model.replace('/', '_') + 'inference' + str(ind)
             Ypred_file = os.path.join(save_dir, 'test_Ypred_point{}.csv'.format(saved_model_str))
             Xpred_file = os.path.join(save_dir, 'test_Xpred_point{}.csv'.format(saved_model_str))
-            # 2 options: simulator/logit
-            Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
-            #print("shape of Ypred is", np.shape(Ypred))
-            #print("shape of good index is", np.shape(good_index))
-            if not save_Simulator_Ypred:            # The default is the simulator Ypred output
-                Ypred = logit.cpu().data.numpy()
-            if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
-                Ypred = np.reshape(Ypred, [-1, 1])
-            with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
-                np.savetxt(fyp, Ypred[good_index, :])
-                np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[good_index, :])
+            if self.flags.data_set != 'meta_material':
+                # 2 options: simulator/logit
+                Ypred = simulator(self.flags.data_set, geometry_eval_input.cpu().data.numpy())
+                #print("shape of Ypred is", np.shape(Ypred))
+                #print("shape of good index is", np.shape(good_index))
+                if not save_Simulator_Ypred:            # The default is the simulator Ypred output
+                    Ypred = logit.cpu().data.numpy()
+                if len(np.shape(Ypred)) == 1:           # If this is the ballistics dataset where it only has 1d y'
+                    Ypred = np.reshape(Ypred, [-1, 1])
+                with open(Xpred_file, 'a') as fxp, open(Ypred_file, 'a') as fyp:
+                    np.savetxt(fyp, Ypred[good_index, :])
+                    np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[good_index, :])
+            else:                       # This is meta-meterial dataset, handle with special
+                with open(Xpred_file, 'a') as fxp:
+                    np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[good_index, :])
+                
        
         #############################
         # After BP, choose the best #
@@ -494,7 +499,7 @@ class Network(object):
         if self.flags.data_set == 'sine_wave': 
             return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
         elif self.flags.data_set == 'meta_material':
-            return np.array([2,2,2,2,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1,1,1,1,1,1,1,1])
+            return np.array([2.272,2.272,2.272,2.272,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1.272,1.272,1.272,1.272,1,1,1,1])
         elif self.flags.data_set == 'ballistics':
             return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':
