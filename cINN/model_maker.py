@@ -57,8 +57,7 @@ def subnet_fc(c_in, c_out):
                                   nn.Linear(160, 160), nn.ReLU(),
                                   nn.Linear(160, 160), nn.ReLU(),
                                   nn.Linear(160,  c_out))
-    """
-    
+   """ 
 
 # Can only take 2 input.... Due to the restriction of the framework used
 

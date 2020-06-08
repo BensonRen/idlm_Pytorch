@@ -333,11 +333,11 @@ def read_data_sine_wave(flags, eval_data_all=False):
     data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Sinusoidal_Wave/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
-    data_x = normalize_np(data_x)
-    data_y = normalize_np(data_y)
+    #data_x = normalize_np(data_x)
+    #data_y = normalize_np(data_y)
     if eval_data_all:
-        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=0.999)
-    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_regress, test_ratio=flags.test_ratio)
+        return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class, test_ratio=0.999)
+    return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class, test_ratio=flags.test_ratio)
 
 
 def read_data_naval_propulsion(flags, eval_data_all=False):

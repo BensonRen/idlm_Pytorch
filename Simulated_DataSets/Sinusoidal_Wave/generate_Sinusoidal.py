@@ -9,12 +9,12 @@ from numpy import sin, cos
 from mpl_toolkits.mplot3d import Axes3D
 
 # Define some hyper-params
-x_dimension = 3         # Current version only support 2 dimension due to visualization issue
-y_dimension = 2         # Current version only support 2 dimension due to visualization issue
+x_dimension = 2         # Current version only support 2 dimension due to visualization issue
+y_dimension = 1         # Current version only support 2 dimension due to visualization issue
 x_low = -1
 x_high = 1
-num_sample_dimension = 20
-f = 2
+num_sample_dimension = 100
+f = 3
 
 def plotData(data_x, data_y, save_dir='generated_sinusoidal_scatter.png'):
     """
@@ -39,13 +39,14 @@ def getYfromX(x):
     #y_shape[0] = y_dimension
     #data_y = np.zeros(y_shape)
     y_shape = np.array(np.shape(x))
-    y_shape[-1] = 2             # y_dimension hard-coded
+    y_shape[-1] = 1             # y_dimension hard-coded
     data_y = np.zeros(y_shape)
     print("shape of data_y is", np.shape(data_y))
     print("shape of input x is", np.shape(x))
-    for i in range(3):
-        data_y[:, 0] += sin(f*np.pi*x[:, i])
-        data_y[:, 1] += cos(f*np.pi*x[:, i])
+    data_y = sin(f*np.pi*x[:,0])  +  cos(f*np.pi*x[:,1])
+    #for i in range(2):
+        #data_y[:] += sin(f*np.pi*x[:, i])
+        #data_y[:, 1] += cos(f*np.pi*x[:, i])
         # data_y[0, :] += x[i, ::]              # Easy case for validation of architecture
     return data_y 
 

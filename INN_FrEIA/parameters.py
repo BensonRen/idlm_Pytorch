@@ -3,19 +3,19 @@ The parameter file storing the parameters for INN Model
 """
 
 # Define which data set you are using
-DATA_SET = 'meta_material'
+# DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-# DATA_SET = 'sine_wave'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Architectural Params
-DIM_Z = 3
-DIM_X = 4
+DIM_Z = 1
+DIM_X = 2
 DIM_Y = 1
-DIM_TOT = 8
+DIM_TOT = 4
 COUPLE_LAYER_NUM = 6
 DIM_SPEC = None
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
@@ -58,14 +58,16 @@ Y_RANGE = [i for i in range(10 , 310 )]                         # Artificial Met
 FORCE_RUN = True
 MODEL_NAME  = None
 # MODEL_NAME  = 'dim_z_2 + wBN + 100 + lr1e-3 + reg5e-3'
-#DATA_DIR = '../'                                               # All simulated simple dataset
+DATA_DIR = '../'                                               # All simulated simple dataset
 #DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
-DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
+#DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
 GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
 # Running specific params
 USE_CPU_ONLY = False
 #EVAL_MODEL = "ballistics_Jakob"
-EVAL_MODEL = "robotic_armcouple_layer_num5dim_total4"
+#EVAL_MODEL = "robotic_armcouple_layer_num5dim_total4"
+EVAL_MODEL = "retrain_time_evalsine_wavecouple_layer_num4dim_total4lambda_mse0.01trail1"
+#EVAL_MODEL = "sine_wavecouple_layer_num4dim_total4lambda_mse0.01trail1"
 #EVAL_MODEL = "sine_wavecouple_layer_num6dim_total5"

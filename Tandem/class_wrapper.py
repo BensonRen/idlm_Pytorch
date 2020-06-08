@@ -109,7 +109,7 @@ class Network(object):
                 X_mean = [0, 1.5, np.radians(40.5), 15/34]
                 X_range = [1., 1., 1.0, 10/34]
             relu = torch.nn.ReLU()
-            BDY_loss_all = 100 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
+            BDY_loss_all = 1 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.Boundary_loss = BDY_loss
         #if self.flags.data_set != 'gaussian_mixture':
@@ -126,7 +126,7 @@ class Network(object):
 
     def get_boundary_lower_bound_uper_bound(self):
         if self.flags.data_set == 'sine_wave':
-            return np.array([2, 2, 2]), np.array([-1, -1, -1]), np.array([1, 1, 1])
+            return np.array([2, 2]), np.array([-1, -1]), np.array([1, 1])
         elif self.flags.data_set == 'ballistics':
             return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':
@@ -384,8 +384,8 @@ class Network(object):
                 self.log.add_scalar('Loss/BDY_test', self.Boundary_loss.cpu().data.numpy(), epoch)
 
                 # Testing code #
-                print('Testing Ypred is', S_out.cpu().data.numpy())
-                print('Testing Ytruth is', spectra.cpu().data.numpy())
+                #print('Testing Ypred is', S_out.cpu().data.numpy())
+                #print('Testing Ytruth is', spectra.cpu().data.numpy())
                 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss))
@@ -487,21 +487,18 @@ class Network(object):
                 if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
                     Xpred[:, 3] = Xpred[:, 3] * 34
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
-                
+                """
                 np.savetxt(fxp, Xpred.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
                     np.savetxt(fyp, Ypred)
-                
-                #print("Ypred shape", np.shape(Ypred))
-                #print("Xpred shape", np.shape(Xpred))
-                #print("Xtruth shape",np.shape(geometry))
+                """
         tk.record(1)
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/Tandem/'):
+    def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/Tandem/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result

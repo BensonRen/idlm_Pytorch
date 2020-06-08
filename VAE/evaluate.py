@@ -33,11 +33,11 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     if flags.data_set == 'ballistics':
         flags.test_ratio = 0.078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.125                        # 8000 in total
+        flags.test_ratio = 0.1                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1                          # 10000 in total
     elif flags.data_set == 'meta_material':
-        flags.test_ratio = 0.05                         # 20000 in total for Meta material
+        flags.test_ratio = 0.0476                         # 20000 in total for Meta material
     else:
         print("Your dataset is none of the artificial datasets")
 
@@ -105,6 +105,6 @@ if __name__ == '__main__':
     evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    #evaluate_all("models/meta_materials")
+    #evaluate_all("models/sine_wavek")
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
 

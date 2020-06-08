@@ -41,13 +41,15 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     if flags.data_set == 'ballistics':
         flags.test_ratio = 0.0078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.125                        # 8000 in total
+        flags.test_ratio = 0.001                        # 8000 in total
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1                          # 10000 in total
     else:
-        flags.test_ratio = 0.005                         # 20000 in total for Meta material
+        flags.test_ratio = 0.0476                         # 20000 in total for Meta material
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.01
+    if flags.data_set == 'ballistics':
+        flags.lr = 1
     flags.eval_batch_size = eval_flags.eval_batch_size
     flags.train_step = eval_flags.train_step
 
@@ -65,7 +67,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/Backprop/' + flags.data_set, save_all=True,
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/multi_eval/NA/' + flags.data_set, save_all=True,
                                                 save_misc=save_misc, MSE_Simulator=MSE_Simulator,save_Simulator_Ypred=save_Simulator_Ypred)
     else:
         pred_file, truth_file = ntwk.evaluate(save_misc=save_misc, MSE_Simulator=MSE_Simulator, save_Simulator_Ypred=save_Simulator_Ypred)
@@ -106,15 +108,18 @@ if __name__ == '__main__':
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
     #evaluate_all()
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=False)
-    #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=False)
+    # For Meta-material !!!!!
+    #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=False, MSE_Simulator=False)
+    # For non Meta-material !!!!!
+    #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=False)
+    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=False)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False, save_Simulator_Ypred=False, MSE_Simulator=False)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)
-    #evaluate_all(models_dir="models/meta_ensemble/")
+    #evaluate_all(models_dir="models/")
     
     
     # Eval META_MATERIAL

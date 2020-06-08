@@ -45,7 +45,7 @@ if __name__ == '__main__':
     #        flags.kl_coeff = kl_coeff
 
 
-    unit_list = [500, 800, 1000]
+    unit_list = [500, 1000]
     for layer_num in range(5, 10):
         for unit in unit_list:
             flags = flag_reader.read_flag()  	            # setting the base case

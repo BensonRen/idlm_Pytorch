@@ -214,11 +214,11 @@ def simulator_sine(Xpred):
     :return:
     """
     # First step is to un-normalize the data into original range
-    Xpred = unnormalize_eval(Xpred, x_max=1, x_min=-1)
+    #Xpred = unnormalize_eval(Xpred, x_max=1, x_min=-1)
     # Then feed through the original simulator
     Ypred = getYfromX(Xpred)
     # Then normalize it as the range of the original data
-    Ypred = normalize_eval(Ypred, x_max=3, x_min=-3)
+    #Ypred = normalize_eval(Ypred, x_max=3, x_min=-3)
     return Ypred
 
 

@@ -46,12 +46,12 @@ def retrain_different_dataset():
      """
      from utils.helper_functions import load_flags
      #data_set_list = ["meta_material"]
-     data_set_list = [  "ballistics",
-                        "robotic_arm",
-                        "sine_wave"]
+     data_set_list = [  "ballistics"]
+                        #"robotic_armreg0.0001trail_1_complexity_swipe_layer500_num5"]
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("models", eval_model))
-        flags.model_name = "retrain_time_eval" + eval_model
+        flags.model_name = "retrain_without_boundary" + eval_model
+        flags.batch_size = 1024
         flags.train_step = 500
         flags.test_ratio = 0.2
         training_from_flag(flags)

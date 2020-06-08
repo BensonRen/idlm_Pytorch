@@ -30,20 +30,10 @@ if __name__ == '__main__':
     #                for j in range(3):
     #                    flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_backward_complexity_swipe_layer" + str(linear_unit) + "_num" + str(i)
     #                    train.training_from_flag(flags)
-    for i in range(3): 
-        for couple_layer in range(5,15):
-            flags = flag_reader.read_flag()  	            # setting the base case
-            flags.couple_layer_num = couple_layer
-            flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + \
-                                  "trail_" + str(i) 
-            train.training_from_flag(flags)
     
-    #for dim_tot in range(4, 5):
-    #    for couple_layer in range(5,10):
-    #        flags = flag_reader.read_flag()  	            # setting the base case
-    #        flags.couple_layer_num = couple_layer
-    #        flags.model_name = flags.data_set + "couple_layer_num" + str(couple_layer) + "dim_total" + str(dim_tot)
-    #        train.training_from_flag(flags)
+    
+    
+    
     
     
     #kl_coeff_list = [1, 0.75, 0.5, 0.25, 0.1]#e-2, 8e-3, 5e-3, 3e-3, 1e-3]
@@ -55,21 +45,21 @@ if __name__ == '__main__':
     #        flags.kl_coeff = kl_coeff
 
 
-    #unit_list = [100, 200, 300, 400]
-    #for layer_num in range(5, 10):
-    #    for unit in unit_list:
-    #        flags = flag_reader.read_flag()  	            # setting the base case
-    #        linear_d = [unit for j in range(layer_num)]
-    #        linear_e = [unit for j in range(layer_num)]
-    #        linear_d[0] = flags.dim_y + flags.dim_z
-    #        linear_d[-1] = flags.dim_x
-    #        linear_e[0] = flags.dim_y + flags.dim_x
-    #        linear_e[-1] = flags.dim_z * 2
-    #        flags.linear_d = linear_d
-    #        flags.linear_e = linear_e
-    #        for i in range(3):
-    #            flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i)
-    #            print(flags.model_name)
-    #            train.training_from_flag(flags)
+    unit_list = [500, 800, 1000]
+    for layer_num in range(10, 15):
+        for unit in unit_list:
+            flags = flag_reader.read_flag()  	            # setting the base case
+            linear_d = [unit for j in range(layer_num)]
+            linear_e = [unit for j in range(layer_num)]
+            linear_d[0] = flags.dim_y + flags.dim_z
+            linear_d[-1] = flags.dim_x
+            linear_e[0] = flags.dim_y + flags.dim_x
+            linear_e[-1] = flags.dim_z * 2
+            flags.linear_d = linear_d
+            flags.linear_e = linear_e
+            for i in range(2):
+                flags.model_name = flags.data_set + "layer_num" + str(layer_num) + "unit_" + str(unit) + "reg" + str(flags.reg_scale) + "trail" + str(i+2)
+                print(flags.model_name)
+                train.training_from_flag(flags)
 
 

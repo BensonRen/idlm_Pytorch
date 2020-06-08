@@ -293,15 +293,17 @@ class Network(object):
                 batch_size = len(x)
                 # Create a noisy z vector with noise level same as y
                 z = torch.randn(batch_size, dim_z, device=device)
-
+                """
                 # Initialize the x first
                 if self.flags.data_set == 'gaussian_mixture':
                     y_prev = np.copy(y.data.numpy())
                     y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
+                """
                 if cuda:
                     x = x.cuda()
                     y = y.cuda()
                 Xpred = self.model(z, y, rev=True).cpu().data.numpy()
+                """
                 np.savetxt(fxt, x.cpu().data.numpy())
                 np.savetxt(fxp, Xpred)
                 if self.flags.data_set == 'gaussian_mixture':
@@ -311,10 +313,11 @@ class Network(object):
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred)
+                """
             tk.record(1)
         return Ypred_file, Ytruth_file
 
-    def evaluate_multiple_time(self, time=1000, save_dir='/work/sr365/multi_eval/cINN/'):
+    def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/cINN/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result

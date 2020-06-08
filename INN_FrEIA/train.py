@@ -42,9 +42,10 @@ def retrain_different_dataset():
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ["ballistics_Jakob",
-                        "robotic_armcouple_layer_num5dim_total4",
-                        "sine_wavecouple_layer_num6dim_total5"]
+     data_set_list = ["sine_wavecouple_layer_num4dim_total4lambda_mse0.01trail1"]
+                       # "ballistics_Jakob",
+                       # "robotic_armcouple_layer_num5dim_total4",
+                       # "sine_wavecouple_layer_num6dim_total5"]
      #data_set_list = ["robotic_armcouple_layer_num5dim_total4", "sine_wavecouple_layer_num6dim_total5"]
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("models", eval_model))
