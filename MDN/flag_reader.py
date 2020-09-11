@@ -19,6 +19,7 @@ def read_flag():
     parser = argparse.ArgumentParser()
     # Data_Set parameter
     parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
+    parser.add_argument('--test-ratio', default=TEST_RATIO, type=float, help='the ratio of the test set')
 
     # Model Architectural Params
     parser.add_argument('--num-gaussian', type=int, default=NUM_GAUSSIAN, help='The number of gaussians')

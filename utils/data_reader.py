@@ -21,9 +21,10 @@ def importData(directory, x_range, y_range):
     lbl = []
     for file_name in train_data_files:
         # import full arrays
-        ftr_array = pd.read_csv(os.path.join(directory, file_name), delimiter=' ',
+        print(x_range)
+        ftr_array = pd.read_csv(os.path.join(directory, file_name), delimiter=',',
                                 header=None, usecols=x_range)
-        lbl_array = pd.read_csv(os.path.join(directory, file_name), delimiter=' ',
+        lbl_array = pd.read_csv(os.path.join(directory, file_name), delimiter=',',
                                 header=None, usecols=y_range)
         # append each data point to ftr and lbl
         for params, curve in zip(ftr_array.values, lbl_array.values):

@@ -14,10 +14,8 @@ import sys
 import pickle
 import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
-from Simulated_DataSets.Gaussian_Mixture.generate_Gaussian import determine_class_from_x
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
 from Simulated_DataSets.Ballistics.Inverse_ballistics_original import InverseBallisticsModel
-from Simulated_DataSets.Sine_test import generate_sine_test_1d
 from ensemble_mm.predict_ensemble import ensemble_predict_master
 # 1
 def get_Xpred(path, name=None):
@@ -193,19 +191,6 @@ def write_flags_and_BVE(flags, best_validation_loss, save_dir, forward_best_loss
     save_flags(flags, save_dir=save_dir)
 
 
-# 9
-def simulator_gaussian(Xpred):
-    """
-    The simulator function for gaussian, input X position output class
-    :param Xpred: The Xpred output from model
-    :return:
-    """
-    # The Evaluation model is normalized, get back to original size
-    Xpred_unnorm = unnormalize_eval(Xpred, x_max=13, x_min=-13)
-    Ypred = determine_class_from_x(Xpred_unnorm)
-    return Ypred
-
-
 # 10
 def simulator_sine(Xpred):
     """
@@ -243,9 +228,6 @@ def simulator_ballistics(Xpred):
     IB = InverseBallisticsModel()
     return IB.forward_process(Xpred, output_full=True) 
 
-# 13
-def simulator_sine_test_1d(Xpred):
-    return generate_sine_test_1d.getYfromX(Xpred)
 
 # 14
 def simulator_meta_material(Xpred):
@@ -276,9 +258,7 @@ def simulator(data_set, Xpred):
     :return: Ypred from the simulator
     """
 
-    if data_set == 'gaussian_mixture':
-        return simulator_gaussian(Xpred)
-    elif data_set == 'sine_wave':
+    if data_set == 'sine_wave':
         return simulator_sine(Xpred)
     elif data_set == 'naval_propulsion':
         return simulator_naval(Xpred)
@@ -286,8 +266,6 @@ def simulator(data_set, Xpred):
         return simulator_robotic(Xpred)
     elif data_set == 'ballistics':
         return simulator_ballistics(Xpred)
-    elif data_set == 'sine_test_1d':
-        return simulator_sine_test_1d(Xpred)
     elif data_set == 'meta_material':
         return simulator_meta_material(Xpred)
     else:
