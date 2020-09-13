@@ -87,7 +87,10 @@ def mdn_loss(pi, sigma, mu, target):
     The loss is the negative log likelihood of the data given the MoG
     parameters.
     """
-    prob = torch.log(pi) + gaussian_probability(sigma, mu, target)
+    GP = gaussian_probability(sigma, mu, target)
+    prob = torch.log(pi) +  GP
+    print('pi part: {}, gaussian_part: {}'.format(torch.log(pi).detach().cpu().numpy(), GP.detach().cpu().numpy()))
+    print('prob = {}'.format(prob.detach().cpu().numpy()))
     #nll = -torch.log(torch.sum(torch.exp(prob), dim=1))
     nll = -torch.sum(prob, dim=1)
     return torch.mean(nll)

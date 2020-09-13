@@ -8,7 +8,7 @@ import os
 # Own
 import flag_reader
 from class_wrapper import Network
-from model_maker import cINN
+from model_maker import MDN
 from utils import data_reader
 from utils import helper_functions
 from utils.evaluation_helper import plotMSELossDistrib
@@ -29,7 +29,10 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     if (model_dir.startswith("models")):
         model_dir = model_dir[7:]
         print("after removing prefix models/, now model_dir is:", model_dir)
-    flags = helper_functions.load_flags(os.path.join("models", model_dir))
+    if model_dir.startswith('/'): # It is a absolute path
+        flags = helper_functions.load_flags(model_dir)
+    else:
+        flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
     # Set up the test_ratio
@@ -46,7 +49,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(cINN, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
+    ntwk = Network(MDN, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
     print(model_dir)
     print("number of trainable parameters is :")
     pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
@@ -62,7 +65,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     if flags.data_set != 'meta_material' and not multi_flag: 
         plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
-    
+   
 def evaluate_all(models_dir="models"):
     """
     This function evaluate all the models in the models/. directory

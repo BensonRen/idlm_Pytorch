@@ -14,7 +14,7 @@ from numpy import sin, cos
 arm_num = 3                                                         # Number of arms
 arm_lengths = [0.5, 0.5, 1]                                         # length of the robotic arm
 arm_max_length = np.sum(arm_lengths)                                # Drawing limit
-num_samples = 100000
+num_samples = 10000
 sample_vars = [1/16, 1/4, 1/4, 1/4]
 eps = 0.2
 

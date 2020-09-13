@@ -33,7 +33,6 @@ def read_flag():
                         help='The Batch size for back propagation')
     parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
-    parser.add_argument('--backprop-step', default=BACKPROP_STEP, type=int, help='# steps for back propagation')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
     parser.add_argument('--lr-decay-rate', default=LR_DECAY_RATE, type=float,
                         help='decay learn rate by multiplying this factor')
@@ -47,6 +46,7 @@ def read_flag():
     parser.add_argument('--y-range', type=list, default=Y_RANGE, help='columns of output parameters')
     parser.add_argument('--geoboundary', default=GEOBOUNDARY, type=tuple, help='the boundary of the geometric data')
     parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
+    parser.add_argument('--ckpt-dir', default=CKPT_DIR, type=str, help='The folder to store the checkpoint file')
     parser.add_argument('--data-dir', default=DATA_DIR, type=str, help='data directory')
     parser.add_argument('--normalize-input', default=NORMALIZE_INPUT, type=bool,
                         help='whether we should normalize the input or not')

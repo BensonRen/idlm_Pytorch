@@ -28,7 +28,7 @@ def training_from_flag(flags):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(MDN, flags, train_loader, test_loader)
+    ntwk = Network(MDN, flags, train_loader, test_loader, ckpt_dir=flags.ckpt_dir)
 
     # Training process
     print("Start training now...")

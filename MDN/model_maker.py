@@ -46,6 +46,6 @@ class MDN(nn.Module):
         # The mixture density network outputs 3 values (Pi is a multinomial distribution of the Gaussians. Sigma
         #             is the standard deviation of each Gaussian. Mu is the mean of each
         #             Gaussian.)
-        pi, sigma, mu = self.mdn(out)
+        pi, sigma, mu = self.mdn(F.relu(out))
         return pi, sigma, mu
 
