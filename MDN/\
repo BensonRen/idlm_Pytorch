@@ -11,7 +11,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.distributions import Categorical
 import math
-from torch.distributions.multivariate_normal import MultivariateNormal
+
 
 ONEOVERSQRT2PI = 1.0 / math.sqrt(2*math.pi)
 
@@ -48,7 +48,6 @@ class MDN(nn.Module):
         )
         self.sigma = nn.Linear(in_features, out_features*out_features*num_gaussians)
         self.mu = nn.Linear(in_features, out_features*num_gaussians)
-        self.cuda = True if torch.cuda.is_available() else False
 
     def forward(self, minibatch):
         #print('checki if there is nan in input:', torch.sum(torch.isnan(minibatch)))
@@ -56,7 +55,6 @@ class MDN(nn.Module):
         pi = self.pi(minibatch)
         #print('in forward function, pi = {}'.format(pi))
         sigma = self.sigma(minibatch)
-        #sigma = torch.exp(self.sigma(minibatch))
         sigma = sigma.view(-1, self.num_gaussians, self.out_features, self.out_features)
         #print('in forward function, sigma = {}'.format(sigma))
         mu = self.mu(minibatch)
@@ -98,7 +96,6 @@ def mdn_loss(pi, sigma, mu, target):
     parameters.
     """
     #GP = gaussian_probability(sigma, mu, target)
-    D = mu.size(-1)
     target = target.unsqueeze(1).expand_as(mu)
     loss = 0
     G = pi.size(1)
@@ -108,37 +105,18 @@ def mdn_loss(pi, sigma, mu, target):
     # matrix implementation #
     #########################
     diff = target - mu
-    #print('size of diff = ', diff.size())
-    #print('size of sigma = ', sigma.size())
-    # To make sigma symmetric add the transpose to itself
-    precision_mat_diag_pos = torch.matmul(sigma.view([-1, D, D]),torch.transpose(sigma.view([-1, D, D]), 1, 2))
-    #print('size of precision mat is', precision_mat_diag_pos.size())
-    #precision_mat =  sigma.view([-1, D, D]) + torch.transpose(sigma.view([-1, D, D]), 1, 2)
-   #diagonal_mat = torch.zeros(D,D).cuda()
-    #precision_mat_diag_pos = precision_mat + diagonal_mat.fill_diagonal_(1 - torch.min(torch.diagonal(precision_mat)).detach().cpu().numpy())
-    mul1 = torch.transpose(torch.diagonal(torch.matmul(diff.view([-1, D]), precision_mat_diag_pos)),0, 1)
-    #print('size of mul1 = ', mul1.size())
-    diff_t =  torch.transpose(diff.view([-1, D]),0, 1)
-    #print('size of diff_t = ', diff_t.size())
-    p_value =  torch.diagonal(torch.matmul(mul1,diff_t)).view([B, G])
-    #print('size of p_value = ', p_value.size())
-    #print('p_value', p_value)
-    loss = torch.mean(0.5*pi*p_value, dim=1)
-    det_sigma = torch.abs(torch.det(precision_mat_diag_pos))
-    #print('size of det sigma', det_sigma.size())
-    #print(det_sigma)
-    sigma_term = -torch.mean(pi*torch.log(torch.sqrt(det_sigma.view([B, G]))))
-    #print('size of sigma term = ', sigma_term.size())
-    #print('sigma term', sigma_term)
-    loss += sigma_term
-    mean_loss = torch.mean(loss)
-    #print(mean_loss)
-    #exit()
-    return mean_loss
+    print('size of diff = ', diff.size())
+    print('size of sigma = ', sigma.size())
+    mul1 = torch.matmul(diff, sigma)
+    print('size of mul1 = ', mul1.size())
+    print('size of diff_t = ', torch.transpose(diff, 1, 2))
+    p_value =  torch.matmul(torch.matmul(diff, sigma),diff)# torch.transpose(diff))
+    print('size of p_value = ', p_value.size())
+    exit()
     #loss = torch.sum(torch.matmul(pi, p_value)
 
 
-    """
+
     ##########################
     # individual computation #
     ##########################
@@ -169,41 +147,18 @@ def mdn_loss(pi, sigma, mu, target):
     #nll = nll[torch.logical_not(torch.isnan(nll))]
     #print('mean = {}'.format(torch.mean(nll)))
     #return torch.mean(nll)
-    """
+
 
 def sample(pi, sigma, mu):
     """Draw samples from a MoG.
-    # Original implementation
+    """
     categorical = Categorical(pi)
     pis = list(categorical.sample().data)
     sample = Variable(sigma.data.new(sigma.size(0), sigma.size(2)).normal_())
     for i, idx in enumerate(pis):
         sample[i] = sample[i].mul(sigma[i,idx]).add(mu[i,idx])
     return sample
-    """
-    ######################
-    # new implementation #
-    ######################
-    categorical = Categorical(pi)
-    pis = list(categorical.sample().data)
-    #print('len of pis', len(pis))
-    #print('pis', pis)
-    #print('size of sigma = ', sigma.size())
-    #print('size of mu = ', mu.size())
-    D = mu.size(-1)
-    samples = torch.zeros([len(pi), D])
-    for i, idx in enumerate(pis):
-        precision_mat_diag_pos = torch.matmul(sigma[i, idx],torch.transpose(sigma[i,idx],0,1))
-        #precision_mat = sigma[i, idx] + torch.transpose(sigma[i, idx], 0, 1)
-        #diagonal_mat = torch.zeros(D,D).cuda()
-        #precision_mat_diag_pos = precision_mat + diagonal_mat.fill_diagonal_(1 - torch.min(torch.diagonal(precision_mat)).detach().cpu().numpy())
-        #print('precision_mat = ', precision_mat_diag_pos)
-        MVN = MultivariateNormal(loc=mu[i, idx], precision_matrix=precision_mat_diag_pos)
-        draw_sample = MVN.rsample()
-        #print('sample size = ', draw_sample.size())
-        samples[i, :] = draw_sample
-    #print('samples', samples.size())
-    return samples
+
 def new_mdn_loss(pi, sigma, mu, target):
     """
     Copied from :

@@ -39,7 +39,8 @@ class MDN(nn.Module):
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             if ind != len(self.linears) - 1:
-                out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+                #out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+                out = F.relu(fc(out))                                   # ReLU + BN + Linear
             else:
                 out = fc(out)
 

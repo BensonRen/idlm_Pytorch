@@ -72,14 +72,24 @@ class Network(object):
         print(model)
         return model
 
-    def make_loss(self, pi, sigma, mu, labels=None):
+    def make_loss(self, pi, sigma, mu, labels=None, warmup=None, warmup_threshold=10):
         """
         The special loss for mdn
         :param logit: The output of the network
         :param labels: The ground truth labels
+        :param warmup: The warmup process for the mean to get the range faster
         :return: the total loss
         """
-        return mdn.mdn_loss(pi, sigma, mu, labels)
+        #return mdn.new_mdn_loss(pi, sigma, mu, labels)
+        if warmup is None or warmup> warmup_threshold:                  # If no warmup is being done
+            return mdn.mdn_loss(pi, sigma, mu, labels)
+        else:
+            print('warmup mode on')
+            # Make sigma to 1 (wide)
+            loss = 10*torch.mean(torch.pow(sigma-1, 2))
+            # Make the mu converge to labels
+            loss += 10*torch.mean(torch.pow(torch.mean(mu, 1) - labels, 2))
+        return loss
 
     def make_optimizer(self):
         """
@@ -147,19 +157,23 @@ class Network(object):
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
+                #print('spectra = ', spectra)
+                #print('geometry = ', geometry)
                 self.optm.zero_grad()                               # Zero the gradient first
                 pi, sigma, mu = self.model(spectra)                        # Get the output
-                print('spectra = {}, pi, sigma, mu = {}, {}, {}'.format(spectra.cpu().numpy(),
-                                        pi.detach().cpu().numpy(), 
-                                        sigma.detach().cpu().numpy(), 
-                                        mu.detach().cpu().numpy())) 
+                #print('spectra = {}, pi, sigma, mu = {}, {}, {}'.format(spectra.cpu().numpy(),
+                #                        pi.detach().cpu().numpy()[0,:], 
+                #                        sigma.detach().cpu().numpy()[0,:,0], 
+                #                        mu.detach().cpu().numpy()[0,:,0])) 
+                #print('geometry shape', geometry.size())
                 loss = self.make_loss(pi, sigma, mu, geometry)               # Get the loss tensor
-                Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
-                Ypred = torch.tensor(simulator(self.flags.data_set, Xpred), requires_grad=False)
-                if cuda:
-                    Ypred = Ypred.cuda()
-                simulator_loss = nn.functional.mse_loss(Ypred, spectra).detach().cpu().numpy() # Get the loss tensor
-                print('nll loss at epoch {}, batch {} is {} simulation loss is {}'.format(epoch, j, loss.detach().cpu().numpy(),simulator_loss))
+                #loss = self.make_loss(pi, sigma, mu, geometry, warmup=epoch)               # Get the loss tensor
+                #Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
+                #Ypred = torch.tensor(simulator(self.flags.data_set, Xpred), requires_grad=False)
+                #if cuda:
+                #    Ypred = Ypred.cuda()
+                #simulator_loss = nn.functional.mse_loss(Ypred, spectra).detach().cpu().numpy() # Get the loss tensor
+                #print('nll loss at epoch {}, batch {} is {} '.format(epoch, j, loss.detach().cpu().numpy()))
                 loss.backward()                                     # Calculate the backward gradients
                 # gradient clipping
                 torch.nn.utils.clip_grad_value_(self.model.parameters(), 1)
@@ -171,10 +185,10 @@ class Network(object):
             train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
             # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
 
-            if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
+            if epoch % self.flags.eval_step == 0:                      # For eval steps, do the evaluations and tensor board
                 # Record the training loss to the tensorboard
                 self.log.add_scalar('Loss/train', train_avg_loss, epoch)
-                self.log.add_scalar('Loss/simulator_train', simulator_loss, epoch)
+                #self.log.add_scalar('Loss/simulator_train', simulator_loss, epoch)
                 # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
 
                 # Set to Evaluation Mode
@@ -187,6 +201,7 @@ class Network(object):
                         spectra = spectra.cuda()
                     pi, sigma, mu = self.model(spectra)  # Get the output
                     Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
+                    #print('shape of Xpred = ', np.shape(Xpred))
                     Ypred = torch.tensor(simulator(self.flags.data_set, Xpred), requires_grad=False)
                     if cuda:
                         Ypred = Ypred.cuda()
@@ -197,8 +212,10 @@ class Network(object):
                 test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
                 self.log.add_scalar('Loss/test', test_avg_loss, epoch)
 
-                print("This is Epoch %d, training loss %.5f, validation loss %.5f, training simulator loss %.5f" \
-                      % (epoch, train_avg_loss, test_avg_loss, simulator_loss ))
+                print("This is Epoch %d, training loss %.5f, validation loss %.5f"\
+                      % (epoch, train_avg_loss, test_avg_loss ))
+                #print("This is Epoch %d, training loss %.5f, validation loss %.5f, training simulator loss %.5f" \
+                #      % (epoch, train_avg_loss, test_avg_loss, simulator_loss ))
                 # Plotting the first spectra prediction for validation
                 # f = self.compare_spectra(Ypred=logit[0,:].cpu().data.numpy(), Ytruth=spectra[0,:].cpu().data.numpy())
                 # self.log.add_figure(tag='spectra compare',figure=f,global_step=epoch)

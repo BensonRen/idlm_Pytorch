@@ -11,16 +11,18 @@ if __name__ == '__main__':
     linear_unit_list = [1000]
     # reg_scale_list = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
     #reg_scale_list = [5e-4]
-    for num_gaussian in range(3,15):
+    for num_gaussian in range(3,10):
         for linear_unit in linear_unit_list:
         #for kernel_first in conv_kernel_size_first_list:
         #    for kernel_second in conv_kernel_size_second_list:
                 # Setting the loop for setting the parameter
-            for i in range(7, 8):
+            for i in range(4, 13):
                 flags = flag_reader.read_flag()  	#setting the base case
+                flags.data_set = 'ballistics'
+                flags.ckpt_dir = '/work/sr365/MDN_results/' + flags.data_set
                 flags.num_gaussian = num_gaussian   # Setting the number of gaussians
                 linear = [linear_unit for j in range(i)]        #Set the linear units
-                linear[0] = 2                  # The start of linear
+                linear[0] = 1                  # The start of linear
                 linear[-1] = 4                # The end of linear
                 flags.linear = linear
                 #for reg_scale in reg_scale_list:
