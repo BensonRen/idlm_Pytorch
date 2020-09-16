@@ -19,7 +19,7 @@ BATCH_SIZE = 512
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
 TRAIN_STEP = 300
-LEARN_RATE = 1e-4
+LEARN_RATE = 1e-2
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
 STOP_THRESHOLD = -float('inf')
@@ -39,4 +39,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200915_234439'
+EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200916_001148'
