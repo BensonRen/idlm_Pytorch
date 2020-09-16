@@ -123,14 +123,14 @@ def mdn_loss(pi, sigma, mu, target):
     p_value =  torch.diagonal(torch.matmul(mul1,diff_t)).view([B, G])
     #print('size of p_value = ', p_value.size())
     #print('p_value', p_value)
-    loss = torch.mean(0.5*pi*p_value, dim=1)
+    loss = torch.sum(0.5*p_value, dim=1)
     det_sigma = torch.abs(torch.det(precision_mat_diag_pos))
     #print('size of det sigma', det_sigma.size())
     #print(det_sigma)
-    sigma_term = -torch.mean(pi*torch.log(torch.sqrt(det_sigma.view([B, G]))))
+    sigma_term = -torch.sum(torch.log(torch.sqrt(det_sigma.view([B, G]))), dim=1)
     #print('size of sigma term = ', sigma_term.size())
     #print('sigma term', sigma_term)
-    loss += sigma_term
+    loss += sigma_term - torch.sum(torch.log(pi), dim=1)
     mean_loss = torch.mean(loss)
     #print(mean_loss)
     #exit()
@@ -195,7 +195,8 @@ def sample(pi, sigma, mu):
     for i, idx in enumerate(pis):
         precision_mat_diag_pos = torch.matmul(sigma[i, idx],torch.transpose(sigma[i,idx],0,1))
         #precision_mat = sigma[i, idx] + torch.transpose(sigma[i, idx], 0, 1)
-        #diagonal_mat = torch.zeros(D,D).cuda()
+        diagonal_mat = torch.zeros(D,D).cuda()
+        precision_mat_diag_pos += diagonal_mat.fill_diagonal_(1e-5)     # add small positive value
         #precision_mat_diag_pos = precision_mat + diagonal_mat.fill_diagonal_(1 - torch.min(torch.diagonal(precision_mat)).detach().cpu().numpy())
         #print('precision_mat = ', precision_mat_diag_pos)
         MVN = MultivariateNormal(loc=mu[i, idx], precision_matrix=precision_mat_diag_pos)

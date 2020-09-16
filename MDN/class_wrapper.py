@@ -202,14 +202,16 @@ class Network(object):
                     pi, sigma, mu = self.model(spectra)  # Get the output
                     Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
                     #print('shape of Xpred = ', np.shape(Xpred))
-                    Ypred = torch.tensor(simulator(self.flags.data_set, Xpred), requires_grad=False)
+                    Ypred_np = simulator(self.flags.data_set, Xpred)
+                    valid = (Ypred_np != -999)
+                    Ypred = torch.tensor(Ypred_np, requires_grad=False)
                     if cuda:
                         Ypred = Ypred.cuda()
-                    loss = nn.functional.mse_loss(Ypred, spectra)  # Get the loss tensor
-                    test_loss += loss                                       # Aggregate the loss
+                    loss = nn.functional.mse_loss(Ypred[valid], spectra[valid])  # Get the loss tensor
+                    test_loss += loss.detach().cpu().numpy()                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
-                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                test_avg_loss = test_loss / (j+1)
                 self.log.add_scalar('Loss/test', test_avg_loss, epoch)
 
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f"\

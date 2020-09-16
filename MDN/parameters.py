@@ -9,13 +9,13 @@ DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set
-NUM_GAUSSIAN = 5
-LINEAR = [1,  100, 100, 100, 100, 4]
+NUM_GAUSSIAN = 20
+LINEAR = [1,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 4]
 
 # Optimizer Params
 OPTIM = "Adam"
 REG_SCALE = 1e-3
-BATCH_SIZE = 1024
+BATCH_SIZE = 512
 EVAL_BATCH_SIZE = 4096
 EVAL_STEP = 20
 TRAIN_STEP = 300
@@ -39,4 +39,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200914_105808'
+EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200915_232515'

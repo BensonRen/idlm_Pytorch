@@ -39,14 +39,14 @@ class MDN(nn.Module):
         # For the linear part
         for ind, (fc, bn) in enumerate(zip(self.linears, self.bn_linears)):
             if ind != len(self.linears) - 1:
-                #out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
-                out = F.relu(fc(out))                                   # ReLU + BN + Linear
+                out = F.relu(bn(fc(out)))                                   # ReLU + BN + Linear
+                #out = F.relu(fc(out))                                   # ReLU + BN + Linear
             else:
-                out = fc(out)
+                out = F.relu(fc(out))
 
         # The mixture density network outputs 3 values (Pi is a multinomial distribution of the Gaussians. Sigma
         #             is the standard deviation of each Gaussian. Mu is the mean of each
         #             Gaussian.)
-        pi, sigma, mu = self.mdn(F.relu(out))
+        pi, sigma, mu = self.mdn(out)
         return pi, sigma, mu
 
