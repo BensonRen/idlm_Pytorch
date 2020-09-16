@@ -225,6 +225,7 @@ def simulator_ballistics(Xpred):
     :param Xpred: The Xpred output from model
     :return:
     """
+    Xpred[:, 3] *= 15
     IB = InverseBallisticsModel()
     return IB.forward_process(Xpred, output_full=True) 
 

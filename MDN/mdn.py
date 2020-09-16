@@ -125,11 +125,14 @@ def mdn_loss(pi, sigma, mu, target):
     #print('p_value', p_value)
     det_sigma = torch.abs(torch.det(precision_mat_diag_pos)).view([B,G])
     #det_sigma = torch.det(precision_mat_diag_pos).view([B,G])
-    #print('deg_sigma', p_value)
-    before_exp = torch.log(pi) + 0.5*torch.log(det_sigma) - 0.5*p_value
-    #print('p_value', p_value)
+    #print('deg_sigma', det_sigma)
+    before_exp = torch.min(torch.log(pi) + 0.5*torch.log(det_sigma) - 0.5*p_value, 50)     # capping to e^50
+    #print('before_exp', before_exp)
     likelihood = torch.exp(before_exp)
-    loss = torch.mean(torch.sum(-likelihood, dim=1))
+    #print('likihood' , likelihood)
+    #loss = torch.mean(-torch.log(torch.sum(likelihood, dim=1)))
+    loss = torch.mean(-torch.log(torch.sum(likelihood, dim=1)+1e-6))
+    #print('loss = ', loss)
     return loss
     """
     loss = torch.sum(0.5*p_value, dim=1)

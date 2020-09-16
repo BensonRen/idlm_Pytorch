@@ -302,6 +302,7 @@ def read_data_ballistics(flags, eval_data_all=False):
     """
     data_dir = os.path.join(flags.data_dir, 'Simulated_DataSets/Ballistics/')
     data_x = pd.read_csv(data_dir + 'data_x.csv', header=None).astype('float32').values
+    data_x[:,3] /= 15
     data_y = pd.read_csv(data_dir + 'data_y.csv', header=None).astype('float32').values
     if eval_data_all:
         return get_data_into_loaders(data_x, data_y, flags.batch_size, SimulatedDataSet_class, test_ratio=0.999)
