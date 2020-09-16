@@ -127,10 +127,10 @@ def mdn_loss(pi, sigma, mu, target):
     det_sigma = torch.abs(torch.det(precision_mat_diag_pos))
     #print('size of det sigma', det_sigma.size())
     #print(det_sigma)
-    sigma_term = -torch.sum(torch.log(torch.sqrt(det_sigma.view([B, G]))), dim=1)
+    sigma_term = -torch.sum(torch.log(pi*torch.sqrt(det_sigma.view([B, G]))), dim=1)
     #print('size of sigma term = ', sigma_term.size())
     #print('sigma term', sigma_term)
-    loss += sigma_term - torch.sum(torch.log(pi), dim=1)
+    loss += sigma_term
     mean_loss = torch.mean(loss)
     #print(mean_loss)
     #exit()
