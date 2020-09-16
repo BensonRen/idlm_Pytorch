@@ -9,7 +9,7 @@ DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set
-NUM_GAUSSIAN = 20
+NUM_GAUSSIAN = 5
 LINEAR = [1,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 4]
 
 # Optimizer Params
@@ -17,8 +17,8 @@ OPTIM = "Adam"
 REG_SCALE = 1e-3
 BATCH_SIZE = 512
 EVAL_BATCH_SIZE = 4096
-EVAL_STEP = 20
-TRAIN_STEP = 100
+EVAL_STEP = 2
+TRAIN_STEP = 10
 LEARN_RATE = 1e-4
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
@@ -39,4 +39,4 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200916_114129'
+EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200916_125408'

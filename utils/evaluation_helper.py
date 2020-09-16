@@ -9,20 +9,27 @@ import matplotlib.pyplot as plt
 import os
 from utils.helper_functions import simulator
 
-def compare_truth_pred(pred_file, truth_file):
+def compare_truth_pred(pred_file, truth_file, cut_off_outlier_thres=None, quiet_mode=False):
     """
     Read truth and pred from csv files, compute their mean-absolute-error and the mean-squared-error
     :param pred_file: full path to pred file
     :param truth_file: full path to truth file
     :return: mae and mse
     """
-    pred = np.loadtxt(pred_file, delimiter=' ')
-    truth = np.loadtxt(truth_file, delimiter=' ')
-    print("in compare truth pred function in eval_help package, your shape of pred file is", np.shape(pred))
+    if isinstance(pred_file, str):      # If input is a file name (original set up)
+        pred = np.loadtxt(pred_file, delimiter=' ')
+        truth = np.loadtxt(truth_file, delimiter=' ')
+    elif isinstance(pred_file, np.ndarray):
+        pred = pred_file
+        truth = truth_file
+    else:
+        print('In the compare_truth_pred function, your input pred and truth is neither a file nor a numpy array')
+    if not quiet_mode:
+        print("in compare truth pred function in eval_help package, your shape of pred file is", np.shape(pred))
     if len(np.shape(pred)) == 1:
         # Due to Ballistics dataset gives some non-real results (labelled -999)
         valid_index = pred != -999
-        if (np.sum(valid_index) != len(valid_index)):
+        if (np.sum(valid_index) != len(valid_index)) and not quiet_mode:
             print("Your dataset should be ballistics and there are non-valid points in your prediction!")
             print('number of non-valid points is {}'.format(len(valid_index) - np.sum(valid_index)))
         pred = pred[valid_index]
@@ -32,6 +39,11 @@ def compare_truth_pred(pred_file, truth_file):
         truth = np.reshape(truth, [-1,1])
     mae = np.mean(np.abs(pred-truth), axis=1)
     mse = np.mean(np.square(pred-truth), axis=1)
+
+    if cut_off_outlier_thres is not None:
+        mse = mse[mse < cut_off_outlier_thres]
+        mae = mae[mae < cut_off_outlier_thres]
+
         
     return mae, mse
 

@@ -14,6 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 # from torchsummary import summary
 from torch.optim import lr_scheduler
 from utils.helper_functions import simulator
+from utils.evaluation_helper import compare_truth_pred
 import mdn
 # Libs
 import numpy as np
@@ -203,12 +204,14 @@ class Network(object):
                     Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
                     #print('shape of Xpred = ', np.shape(Xpred))
                     Ypred_np = simulator(self.flags.data_set, Xpred)
-                    valid = (Ypred_np != -999)
-                    Ypred = torch.tensor(Ypred_np, requires_grad=False)
-                    if cuda:
-                        Ypred = Ypred.cuda()
-                    loss = nn.functional.mse_loss(Ypred[valid], spectra[valid])  # Get the loss tensor
-                    test_loss += loss.detach().cpu().numpy()                                       # Aggregate the loss
+                    mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
+                                                   cut_off_outlier_thres=10, quiet_mode=True)
+                    #valid = (Ypred_np != -999)
+                    #Ypred = torch.tensor(Ypred_np, requires_grad=False)
+                    #if cuda:
+                    #    Ypred = Ypred.cuda()
+                    #loss = nn.functional.mse_loss(Ypred[valid], spectra[valid])  # Get the loss tensor
+                    test_loss += np.mean(mse)                                     # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss / (j+1)
