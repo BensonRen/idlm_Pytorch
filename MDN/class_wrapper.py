@@ -201,16 +201,10 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     pi, sigma, mu = self.model(spectra)  # Get the output
-                    Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
-                    #print('shape of Xpred = ', np.shape(Xpred))
+                    Xpred = mdn.sample(pi, sigma, mu)
                     Ypred_np = simulator(self.flags.data_set, Xpred)
                     mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
                                                    cut_off_outlier_thres=10, quiet_mode=True)
-                    #valid = (Ypred_np != -999)
-                    #Ypred = torch.tensor(Ypred_np, requires_grad=False)
-                    #if cuda:
-                    #    Ypred = Ypred.cuda()
-                    #loss = nn.functional.mse_loss(Ypred[valid], spectra[valid])  # Get the loss tensor
                     test_loss += np.mean(mse)                                     # Aggregate the loss
 
                 # Record the testing loss to the tensorboard

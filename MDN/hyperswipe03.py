@@ -16,7 +16,7 @@ if __name__ == '__main__':
         #for kernel_first in conv_kernel_size_first_list:
         #    for kernel_second in conv_kernel_size_second_list:
                 # Setting the loop for setting the parameter
-            for i in range(5, 13):
+            for i in range(6, 13):
                 flags = flag_reader.read_flag()  	#setting the base case
                 flags.data_set = 'ballistics'
                 flags.ckpt_dir = '/work/sr365/MDN_results/' + flags.data_set
