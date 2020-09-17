@@ -4,9 +4,9 @@ Params for Back propagation model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
@@ -18,7 +18,7 @@ USE_LORENTZ = False
 #CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [2, 500, 500, 500, 500, 1]                 # Dimension of data set cross check with data generator
+LINEAR = [4, 500, 500, 500, 500, 2]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
@@ -28,7 +28,7 @@ CONV_STRIDE = []
 OPTIM = "Adam"
 REG_SCALE = 5e-4
 BATCH_SIZE = 1024
-EVAL_BATCH_SIZE = 1000
+EVAL_BATCH_SIZE = 128
 EVAL_STEP = 20
 TRAIN_STEP = 500
 BACKPROP_STEP = 300
@@ -42,7 +42,7 @@ X_RANGE = [i for i in range(2, 10 )]
 #Y_RANGE = [i for i in range(10 , 2011 )]                       # Real Meta-material dataset range
 Y_RANGE = [i for i in range(10 , 310 )]                         # Artificial Meta-material dataset
 FORCE_RUN = True
-MODEL_NAME = 'sine_wave' 
+MODEL_NAME = 'robotic_arm' 
 DATA_DIR = '../'                                               # All simulated simple dataset
 #DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
 #DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset

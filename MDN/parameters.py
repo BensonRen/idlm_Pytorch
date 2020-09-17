@@ -3,9 +3,9 @@ Params for Back propagation model
 """
 # Define which data set you are using
 # DATA_SET = 'meta_material'
-# DATA_SET = 'sine_wave'
+DATA_SET = 'sine_wave'
 # DATA_SET = 'robotic_arm'
-DATA_SET = 'ballistics'
+# DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set

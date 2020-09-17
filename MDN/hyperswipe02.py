@@ -18,12 +18,12 @@ if __name__ == '__main__':
                 # Setting the loop for setting the parameter
             for i in range(6, 13):
                 flags = flag_reader.read_flag()  	#setting the base case
-                flags.data_set = 'ballistics'
+                flags.data_set = 'sine_wave'
                 flags.ckpt_dir = '/work/sr365/MDN_results/' + flags.data_set
                 flags.num_gaussian = num_gaussian   # Setting the number of gaussians
                 linear = [linear_unit for j in range(i)]        #Set the linear units
                 linear[0] = 1                  # The start of linear
-                linear[-1] = 4                # The end of linear
+                linear[-1] = 2                # The end of linear
                 flags.linear = linear
                 #for reg_scale in reg_scale_list:
                 #    flags.reg_scale = reg_scale

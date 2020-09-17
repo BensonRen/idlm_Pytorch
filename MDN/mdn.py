@@ -206,19 +206,23 @@ def sample(pi, sigma, mu):
     #print('size of mu = ', mu.size())
     D = mu.size(-1)
     samples = torch.zeros([len(pi), D])
+    sigma_cpu_all = sigma.detach().cpu()
+    mu_cpu_all = mu.detach().cpu()
     for i, idx in enumerate(pis):
-        sigma_cpu = sigma[i,idx].detach().cpu()
+        #print('i = {}'.format(i))
+        sigma_cpu = sigma_cpu_all[i,idx]
         precision_mat_diag_pos = torch.matmul(sigma_cpu,torch.transpose(sigma_cpu,0,1))
-        mu_cpu = mu[i, idx].detach().cpu()
+        mu_cpu = mu_cpu_all[i, idx]
         #precision_mat = sigma[i, idx] + torch.transpose(sigma[i, idx], 0, 1)
         diagonal_mat = torch.tensor(np.zeros([D,D]))
         #precision_mat_diag_pos np.fill_diagonal_(diagonal_mat, 1e-7)
-        precision_mat_diag_pos += diagonal_mat.fill_diagonal_(1e-7)    # add small positive value
+        precision_mat_diag_pos += diagonal_mat.fill_diagonal_(1)    # add small positive value
         #precision_mat_diag_pos = precision_mat + diagonal_mat.fill_diagonal_(1 - torch.min(torch.diagonal(precision_mat)).detach().cpu().numpy())
         #print('precision_mat = ', precision_mat_diag_pos)
         #print(precision_mat_diag_pos)
         #print(mu_cpu)
         try:
+            #print('precision_mat = ', precision_mat_diag_pos)
             MVN = MultivariateNormal(loc=mu_cpu, precision_matrix=precision_mat_diag_pos)
             draw_sample = MVN.rsample()
         except:

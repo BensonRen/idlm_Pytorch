@@ -487,14 +487,12 @@ class Network(object):
                 if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
                     Xpred[:, 3] = Xpred[:, 3] * 34
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
-                """
                 np.savetxt(fxp, Xpred.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
                     np.savetxt(fyp, Ypred)
-                """
         tk.record(1)
         return Ypred_file, Ytruth_file
 

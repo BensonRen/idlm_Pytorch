@@ -46,18 +46,17 @@ def cINN(flags):
 ##########
 
 def subnet_fc(c_in, c_out):
+    """ 
     # Ben's version of internal layer
     return nn.Sequential(nn.Linear(c_in, 512), nn.ReLU(), 
                                   nn.Linear(512, 512), nn.ReLU(),
                                   nn.Linear(512,  c_out))
-    
     """
-    # Original version of internal layer
+    #Original version of internal layer
     return nn.Sequential(nn.Linear(c_in, 160), nn.ReLU(), 
                                   nn.Linear(160, 160), nn.ReLU(),
                                   nn.Linear(160, 160), nn.ReLU(),
                                   nn.Linear(160,  c_out))
-   """ 
 
 # Can only take 2 input.... Due to the restriction of the framework used
 

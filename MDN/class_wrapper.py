@@ -206,6 +206,8 @@ class Network(object):
                     mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
                                                    cut_off_outlier_thres=10, quiet_mode=True)
                     test_loss += np.mean(mse)                                     # Aggregate the loss
+                    print('j = {}'.format(j))
+                    break;      # only get the first batch that is enough
 
                 # Record the testing loss to the tensorboard
                 test_avg_loss = test_loss / (j+1)

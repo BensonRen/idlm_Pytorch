@@ -40,17 +40,17 @@ def training_from_flag(flags):
     # put_param_into_folder(ntwk.ckpt_dir)
 
 
-def retrain_different_dataset():
+def retrain_different_dataset(index):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
      #data_set_list = ["meta_material"]
-     data_set_list = [  "ballistics"]
+     data_set_list = [  "ballistics","sine_wave","robotic_arm"]
                         #"robotic_armreg0.0001trail_1_complexity_swipe_layer500_num5"]
      for eval_model in data_set_list:
-        flags = load_flags(os.path.join("models", eval_model))
-        flags.model_name = "retrain_without_boundary" + eval_model
+        flags = load_flags(os.path.join("prev_models", eval_model))
+        flags.model_name = "retrain_" + str(index) + eval_model
         flags.batch_size = 1024
         flags.train_step = 500
         flags.test_ratio = 0.2
@@ -63,9 +63,9 @@ if __name__ == '__main__':
 
     # Call the train from flag function
     #for i in range(20):
-    training_from_flag(flags)
+    #training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    #for i in range(10):
-    #retrain_different_dataset()
+    for i in range(5):
+        retrain_different_dataset()
 
