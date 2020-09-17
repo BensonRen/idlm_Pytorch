@@ -12,6 +12,7 @@ from torch.autograd import Variable
 from torch.distributions import Categorical
 import math
 import numpy as np
+#from numpy.random.Generator import multivariate_normal
 from torch.distributions.multivariate_normal import MultivariateNormal
 
 ONEOVERSQRT2PI = 1.0 / math.sqrt(2*math.pi)
@@ -204,23 +205,25 @@ def sample(pi, sigma, mu):
     #print('size of sigma = ', sigma.size())
     #print('size of mu = ', mu.size())
     D = mu.size(-1)
-    samples = np.zeros([len(pi), D])
+    samples = torch.zeros([len(pi), D])
     for i, idx in enumerate(pis):
         sigma_cpu = sigma[i,idx].detach().cpu()
-        precision_mat_diag_pos = torch.matmul(sigma_cpu,torch.transpose(sigma_cpu,0,1)).numpy()
-        mu_cpu = mu[i, idx].detach().cpu().numpy()
+        precision_mat_diag_pos = torch.matmul(sigma_cpu,torch.transpose(sigma_cpu,0,1))
+        mu_cpu = mu[i, idx].detach().cpu()
         #precision_mat = sigma[i, idx] + torch.transpose(sigma[i, idx], 0, 1)
-        diagonal_mat = np.zeros([D,D])
-        np.fill_diagonal(diagonal_mat, 1e-7)
-        precision_mat_diag_pos += diagonal_mat    # add small positive value
+        diagonal_mat = torch.tensor(np.zeros([D,D]))
+        #precision_mat_diag_pos np.fill_diagonal_(diagonal_mat, 1e-7)
+        precision_mat_diag_pos += diagonal_mat.fill_diagonal_(1e-7)    # add small positive value
         #precision_mat_diag_pos = precision_mat + diagonal_mat.fill_diagonal_(1 - torch.min(torch.diagonal(precision_mat)).detach().cpu().numpy())
         #print('precision_mat = ', precision_mat_diag_pos)
+        #print(precision_mat_diag_pos)
+        #print(mu_cpu)
         try:
             MVN = MultivariateNormal(loc=mu_cpu, precision_matrix=precision_mat_diag_pos)
             draw_sample = MVN.rsample()
         except:
             print("Ops, your covariance matrix is very unfortunately singular, assign loss of test_loss to avoid counting")
-            draw_sample = -999*np.ones([1, D])
+            draw_sample = -999*torch.ones([1, D])
         #print('sample size = ', draw_sample.size())
         samples[i, :] = draw_sample
     #print('samples', samples.size())

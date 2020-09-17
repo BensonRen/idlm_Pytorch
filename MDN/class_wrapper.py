@@ -201,7 +201,7 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     pi, sigma, mu = self.model(spectra)  # Get the output
-                    Xpred = mdn.sample(pi, sigma, mu)
+                    Xpred = mdn.sample(pi, sigma, mu).numpy()
                     Ypred_np = simulator(self.flags.data_set, Xpred)
                     mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
                                                    cut_off_outlier_thres=10, quiet_mode=True)
