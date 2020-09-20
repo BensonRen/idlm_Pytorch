@@ -29,7 +29,8 @@ class Network(object):
         self.model_fn = model_fn                                # The model maker function
         self.flags = flags                                      # The Flags containing the specs
         if inference_mode:                                      # If inference mode, use saved model
-            self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
+            self.ckpt_dir = saved_model
+            #self.ckpt_dir = os.path.join(ckpt_dir, saved_model)
             self.saved_model = saved_model
             print("This is inference mode, the ckpt is", self.ckpt_dir)
         else:                                                   # training mode, create a new ckpt folder
@@ -201,8 +202,6 @@ class Network(object):
                 print("Doing Evaluation on the model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
-                    if self.flags.data_set == 'gaussian_mixture':
-                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
@@ -236,6 +235,52 @@ class Network(object):
         self.log.close()
         tk.record(1)                    # Record at the end of the training
 
+    def evaluate(self, save_dir='data/', save_all=False, MSE_Simulator=False, save_misc=False, save_Simulator_Ypred=False):
+        self.load()                             # load the model as constructed
+        try:
+            bs = self.flags.backprop_step         # for previous code that did not incorporate this
+        except AttributeError:
+            print("There is no attribute backprop_step, catched error and adding this now")
+            self.flags.backprop_step = 300
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model.cuda()
+        self.model.eval()
+        saved_model_str = self.saved_model.replace('/','_')
+        # Get the file names
+        Ypred_file = os.path.join(save_dir, 'test_Ypred_{}.csv'.format(saved_model_str))
+        Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
+        Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
+        Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+        print("evalution output pattern:", Ypred_file)
+
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(save_dir, 'evaluation_time.txt'))
+
+        # Open those files to append
+        with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
+                open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
+            # Loop through the eval data and evaluate
+            for ind, (geometry, spectra) in enumerate(self.test_loader):
+                if cuda:
+                    geometry = geometry.cuda()
+                    spectra = spectra.cuda()
+                # Initialize the geometry first
+                logit = self.model(geometry)
+                #Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind,
+                #                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc, save_Simulator_Ypred=save_Simulator_Ypred)
+                tk.record(ind)                          # Keep the time after each evaluation for backprop
+                # self.plot_histogram(loss, ind)                                # Debugging purposes
+                if save_misc:
+                    np.savetxt('visualize_final/point{}_Xtruth.csv'.format(ind), geometry.cpu().data.numpy())
+                    np.savetxt('visualize_final/point{}_Ytruth.csv'.format(ind), spectra.cpu().data.numpy())
+                # suppress printing to evaluate time
+                np.savetxt(fxt, geometry.cpu().data.numpy())
+                np.savetxt(fyt, spectra.cpu().data.numpy())
+                np.savetxt(fyp, logit.detach().cpu().numpy())
+                #np.savetxt(fyp, Ypred)
+                #np.savetxt(fxp, Xpred)
+        return Ypred_file, Ytruth_file
 
     def initialize_geometry_eval(self):
         """

@@ -16,7 +16,7 @@ import numpy as np
 from Simulated_DataSets.Robotic_Arm.generate_robotic_arm import determine_final_position
 from Simulated_DataSets.Sinusoidal_Wave.generate_Sinusoidal import *
 from Simulated_DataSets.Ballistics.Inverse_ballistics_original import InverseBallisticsModel
-from ensemble_mm.predict_ensemble import ensemble_predict_master
+# from ensemble_mm.predict_ensemble import ensemble_predict_master
 # 1
 def get_Xpred(path, name=None):
     """
@@ -231,12 +231,13 @@ def simulator_ballistics(Xpred):
 
 
 # 14
+"""
 def simulator_meta_material(Xpred):
-    """
+    ""
     The function where calls the ensemble model to work as a simulator
     This use the prediction ensemble function in Backprop model which trained a bunch of network and predict the output averaged
     Uses a temporary folder called useless to save and read the file
-    """
+    ""
     np.savetxt('/work/sr365/useless/Xpred.csv', Xpred)
     # Path has to be changed for pickel to unpickel the model from checkpoint file
     cwd = os.getcwd()
@@ -247,7 +248,7 @@ def simulator_meta_material(Xpred):
     os.chdir(cwd)
     Ypred = np.loadtxt('/work/sr356/useless/Ypred_ensemble.csv', delimiter=' ')
     return Ypred
-    
+"""
     
 # 15
 def simulator(data_set, Xpred):

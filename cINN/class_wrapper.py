@@ -176,10 +176,6 @@ class Network(object):
 
             for j, (x, y) in enumerate(self.train_loader):
                 batch_size = len(x)
-                if self.flags.data_set == 'gaussian_mixture':
-                    y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-
-                ######################
                 # Preparing the data #
                 ######################
                 if cuda:
@@ -223,8 +219,6 @@ class Network(object):
                 test_loss = 0
                 for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
                     batch_size = len(x)
-                    if self.flags.data_set == 'gaussian_mixture':
-                        y = torch.nn.functional.one_hot(y.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
 
                     ######################
                     # Preparing the data #
@@ -303,17 +297,12 @@ class Network(object):
                     x = x.cuda()
                     y = y.cuda()
                 Xpred = self.model(z, y, rev=True).cpu().data.numpy()
-                """
                 np.savetxt(fxt, x.cpu().data.numpy())
                 np.savetxt(fxp, Xpred)
-                if self.flags.data_set == 'gaussian_mixture':
-                    np.savetxt(fyt, y_prev)
-                else:
-                    np.savetxt(fyt, y.cpu().data.numpy())
+                np.savetxt(fyt, y.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred)
-                """
             tk.record(1)
         return Ypred_file, Ytruth_file
 

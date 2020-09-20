@@ -37,7 +37,8 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     print(model_dir)
     flags = load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
-    flags.backprop_step = eval_flags.backprop_step
+    #flags.backprop_step = eval_flags.backprop_step
+    flags.backprop_step = 200 
     if flags.data_set == 'ballistics':
         flags.test_ratio = 0.078                        # 12800 in total
     elif flags.data_set == 'sine_wave':
@@ -45,11 +46,12 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
     elif flags.data_set == 'robotic_arm':
         flags.test_ratio = 0.1                          # 10000 in total
     else:
-        flags.test_ratio = 0.005                         # 20000 in total for Meta material
+        flags.test_ratio = 0.01                         # 20000 in total for Meta material
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.01
-    flags.eval_batch_size = eval_flags.eval_batch_size
-    flags.train_step = eval_flags.train_step
+    flags.eval_batch_size = 128#eval_flags.eval_batch_size
+    flags.train_step = 300#eval_flags.train_step
+    flags.data_dir = '/work/sr365/Christian_data/'
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -99,7 +101,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all, save_Simulator_Ypred=F
 
 if __name__ == '__main__':
     # Read the flag, however only the flags.eval_model is used and others are not used
-    eval_flags = flag_reader.read_flag()
+    #eval_flags = flag_reader.read_flag()
 
     #print(eval_flags.eval_model)
     # Call the evaluate function from model
@@ -112,7 +114,8 @@ if __name__ == '__main__':
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
     #evaluate_from_model(eval_flags.eval_model)
-    evaluate_all(models_dir="models/meta_ensemble/")
+    evaluate_all(models_dir="/work/sr365/MM_ensemble/models/")
+    #evaluate_all(models_dir="models/ensemble/")
     
     
     # Eval META_MATERIAL

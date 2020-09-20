@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from thop import profile, clever_format
 
 
-def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_misc=False, MSE_Simulator=False, save_Simulator_Ypred=False):
+def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_misc=False, MSE_Simulator=False, save_Simulator_Ypred=True):
 
     """
     Evaluating interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
@@ -46,6 +46,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
         flags.test_ratio = 0.1                          # 10000 in total
     else:
         flags.test_ratio = 0.0476                         # 20000 in total for Meta material
+        save_Simulator_Ypred = False
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.01
     if flags.data_set == 'ballistics':
@@ -112,13 +113,13 @@ if __name__ == '__main__':
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=False, MSE_Simulator=False)
     # For non Meta-material !!!!!
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True, save_Simulator_Ypred=True, MSE_Simulator=False)
-    evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=False)
+    #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=False, save_Simulator_Ypred=True, MSE_Simulator=False)
     #evaluate_from_model(eval_flags.eval_model, save_misc=False, multi_flag=True)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False, save_Simulator_Ypred=False, MSE_Simulator=False)
     #evaluate_from_model(eval_flags.eval_model, multi_flag=False, eval_data_all=True)
 
-    #evaluate_from_model(eval_flags.eval_model)
+    evaluate_from_model(eval_flags.eval_model)
     #evaluate_all(models_dir="models/")
     
     

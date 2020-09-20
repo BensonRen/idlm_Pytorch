@@ -5,16 +5,16 @@ The parameter file storing the parameters for INN Model
 # Define which data set you are using
 # DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
-DATA_SET = 'sine_wave'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Architectural Params
-DIM_Z = 1
-DIM_X = 2
-DIM_Y = 1
+DIM_Z = 2
+DIM_X = 4
+DIM_Y = 2
 DIM_TOT = 4
 COUPLE_LAYER_NUM = 6
 DIM_SPEC = None
@@ -50,6 +50,7 @@ LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.9
 STOP_THRESHOLD = -float('inf')
+CKPT_DIR = '/work/sr365/INN_robotics'
 
 # Data specific params
 X_RANGE = [i for i in range(2, 10 )]

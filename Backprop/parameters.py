@@ -47,13 +47,14 @@ DATA_DIR = '../'                                               # All simulated s
 #DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
 #DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
-GEOBOUNDARY =[30, 52, 42, 52]
+GEOBOUNDARY =[-1,1,-1,1]
+#GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
 #EVAL_MODEL = "sine_wavereg2e-05trail_0_forward_swipe9"
-EVAL_MODEL = "sine_wave"
+EVAL_MODEL = "mm"
 #EVAL_MODEL = "robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6"
 #EVAL_MODEL = "ballisticsreg0.0005trail_0_complexity_swipe_layer500_num5"
 #EVAL_MODEL = "meta_materialreg2e-05trail_0_forward_swipe6"

@@ -106,12 +106,11 @@ class Network(object):
                 X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
                 X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
             else:                                                   # For ballistics dataset
-                X_mean = [0, 1.5, np.radians(40.5), 15/34]
-                X_range = [1., 1., 1.0, 10/34]
+                X_mean = [0, 1.5, 0.787, 1]
+                X_range = [2., 1.5, 1.256, 10/15]
             relu = torch.nn.ReLU()
-            BDY_loss_all = 1 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
+            BDY_loss_all = 100 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
-        self.Boundary_loss = BDY_loss
         #if self.flags.data_set != 'gaussian_mixture':
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         self.MSE_loss = MSE_loss
@@ -233,10 +232,6 @@ class Network(object):
                 # boundary_loss = 0                 # Unnecessary during training since we provide geometries
                 self.model_f.train()
                 for j, (geometry, spectra) in enumerate(self.train_loader):
-                    if self.flags.data_set == 'gaussian_mixture':
-                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                    if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
-                        geometry[:, 3] = geometry[:, 3] / 34
                     if cuda:
                         geometry = geometry.cuda()                          # Put data onto GPU
                         spectra = spectra.cuda()                            # Put data onto GPU
@@ -264,8 +259,6 @@ class Network(object):
                     for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
                         #if self.flags.data_set == 'gaussian_mixture':
                         #    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                        if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
-                            geometry[:, 3] = geometry[:, 3] / 34
                         if cuda:
                             geometry = geometry.cuda()
                             spectra = spectra.cuda()
@@ -335,8 +328,6 @@ class Network(object):
                 self.optm_b.zero_grad()         # Zero the gradient first
                 #if self.flags.data_set == 'gaussian_mixture':
                 #    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
-                    geometry[:, 3] = geometry[:, 3] / 34
                 G_out = self.model_b(spectra)  # Get the geometry prediction
                 # print("G_out.size", G_out.size())
                 S_out = self.model_f(G_out)     # Get the spectra prediction
@@ -369,10 +360,6 @@ class Network(object):
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
-                    if self.flags.data_set == 'gaussian_mixture':
-                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
-                    if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
-                        geometry[:, 3] = geometry[:, 3] / 34
                     G_out = self.model_b(spectra)  # Get the geometry prediction
                     S_out = self.model_f(G_out)  # Get the spectra prediction
                     loss = self.make_loss(S_out, spectra, G=G_out)  # compute the loss
@@ -484,15 +471,15 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 Xpred = self.model_b(spectra)
-                if self.flags.data_set == 'ballistics':                     # Normalization hard coded here!!
-                    Xpred[:, 3] = Xpred[:, 3] * 34
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
-                np.savetxt(fxp, Xpred.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
                     np.savetxt(fyp, Ypred)
+                if self.flags.data_set == 'ballistics':
+                    Xpred[:, 3] *= 15
+                np.savetxt(fxp, Xpred.cpu().data.numpy())
         tk.record(1)
         return Ypred_file, Ytruth_file
 

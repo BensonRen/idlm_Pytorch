@@ -11,7 +11,6 @@ from class_wrapper import Network
 from model_maker import INN
 from utils import data_reader
 from utils import helper_functions
-from Simulated_DataSets.Gaussian_Mixture import generate_Gaussian
 from utils.evaluation_helper import plotMSELossDistrib
 
 # Libs
@@ -61,15 +60,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     if flags.data_set != 'meta_material' and not multi_flag: 
         plotMSELossDistrib(pred_file, truth_file, flags)
     print("Evaluation finished")
-    
-    # If gaussian, plot the scatter plot
-    if flags.data_set == 'gaussian_mixture':
-        Xpred = helper_functions.get_Xpred(path='data/', name=flags.eval_model) 
-        Ypred = helper_functions.get_Ypred(path='data/', name=flags.eval_model) 
-
-        # Plot the points scatter
-        generate_Gaussian.plotData(Xpred, Ypred, save_dir='data/' + flags.eval_model.replace('/','_') + 'generation plot.png', eval_mode=True)
-
+   
 def evaluate_all(models_dir="models"):
     """
     This function evaluate all the models in the models/. directory
@@ -98,12 +89,13 @@ if __name__ == '__main__':
     useless_flags = flag_reader.read_flag()
 
     print(useless_flags.eval_model)
-    evaluate_from_model(useless_flags.eval_model)
+    #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     # Call the evaluate function from model
     # evaluate_from_model(useless_flags.eval_model)
 
-    #evaluate_all("models/sine_wave")
+    evaluate_all("/work/sr365/INN_robotics/")
+    #evaluate_all("models/")
 

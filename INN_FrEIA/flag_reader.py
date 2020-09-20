@@ -59,6 +59,7 @@ def read_flag():
     # Data Specific params
     parser.add_argument('--model-name', default=MODEL_NAME, type=str, help='name of the model')
     parser.add_argument('--data-dir', default=DATA_DIR, type=str, help='data directory')
+    parser.add_argument('--ckpt-dir', default=CKPT_DIR, type=str, help='ckpt_dir')
     parser.add_argument('--normalize-input', default=NORMALIZE_INPUT, type=bool,
                         help='whether we should normalize the input or not')
     parser.add_argument('--geoboundary', default=GEOBOUNDARY, type=tuple, help='the boundary of the geometric data')

@@ -28,7 +28,7 @@ def training_from_flag(flags):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(Backprop, flags, train_loader, test_loader)
+    ntwk = Network(Backprop, flags, train_loader, test_loader, ckpt_dir=flags.ckpt_dir)
 
     # Training process
     print("Start training now...")
@@ -39,18 +39,17 @@ def training_from_flag(flags):
     #put_param_into_folder(ntwk.ckpt_dir)
 
 
-def retrain_different_dataset():
+def retrain_different_dataset(index):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ["robotic_armreg0.0005trail_0_backward_complexity_swipe_layer500_num6",
-                        "sine_wavereg0.005trail_1_complexity_swipe_layer1000_num8",
-                        "ballisticsreg0.0005trail_0_complexity_swipe_layer500_num5",
-                        "meta_materialreg0.0005trail_2_complexity_swipe_layer1000_num6"]
+     data_set_list = ['mm1','mm2','mm3','mm4','mm5']
      for eval_model in data_set_list:
-        flags = load_flags(os.path.join("models", eval_model))
-        flags.model_name = "retrain_time_eval" + flags.model_name
+        flags = load_flags(os.path.join("prev_models", eval_model))
+        flags.model_name = "retrain_" + str(index)  + flags.model_name
+        flags.data_dir = '/work/sr365/Christian_data_augmented'
+        flags.ckpt_dir = '/work/sr365/MM_ensemble'
         flags.train_step = 500
         flags.test_ratio = 0.2
         training_from_flag(flags)
@@ -58,13 +57,14 @@ def retrain_different_dataset():
 
 if __name__ == '__main__':
     # Read the parameters to be set
+    from utils import evaluation_helper
     flags = flag_reader_ensemble.read_flag()
-
+    evaluation_helper.plotMSELossDistrib('datapool/Ypred_ensemble.csv','datapool/Ytruth.csv',flags)
     # Call the train from flag function
-    for i in range(3):
-        training_from_flag(flags)
+    #for i in range(3):
+    #    training_from_flag(flags)
     print(type(flags))
     # Do the retraining for all the data set to get the training 
-    #for i in range(10):
-    #retrain_different_dataset()
+    #for i in range(1):
+    #    retrain_different_dataset(i)
 

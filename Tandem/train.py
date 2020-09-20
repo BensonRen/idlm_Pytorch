@@ -46,7 +46,7 @@ def retrain_different_dataset(index):
      """
      from utils.helper_functions import load_flags
      #data_set_list = ["meta_material"]
-     data_set_list = [  "ballistics","sine_wave","robotic_arm"]
+     data_set_list = [  "ballistics"]
                         #"robotic_armreg0.0001trail_1_complexity_swipe_layer500_num5"]
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("prev_models", eval_model))
@@ -66,6 +66,6 @@ if __name__ == '__main__':
     #training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    for i in range(5):
-        retrain_different_dataset()
+    for i in range(10):
+        retrain_different_dataset(i)
 

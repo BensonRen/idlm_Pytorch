@@ -18,42 +18,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 from sklearn.metrics import confusion_matrix
+from utils.evaluation_helper import plotMSELossDistrib
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-def plotMSELossDistrib(pred_file, truth_file, flags):
-    if (flags.data_set == 'gaussian_mixture'):
-        # get the prediction and truth array
-        pred = np.loadtxt(pred_file, delimiter=' ')
-        truth = np.loadtxt(truth_file, delimiter=' ')
-        # get confusion matrix
-        cm = confusion_matrix(truth, pred)
-        cm = cm / np.sum(cm)
-        # Calculate the accuracy
-        accuracy = 0
-        for i in range(len(cm)):
-            accuracy += cm[i,i]
-        print("confusion matrix is", cm)
-        # Plotting the confusion heatmap
-        f = plt.figure(figsize=[15,15])
-        plt.title('accuracy = {}'.format(accuracy))
-        sns.set(font_scale=1.4)
-        sns.heatmap(cm, annot=True)
-        eval_model_str = flags.eval_model.replace('/','_')
-        f.savefig('data/{}.png'.format(eval_model_str),annot_kws={"size": 16})
-
-    else:
-        mae, mse = compare_truth_pred(pred_file, truth_file)
-        plt.figure(figsize=(12, 6))
-        plt.hist(mse, bins=100)
-        plt.xlabel('Mean Squared Error')
-        plt.ylabel('cnt')
-        plt.suptitle('(Avg MSE={:.4e})'.format(np.mean(mse)))
-        eval_model_str = flags.eval_model.replace('/','_')
-        plt.savefig(os.path.join(os.path.abspath(''), 'data',
-                             '{}.png'.format(eval_model_str)))
-        print('(Avg MSE={:.4e})'.format(np.mean(mse)))
-
 
 def load_flags(save_dir, save_file="flags.obj"):
     """
@@ -148,10 +115,11 @@ def ensemble_predict_master(model_dir, Xpred_file):
     for model in os.listdir(model_dir):
         if os.path.isdir(os.path.join(model_dir,model)):
             model_list.append(os.path.join(model_dir, model))
+    print('model_list', model_list)
     ensemble_predict(model_list, Xpred_file)
 
 
 if __name__ == '__main__':
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
-    ensemble_predict_master('/work/sr365/models_trained/Backprop/meta_kernel_swipe/t2', '/work/sr365/ensemble_forward/Xpred.csv')
+    ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
     

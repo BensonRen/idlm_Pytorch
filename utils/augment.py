@@ -10,7 +10,7 @@ import numpy as np
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import umap as umap
+#import umap as umap
 
 """
 # In[24]:
@@ -309,16 +309,18 @@ def permutate_periodicity(geometry_in, spectra_in):
 
 
 # In[40]:
-
-data = pd.read_csv('data_new.csv',header=None,sep=' ').values
-(l, w) = np.shape(data)
-g = data[:,2:10]
-s = data[:,10:]
-g_aug, s_aug = permutate_periodicity(g, s)
-output = np.zeros([l*4, w])
-output[:, 2:10] = g_aug
-output[:, 10:] = s_aug
-np.savetxt('data_augmented.csv',output)
+data_folder = '/work/sr365/Christian_data/dataIn'
+data_out_folder = '/work/sr365/Christian_data_augmented'
+for file in os.listdir(data_folder):
+    data = pd.read_csv(os.path.join(data_folder, file),header=None,sep=',').values
+    (l, w) = np.shape(data)
+    g = data[:,2:10]
+    s = data[:,10:]
+    g_aug, s_aug = permutate_periodicity(g, s)
+    output = np.zeros([l*4, w])
+    output[:, 2:10] = g_aug
+    output[:, 10:] = s_aug
+    np.savetxt(os.path.join(data_out_folder, file+'_augmented.csv'),output,delimiter=',')
 
 # In[41]:
 

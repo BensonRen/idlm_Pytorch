@@ -26,7 +26,7 @@ def training_from_flag(flags):
     print("Making network now")
 
     # Make Network
-    ntwk = Network(INN, flags, train_loader, test_loader)
+    ntwk = Network(INN, flags, train_loader, test_loader, ckpt_dir=flags.ckpt_dir)
 
     # Training process
     print("Start training now...")
@@ -37,19 +37,22 @@ def training_from_flag(flags):
     # put_param_into_folder(ntwk.ckpt_dir)
 
 
-def retrain_different_dataset():
+def retrain_different_dataset(index):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ['ballistics', 'robotic_arm', 'sine_wave']
+     data_set_list = ['robotic_arm']
      for eval_model in data_set_list:
-        flags = load_flags(os.path.join("prev_models", eval_model))
-        flags.model_name = "retrain_time_eval" + flags.model_name
-        flags.train_step = 500
-        flags.test_ratio = 0.2
-        flags.stop_threshold = -float('inf')
-        training_from_flag(flags)
+        for j in range(4,10):
+            flags = load_flags(os.path.join("prev_models", eval_model))
+            flags.model_name = "retrain_" + str(index)+'_layer_' + str(j) + flags.model_name
+            flags.couple_layer_num = j
+            flags.batch_size = 1024
+            flags.train_step = 500
+            flags.test_ratio = 0.2
+            flags.stop_threshold = -float('inf')
+            training_from_flag(flags)
 
 
 if __name__ == '__main__':
@@ -62,5 +65,5 @@ if __name__ == '__main__':
     #training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    #for i in range(10):
-    retrain_different_dataset()
+    for i in range(5):
+        retrain_different_dataset(i)

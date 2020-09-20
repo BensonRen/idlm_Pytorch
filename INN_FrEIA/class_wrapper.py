@@ -175,8 +175,6 @@ class Network(object):
 
             for j, (x, y) in enumerate(self.train_loader):
                 batch_size = len(x)
-                if self.flags.data_set == 'gaussian_mixture':
-                    y = y.unsqueeze(1)
 
                 ######################
                 # Preparing the data #
@@ -295,8 +293,6 @@ class Network(object):
                 test_loss = 0
                 for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
                     batch_size = len(x)
-                    if self.flags.data_set == 'gaussian_mixture':
-                        y = y.unsqueeze(1)
 
                     ######################
                     # Preparing the data #
@@ -432,8 +428,6 @@ class Network(object):
                 open(Ypred_file, 'a') as fyp, open(Xpred_file, 'a') as fxp:
             # Loop through the eval data and evaluate
             for ind, (x, y) in enumerate(self.test_loader):
-                if self.flags.data_set == 'gaussian_mixture':
-                    y = y.unsqueeze(1)
                 if cuda:
                     x = x.cuda()  # Put data onto GPU
                     y = y.cuda()  # Put data onto GPU
@@ -450,13 +444,11 @@ class Network(object):
                 # Initialize the x first
                 Xpred = self.model(y_cat, rev=True)
                 Xpred = Xpred[:, :dim_x].cpu().data.numpy()
-                """
                 Ypred = simulator(self.flags.data_set, Xpred)
                 np.savetxt(fxt, x.cpu().data.numpy())
                 np.savetxt(fyt, y.cpu().data.numpy())
                 np.savetxt(fyp, Ypred)
                 np.savetxt(fxp, Xpred)
-                """
             tk.record(1)
         return Ypred_file, Ytruth_file
 
