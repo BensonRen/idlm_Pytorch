@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #kl_coeff_list = [0.8, 0.5]#, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [0.3, 0.15]#, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [0.1, 0.05]#, 5e-3, 3e-3, 1e-3]
-    kl_coeff_list = [0.02, 0.01]#, 5e-3, 3e-3, 1e-3]
+    kl_coeff_list = [0.02, 0.01, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [1,  2, 5e-3, 3e-3, 1e-3]
     lr_list = [1e-3]
     for kl_coeff in kl_coeff_list:

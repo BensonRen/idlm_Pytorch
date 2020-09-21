@@ -2,18 +2,17 @@
 Hyper-parameters of the Tandem model
 """
 # Define which data set you are using
-# DATA_SET = 'meta_material'
+DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
 # DATA_SET = 'robotic_arm'
-DATA_SET = 'ballistics'
+# DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architecture parameters
 #LOAD_FORWARD_CKPT_DIR = 'pre_trained_forward/'
 LOAD_FORWARD_CKPT_DIR = None
-"""
 #LINEAR_F = [4, 500, 500, 500, 1]
 LINEAR_F = [8, 1000, 1000, 1000, 1000, 150]
 CONV_OUT_CHANNEL_F = [4, 4, 4]
@@ -38,6 +37,8 @@ LINEAR_B = [1, 500, 500, 500, 500, 4]
 CONV_OUT_CHANNEL_B = []
 CONV_KERNEL_SIZE_B = []
 CONV_STRIDE_B = []
+"""
+
 # Optimizer parameters
 OPTIM = "Adam"
 REG_SCALE = 5e-4
@@ -63,7 +64,8 @@ DATA_DIR = '../'                                               # All simulated s
 #DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
 #DATA_DIR = '/work/sr365/NN_based_MM_data/'                      # Artificial Meta-material dataset
 # DATA_DIR = '/home/omar/PycharmProjects/github/idlm_Pytorch-master/forward/'
-GEOBOUNDARY = [30, 52, 42, 52]
+GEOBOUNDARY = [-1,1,-1,1]
+#GEOBOUNDARY = [30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
 

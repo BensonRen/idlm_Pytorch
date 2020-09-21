@@ -34,7 +34,7 @@ def load_flags(save_dir, save_file="flags.obj"):
     return flags
 
 
-def predict_from_model(pre_trained_model, Xpred_file):
+def predict_from_model(pre_trained_model, Xpred_file, save_mode=False):
     """
     Predicting interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -51,7 +51,8 @@ def predict_from_model(pre_trained_model, Xpred_file):
     flags.eval_model = pre_trained_model                    # Reset the eval mode
 
     # Get the data, this part is useless in prediction but just for simplicity
-    train_loader, test_loader = data_reader.read_data(flags)
+    #train_loader, test_loader = data_reader.read_data(flags)
+    train_loader, test_loader = None, None
     print("Making network now")
 
     # Make Network
@@ -61,12 +62,13 @@ def predict_from_model(pre_trained_model, Xpred_file):
     print(pytorch_total_params)
     # Evaluation process
     print("Start eval now:")
-    pred_file, truth_file = ntwk.predict(Xpred_file)
-
-    # Plot the MSE distribution
-    flags.eval_model = pred_file.replace('.','_') # To make the plot name different
-    plotMSELossDistrib(pred_file, truth_file, flags)
-    print("Evaluation finished")
+    pred_file, truth_file = ntwk.predict(Xpred_file, save_mode=False)
+     
+    if save_mode:
+        # Plot the MSE distribution
+        flags.eval_model = pred_file.replace('.','_') # To make the plot name different
+        plotMSELossDistrib(pred_file, truth_file, flags)
+        print("Evaluation finished")
 
     return pred_file, truth_file, flags
 
@@ -81,8 +83,9 @@ def ensemble_predict(model_list, Xpred_file):
     pred_list = []
     # Get the predictions into a list of np array
     for pre_trained_model in model_list:
-        pred_file, truth_file, flags = predict_from_model(pre_trained_model, Xpred_file)
-        pred = np.loadtxt(pred_file, delimiter=' ')
+        pred_file, truth_file, flags = predict_from_model(pre_trained_model, Xpred_file, save_mode=False)
+        #pred = np.loadtxt(pred_file, delimiter=' ')
+        pred = pred_file
         pred_list.append(np.copy(np.expand_dims(pred, axis=2)))
     # Take the mean of the predictions
     pred_all = np.concatenate(pred_list, axis=2)
@@ -131,5 +134,6 @@ def ensemble_predict_all(model_dir, Xpred_file_dir):
 if __name__ == '__main__':
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
     #ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
-    ensemble_predict_all('/work/sr365/MM_ensemble/models/','/hpc/home/sr365/NIPS/idlm_Pytorch/MDN/data')
+    ensemble_predict_all('/work/sr365/MM_ensemble/models/','/hpc/home/sr365/NIPS/idlm_Pytorch/VAE/data')
+
     

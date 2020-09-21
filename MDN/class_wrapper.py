@@ -264,8 +264,8 @@ class Network(object):
                 pi, sigma, mu = self.model(spectra)  # Get the output
                 Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
-                np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
+                np.savetxt(fxt, geometry.cpu().data.numpy())
+                np.savetxt(fyt, spectra.cpu().data.numpy())
                 np.savetxt(fxp, Xpred, fmt='%.3f')
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)

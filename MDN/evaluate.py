@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    for i in range(3,4):
+    for i in range(4,17):
         evaluate_all('/work/sr365/MDN_results/meta_material/Gaussian_'+str(i))
     #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)

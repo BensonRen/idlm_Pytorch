@@ -40,7 +40,8 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
         flags.test_ratio = 0.1                          # 10000 in total
     elif flags.data_set == 'meta_material':             # Test the eval part
         flags.test_ratio = 0.0476                         # 20000 in total for Meta material
-        flags.geoboundary = [30, 55, 42, 52] 
+        flags.geoboundary = [-1,1,-1,1] 
+        #flags.geoboundary = [30, 55, 42, 52] 
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -98,4 +99,4 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/ball_new_swipe")
+    evaluate_all("models/MM")

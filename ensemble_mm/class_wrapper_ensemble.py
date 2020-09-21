@@ -326,10 +326,11 @@ class Network(object):
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 
 
-    def predict(self, Xpred_file):
+    def predict(self, Xpred_file, save_mode=True):
         """
         The prediction function, takes Xpred file and write Ypred file using trained model
         :param Xpred_file: Xpred file by (usually VAE) for meta-material
+        :param save_mode: Save the .txt file or not
         :return: pred_file, truth_file to compare
         """
         self.load()         # load the model
@@ -344,10 +345,14 @@ class Network(object):
             self.model.cuda()
             Xpred_tensor = Xpred_tensor.cuda()
         Ypred = self.model(Xpred_tensor)
-        Ypred_file = Ypred_file.replace('Ypred', 'Ypred' + self.flags.model_name)
-        np.savetxt(Ypred_file, Ypred.cpu().data.numpy())
-
+        if save_mode:
+            Ypred_file = Ypred_file.replace('Ypred', 'Ypred' + self.flags.model_name)
+            np.savetxt(Ypred_file, Ypred.cpu().data.numpy())
+        else:
+            Ypred_file = Ypred.cpu().data.numpy()
+        
         return Ypred_file, Ytruth_file
+
 
 
 

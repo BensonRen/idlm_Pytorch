@@ -95,6 +95,6 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    evaluate_all("models")
+    evaluate_all("models/MM")
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
 

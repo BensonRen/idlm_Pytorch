@@ -6,20 +6,20 @@ import train
 import  numpy as np
 import flag_reader
 if __name__ == '__main__':
-    linear_unit_list = [500]
+    linear_unit_list = [500, 1000]
     #linear_unit_list = [150, 100]
     #linear_unit = 500
-    reg_scale_list = [5e-4, 1e-3, 5e-3,1e-2]
+    reg_scale_list = [5e-4,1e-3,1e-2]
     #reg_scale_list = [2e-5]
-    stop_thres_list = [0.002]
+    stop_thres_list = [0.0002]
     #for stop_thres in stop_thres_list:
     for linear_unit in linear_unit_list:
         # Setting the loop for setting the parameter
         for i in range(6, 10):
             flags = flag_reader.read_flag()  	#setting the base case
             linear_b = [linear_unit for j in range(i)]        #Set the linear units
-            linear_b[0] = 1                   # The start of linear
-            linear_b[-1] = 4                # The end of linear
+            linear_b[0] = 150                   # The start of linear
+            linear_b[-1] = 8                # The end of linear
             flags.linear_b = linear_b
             #flags.stop_threshold = stop_thres
             #linear = [linear_unit for j in range(i)]        #Set the linear units
