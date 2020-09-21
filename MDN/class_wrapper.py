@@ -201,12 +201,15 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     pi, sigma, mu = self.model(spectra)  # Get the output
-                    Xpred = mdn.sample(pi, sigma, mu).numpy()
-                    Ypred_np = simulator(self.flags.data_set, Xpred)
-                    mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
-                                                   cut_off_outlier_thres=10, quiet_mode=True)
-                    test_loss += np.mean(mse)                                     # Aggregate the loss
-                    print('j = {}'.format(j))
+                    if self.flags.data_set == 'meta_material':
+                        loss = self.make_loss(pi, sigma, mu, geometry)               # Get the loss tensor
+                        test_loss += loss.detach().cpu().numpy()
+                    else:
+                        Xpred = mdn.sample(pi, sigma, mu).numpy()
+                        Ypred_np = simulator(self.flags.data_set, Xpred)
+                        mae, mse = compare_truth_pred(Ypred_np, spectra.cpu().numpy(),
+                                                       cut_off_outlier_thres=10, quiet_mode=True)
+                        test_loss += np.mean(mse)                                     # Aggregate the loss
                     break;      # only get the first batch that is enough
 
                 # Record the testing loss to the tensorboard
@@ -260,12 +263,13 @@ class Network(object):
                 # Initialize the geometry first
                 pi, sigma, mu = self.model(spectra)  # Get the output
                 Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
-                Ypred = simulator(self.flags.data_set, Xpred)
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy(), fmt='%.3f')
                 np.savetxt(fyt, spectra.cpu().data.numpy(), fmt='%.3f')
-                np.savetxt(fyp, Ypred, fmt='%.3f')
                 np.savetxt(fxp, Xpred, fmt='%.3f')
+                if self.flags.data_set != 'meta_material':
+                    Ypred = simulator(self.flags.data_set, Xpred)
+                    np.savetxt(fyp, Ypred, fmt='%.3f')
         return Ypred_file, Ytruth_file
 
     def plot_histogram(self, loss, ind):

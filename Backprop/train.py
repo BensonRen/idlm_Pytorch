@@ -48,7 +48,7 @@ def retrain_different_dataset():
      data_set_list = ['meta_material']
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("prev_models", eval_model))
-        flags.model_name = "retroain_" + flags.model_name
+        flags.model_name = "retrain_" + flags.model_name
         flags.geoboundary = [-1,1,-1,1]
         flags.data_dir = '/work/sr365/MM_ensemble/'
         flags.train_step = 500

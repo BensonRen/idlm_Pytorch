@@ -2,15 +2,15 @@
 Params for Back propagation model
 """
 # Define which data set you are using
-# DATA_SET = 'meta_material'
-DATA_SET = 'sine_wave'
+DATA_SET = 'meta_material'
+# DATA_SET = 'sine_wave'
 # DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set
 NUM_GAUSSIAN = 10
-LINEAR = [1,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 4]
+LINEAR = [300,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 8]
 
 # Optimizer Params
 OPTIM = "Adam"
@@ -34,7 +34,8 @@ DATA_DIR = '../'
 #DATA_DIR = 'D:\AML\idlm_Ben'
 #CKPT_DIR = 'models/'
 CKPT_DIR = '/work/sr365/MDN_results/' + DATA_SET
-GEOBOUNDARY =[30, 52, 42, 52]
+GEOBOUNDARY =[-1,1,-1,1]
+#GEOBOUNDARY =[30, 52, 42, 52]
 NORMALIZE_INPUT = True
 
 # Running specific

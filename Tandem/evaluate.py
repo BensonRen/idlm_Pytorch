@@ -98,4 +98,4 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/ballistics")
+    evaluate_all("models/ball_new_swipe")

@@ -109,9 +109,8 @@ class Network(object):
                 X_mean = [0, 1.5, 0.787, 1]
                 X_range = [2., 1.5, 1.256, 10/15]
             relu = torch.nn.ReLU()
-            BDY_loss_all = 100 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
+            BDY_loss_all = 1 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
-        #if self.flags.data_set != 'gaussian_mixture':
         MSE_loss = nn.functional.mse_loss(logit, labels)          # The MSE Loss
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss

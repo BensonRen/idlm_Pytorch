@@ -42,10 +42,11 @@ def retrain_different_dataset(index):
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ['robotic_arm', 'sine_wave']
+     data_set_list = ['meta_material']
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("prev_models", eval_model))
         flags.model_name = "retrain_"+ str(index) + eval_model
+        flags.geoboundary = [-1,1,-1,1]
         flags.batch_size = 1024
         flags.train_step = 500
         flags.test_ratio = 0.2
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     #training_from_flag(flags)
 
     # Do the retraining for all the data set to get the training 
-    for i in range(10):
+    for i in range(5):
         retrain_different_dataset(i)
 
 

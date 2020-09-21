@@ -91,7 +91,9 @@ def ensemble_predict(model_list, Xpred_file):
     np.savetxt(save_name, pred_mean)
 
     # saving the plot down
-    flags.eval_model = 'ensemble_model'
+    save_name_ensemble = Xpred_file.split('/')[-1][:-4]
+    print('save name of emsemble = ', save_name_ensemble)
+    flags.eval_model = 'ensemble_model' + save_name_ensemble
     plotMSELossDistrib(save_name, truth_file, flags)
 
 
@@ -118,8 +120,16 @@ def ensemble_predict_master(model_dir, Xpred_file):
     print('model_list', model_list)
     ensemble_predict(model_list, Xpred_file)
 
+def ensemble_predict_all(model_dir, Xpred_file_dir):
+    """
+    use ensemble predict a bunch of Xpred file
+    """
+    for file in os.listdir(Xpred_file_dir):
+        if 'Xpred' in file and 'meta_material' in file:
+            ensemble_predict_master(model_dir, os.path.join(Xpred_file_dir, file))
 
 if __name__ == '__main__':
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
-    ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
+    #ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
+    ensemble_predict_all('/work/sr365/MM_ensemble/models/','/hpc/home/sr365/NIPS/idlm_Pytorch/MDN/data')
     
