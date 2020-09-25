@@ -18,7 +18,7 @@ USE_LORENTZ = False
 #CONV_STRIDE = [2, 1, 1]
 
 # Model Architectural Params for gaussian mixture DataSet
-LINEAR = [4, 500, 500, 500, 500, 2]                 # Dimension of data set cross check with data generator
+LINEAR = [4, 500, 500, 500, 500, 1]                 # Dimension of data set cross check with data generator
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
@@ -28,11 +28,11 @@ CONV_STRIDE = []
 OPTIM = "Adam"
 REG_SCALE = 5e-4
 BATCH_SIZE = 1024
-EVAL_BATCH_SIZE = 128
+EVAL_BATCH_SIZE = 2048
 EVAL_STEP = 20
 TRAIN_STEP = 500
 BACKPROP_STEP = 300
-LEARN_RATE = 5e-4
+LEARN_RATE = 1e-3
 # DECAY_STEP = 25000 # This is for step decay, however we are using dynamic decaying
 LR_DECAY_RATE = 0.5
 STOP_THRESHOLD = 1e-5

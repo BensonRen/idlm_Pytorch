@@ -3,29 +3,29 @@ The parameter file storing the parameters for VAE Model
 """
 
 # Define which data set you are using
-DATA_SET = 'meta_material'
+# DATA_SET = 'meta_material'
 # DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Architectural Params
-DIM_Z = 30
-DIM_X = 8
-DIM_Y = 20
+DIM_Z = 3
+DIM_X = 4
+DIM_Y = 2
 DIM_SPEC = None
-LINEAR_D = [DIM_Y + DIM_Z, 500, 500, 500, 500, 500, 500,    DIM_X]           # Linear units for Decoder
-LINEAR_E = [DIM_Y + DIM_X, 500, 500, 500, 500, 500, 500, 2*DIM_Z]                   # Linear units for Encoder
-#LINEAR_SE = []                      # Linear units for spectra encoder
-#CONV_OUT_CHANNEL_SE = []
-#CONV_KERNEL_SIZE_SE = []
-#CONV_STRIDE_SE = []
-LINEAR_SE = [150, 500, 500, 500, 500, DIM_Y]                      # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = [4, 4, 4]
-CONV_KERNEL_SIZE_SE = [5, 5, 8]
-CONV_STRIDE_SE = [1, 1, 2]
+LINEAR_D = [DIM_Y + DIM_Z, 500, 500, 500, 500, 500, 500, 500,    DIM_X]           # Linear units for Decoder
+LINEAR_E = [DIM_Y + DIM_X, 500, 500, 500, 500, 500, 500, 500, 2*DIM_Z]                   # Linear units for Encoder
+LINEAR_SE = []                      # Linear units for spectra encoder
+CONV_OUT_CHANNEL_SE = []
+CONV_KERNEL_SIZE_SE = []
+CONV_STRIDE_SE = []
+#LINEAR_SE = [150, 500, 500, 500, 500, DIM_Y]                      # Linear units for spectra encoder
+#CONV_OUT_CHANNEL_SE = [4, 4, 4]
+#CONV_KERNEL_SIZE_SE = [5, 5, 8]
+#CONV_STRIDE_SE = [1, 1, 2]
 
 # Optimization params
 KL_COEFF = 0.005

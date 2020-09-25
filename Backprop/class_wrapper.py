@@ -50,17 +50,19 @@ class Network(object):
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
 
-    def make_optimizer_eval(self, geometry_eval):
+    def make_optimizer_eval(self, geometry_eval, optimizer_type=None):
         """
         The function to make the optimizer during evaluation time.
         The difference between optm is that it does not have regularization and it only optmize the self.geometr_eval tensor
         :return: the optimizer_eval
         """
-        if self.flags.optim == 'Adam':
+        if optimizer_type is None:
+            optmizer_type = self.flags.optim
+        if optimizer_type == 'Adam':
             op = torch.optim.Adam([geometry_eval], lr=self.flags.lr)
-        elif self.flags.optim == 'RMSprop':
+        elif optimizer_type == 'RMSprop':
             op = torch.optim.RMSprop([geometry_eval], lr=self.flags.lr)
-        elif self.flags.optim == 'SGD':
+        elif optimizer_type == 'SGD':
             op = torch.optim.SGD([geometry_eval], lr=self.flags.lr)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -94,10 +96,10 @@ class Network(object):
                 X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
                 X_mean = (X_lower_bound + X_upper_bound) / 2        # Get the mean
             else:                                                   # For ballistics dataset
-                X_mean = [0, 1.5, np.radians(40.5), 18]
-                X_range = [1.5, 1.5, 1.1, 32]
+                X_mean = [0, 1.5, 0.787, 1]
+                X_range = [2, 1.5, 1.256, 1]
             relu = torch.nn.ReLU()
-            BDY_loss_all = 10 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
+            BDY_loss_all = 1 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
             BDY_loss = torch.mean(BDY_loss_all)
         self.MSE_loss = MSE_loss
         self.Boundary_loss = BDY_loss
@@ -111,16 +113,20 @@ class Network(object):
         return torch.tensor(nparray, requires_grad=requires_grad, device='cuda', dtype=torch.float)
 
 
-    def make_optimizer(self):
+    def make_optimizer(self, optimizer_type=None):
         """
         Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
         :return:
         """
-        if self.flags.optim == 'Adam':
+        # For eval mode to change to other optimizers
+        if  optimizer_type is None:
+            optmizer_type = self.flags.optim
+        
+        if optimizer_type == 'Adam':
             op = torch.optim.Adam(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
-        elif self.flags.optim == 'RMSprop':
+        elif optimizer_type == 'RMSprop':
             op = torch.optim.RMSprop(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
-        elif self.flags.optim == 'SGD':
+        elif optimizer_type == 'SGD':
             op = torch.optim.SGD(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
@@ -177,8 +183,6 @@ class Network(object):
             # boundary_loss = 0                 # Unnecessary during training since we provide geometries
             self.model.train()
             for j, (geometry, spectra) in enumerate(self.train_loader):
-                if self.flags.data_set == 'gaussian_mixture':
-                    spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                 if cuda:
                     geometry = geometry.cuda()                          # Put data onto GPU
                     spectra = spectra.cuda()                            # Put data onto GPU
@@ -204,8 +208,6 @@ class Network(object):
                 print("Doing Evaluation on the model now")
                 test_loss = 0
                 for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
-                    if self.flags.data_set == 'gaussian_mixture':
-                        spectra = torch.nn.functional.one_hot(spectra.to(torch.int64), 4).to(torch.float) # Change the gaussian labels into one-hot
                     if cuda:
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
@@ -270,8 +272,8 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
-                #Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind,
-                #                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc, save_Simulator_Ypred=save_Simulator_Ypred)
+                Xpred, Ypred, loss = self.evaluate_one(spectra, save_dir=save_dir, save_all=save_all, ind=ind,
+                                                        MSE_Simulator=MSE_Simulator, save_misc=save_misc, save_Simulator_Ypred=save_Simulator_Ypred)
                 tk.record(ind)                          # Keep the time after each evaluation for backprop
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 if save_misc:
@@ -280,8 +282,8 @@ class Network(object):
                 # suppress printing to evaluate time
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
-                #np.savetxt(fyp, Ypred)
-                #np.savetxt(fxp, Xpred)
+                np.savetxt(fyp, Ypred)
+                np.savetxt(fxp, Xpred)
         return Ypred_file, Ytruth_file
 
     def evaluate_one(self, target_spectra, save_dir='data/', MSE_Simulator=False ,save_all=False, ind=None, save_misc=False, save_Simulator_Ypred=False):
@@ -301,7 +303,7 @@ class Network(object):
         # Initialize the geometry_eval or the initial guess xs
         geometry_eval = self.initialize_geometry_eval()
         # Set up the learning schedule and optimizer
-        self.optm_eval = self.make_optimizer_eval(geometry_eval)
+        self.optm_eval = self.make_optimizer_eval(geometry_eval, optimizer_type='SGD')
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
         
         # expand the target spectra to eval batch size
@@ -329,9 +331,17 @@ class Network(object):
                 np.savetxt('geometry_initialization.csv',geometry_eval_input.cpu().data.numpy())
             self.optm_eval.zero_grad()                                  # Zero the gradient first
             logit = self.model(geometry_eval_input)                     # Get the output
+            ###################################################
+            # Boundar loss controled here: with Boundary Loss #
+            ###################################################
             loss = self.make_loss(logit, target_spectra_expand, G=geometry_eval_input)         # Get the loss
+            ##################################################
+            # Boundar loss controled here: NO  Boundary Loss #
+            ##################################################
+            #loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
             loss.backward()                                             # Calculate the Gradient
 
+            """
             if save_misc:
                 ###################################
                 # evaluate through simulator part #
@@ -359,7 +369,6 @@ class Network(object):
                 Real_MSE_list = np.mean(np.square(logit.cpu().data.numpy() - target_spectra_expand.cpu().data.numpy()), axis=1)
                 Full_loss_matrix_fake[:, i] = np.copy(Real_MSE_list)
                 
-                """
             if save_all and  chose_middle_value:
                     save_all_Ypred_best = Ypred
                 # Record the trails that gets better
@@ -374,13 +383,17 @@ class Network(object):
                 self.optm_eval.step()  # Move one step the optimizer
                 self.lr_scheduler.step(loss.data)
 
-        # Save the Best_MSE list for first few to sample
+        """
+        #################################################
+        # Save the Best_MSE list for first few to sample#
+        #################################################
         if save_misc and ind < 20:
             np.savetxt('best_mse/best_mse_list{}.csv'.format(ind), Best_MSE_list)
             np.savetxt('best_mse/avg_mse_list{}.csv'.format(ind), Avg_MSE_list)
             #np.savetxt('best_mse/full_loss_mat_real{}.csv'.format(ind), Full_loss_matrix_real)
             #np.savetxt('best_mse/full_loss_mat_fake{}.csv'.format(ind), Full_loss_matrix_fake)
 
+        """
         
         if save_all:
             #######################################################
@@ -416,8 +429,6 @@ class Network(object):
             else:                       # This is meta-meterial dataset, handle with special
                 with open(Xpred_file, 'a') as fxp:
                     np.savetxt(fxp, geometry_eval_input.cpu().data.numpy()[good_index, :])
-                
-       
         #############################
         # After BP, choose the best #
         #############################
@@ -473,7 +484,7 @@ class Network(object):
             numpy_geometry[:, 0] = np.random.normal(0, 0.25, size=[bs,])
             numpy_geometry[:, 1] = np.random.normal(1.5, 0.25, size=[bs,])
             numpy_geometry[:, 2] = np.radians(np.random.uniform(9, 72, size=[bs,]))
-            numpy_geometry[:, 3] = np.random.poisson(15, size=[bs,])
+            numpy_geometry[:, 3] = np.random.poisson(15, size=[bs,]) / 15
             geomtry_eval = self.build_tensor(numpy_geometry, requires_grad=True)
         elif self.flags.data_set == 'robotic_arm':
             bs = self.flags.eval_batch_size
@@ -510,7 +521,7 @@ class Network(object):
         elif self.flags.data_set == 'ballistics':
             return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':
-            return np.array([1.5, 3.0, 3.0, 3.0]), np.array([-0.75, -1.5, -1.5, -1.5]), np.array([0.75, 1.5, 1.5, 1.5])
+            return np.array([1, 2.0, 2.0, 2.0]), np.array([-0.5, -1, -1, -1]), np.array([0.5, 1, 1, 1])
         else:
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 

@@ -2,15 +2,15 @@
 Params for Back propagation model
 """
 # Define which data set you are using
-DATA_SET = 'meta_material'
+# DATA_SET = 'meta_material'
 # DATA_SET = 'sine_wave'
-# DATA_SET = 'robotic_arm'
+DATA_SET = 'robotic_arm'
 # DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set
 NUM_GAUSSIAN = 10
-LINEAR = [300,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 8]
+LINEAR = [2,  1000, 1000, 1000, 1000, 1000, 1000, 1000, 4]
 
 # Optimizer Params
 OPTIM = "Adam"
@@ -40,4 +40,7 @@ NORMALIZE_INPUT = True
 
 # Running specific
 USE_CPU_ONLY = False
-EVAL_MODEL = '/work/sr365/MDN_results/ballistics/20200916_125408'
+EVAL_MODEL = 'meta_material'
+#EVAL_MODEL = 'sine_wave'
+#EVAL_MODEL = 'ballistics'
+#EVAL_MODEL = 'robotic_arm'

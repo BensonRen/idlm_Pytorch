@@ -14,6 +14,7 @@ from model_maker import Forward, Backward
 from utils import data_reader
 from utils.helper_functions import load_flags
 from utils.evaluation_helper import plotMSELossDistrib
+from utils.evaluation_helper import get_test_ratio_helper
 
 # Libs
 
@@ -32,16 +33,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
         print("after removing prefix models/, now model_dir is:", model_dir)
     flags = load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
-    if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.078                        # 12800 in total
-    elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.1                        # 8000 in total
-    elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.1                          # 10000 in total
-    elif flags.data_set == 'meta_material':             # Test the eval part
-        flags.test_ratio = 0.0476                         # 20000 in total for Meta material
-        flags.geoboundary = [-1,1,-1,1] 
-        #flags.geoboundary = [30, 55, 42, 52] 
+    flags.test_ratio = get_test_ratio_helper(flags)
 
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -82,7 +74,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ["robotic_arm","sine_wave","ballistics"]
+     data_set_list = ["robotic_arm","sine_wave","ballistics","meta_material"]
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
@@ -97,6 +89,6 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    evaluate_different_dataset(multi_flag=True, eval_data_all=False)
     #evaluate_from_model(useless_flags.eval_model)
-    evaluate_all("models/MM")
+    #evaluate_all("models/MM")

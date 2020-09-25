@@ -4,7 +4,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-import evaluate
 import seaborn as sns; sns.set()
 from utils import helper_functions
 from sklearn.neighbors import NearestNeighbors
@@ -433,7 +432,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
         print("Your data_dir is not a folder in MeanAvgnMinMSEvsTry function")
         print("Your data_dir is:", data_dir)
         return
-    Yt = pd.read_csv(os.path.join(data_dir, 'yt.csv'), header=None, delimiter=' ').values
+    Yt = pd.read_csv(os.path.join(data_dir, 'Ytruth.csv'), header=None, delimiter=' ').values
     print("shape of ytruth is", np.shape(Yt))
     # Get all the Ypred into list
     Ypred_list = []
@@ -450,12 +449,15 @@ def MeanAvgnMinMSEvsTry(data_dir):
         Ypred_mat = np.zeros([l, num_trails, w])
         check_full = np.zeros(l)                                     # Safety check for completeness
         for files in os.listdir(data_dir):
-            if 'Ypred' in files:
+            if '_Ypred_' in files:
                 #print(files)
                 Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
                 if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
                     Yp = np.reshape(Yp, [-1, 1])
-                #print("shape of Ypred file is", np.shape(Yp))
+                print("shape of Ypred file is", np.shape(Yp))
+                # Truncating to the top num_trails inferences
+                if len(Yp) != num_trails:
+                    Yp = Yp[:num_trails,:]
                 number_str = files.split('inference')[-1][:-4]
                 print(number_str)
                 number = int(files.split('inference')[-1][:-4])
@@ -533,7 +535,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
         mse_std_list = np.zeros([len(Ypred_list),])
         mse_quan2575_list = np.zeros([2, len(Ypred_list)])
         if 'NA' in data_dir:
-            cut_front = 0
+            cut_front = 20
         else:
             cut_front = 0
         for i in range(len(Ypred_list)-cut_front):
@@ -573,7 +575,7 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
         #if this is not a folder 
-        if not os.path.isdir(os.path.join(data_dir, dirs)):
+        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'boundary' in dirs:
             print("This is not a folder", dirs)
             continue
         for subdirs in os.listdir(os.path.join(data_dir, dirs)):
@@ -647,7 +649,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if not os.path.isdir(os.path.join(data_dir, dirs)):# or 'Backprop' in dirs:
+        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'boundary' in dirs:
             print("skipping due to it is not a directory")
             continue;
         for subdirs in os.listdir((os.path.join(data_dir, dirs))):
@@ -693,8 +695,8 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         :param avg_dict: The average dict for plotting the starting point
         """
         color_dict = {"NA":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
-                        "INN":"k", "Random": "y","Tandem__without_boundary": "violet", "Tandem__with_boundary":"orange", "NA__boundary_prior":"violet","NA__no_boundary_prior":"m","INN_new":"violet",
-                        "NA__boundary_no_prior": "grey", "NA__no_boundary_no_prior": "olive"}
+                        "INN":"k", "Random": "y","MDN": "violet", "Tandem__with_boundary":"orange", "NA__boundary_prior":"violet","NA__no_boundary_prior":"m","INN_new":"violet",
+                        "NA__boundary_no_prior": "grey", "NA_noboundary": "olive"}
         f = plt.figure()
         for key in sorted(dict.keys()):
             x_axis = np.arange(len(dict[key])).astype('float')
@@ -832,3 +834,10 @@ def plotGaussian():
                         data_x = pd.read_csv(filename, header=None, sep=' ').values
                         print("shape of data_x", np.shape(data_x))
                 plotData(data_x, data_y, save_dir=dirs+'generated_gaussian_inference0.png',eval_mode=True)
+
+if __name__ == '__main__':
+    MeanAvgnMinMSEvsTry_all('/work/sr365/multi_eval')
+    datasets = ['meta_material', 'robotic_arm','sine_wave','ballistics']
+    for dataset in datasets:
+        DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', dataset)
+    #data_dir, data_name, save_name='aggregate_plot', gif_flag=False): # Depth=2 now based on current directory structure

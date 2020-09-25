@@ -12,6 +12,7 @@ from model_maker import INN
 from utils import data_reader
 from utils import helper_functions
 from utils.evaluation_helper import plotMSELossDistrib
+from utils.evaluation_helper import get_test_ratio_helper
 
 # Libs
 
@@ -30,13 +31,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
 
-    # Set up the test_ratio
-    if flags.data_set == 'ballistics':
-        flags.test_ratio = 0.078                        # 12800 in total
-    elif flags.data_set == 'sine_wave':
-        flags.test_ratio = 0.1                        # 8000 in total
-    elif flags.data_set == 'robotic_arm':
-        flags.test_ratio = 0.1                          # 10000 in total
+    flags.test_ratio = get_test_ratio_helper(flags)
     
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -75,9 +70,8 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ["robotic_armcouple_layer_num5dim_total4", 
-                      "sine_wavecouple_layer_num6dim_total5",
-                      "ballistics_Jakob"]
+     data_set_list = ["sine_wave"]
+     #data_set_list = ["robotic_arm","sine_wave","ballistics"]
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
@@ -92,10 +86,10 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    evaluate_different_dataset(multi_flag=True, eval_data_all=False)
     # Call the evaluate function from model
     # evaluate_from_model(useless_flags.eval_model)
 
-    evaluate_all("/work/sr365/INN_robotics/")
+    #evaluate_all("/work/sr365/INN/sine_wave")
     #evaluate_all("models/")
 

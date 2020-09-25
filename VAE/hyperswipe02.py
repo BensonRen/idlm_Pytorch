@@ -39,16 +39,17 @@ if __name__ == '__main__':
     #kl_coeff_list = [0.8, 0.5]#, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [0.3, 0.15]#, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [0.1, 0.05]#, 5e-3, 3e-3, 1e-3]
-    kl_coeff_list = [0.02, 0.01, 5e-3, 3e-3, 1e-3]
+    kl_coeff_list = [0.02, 0.015, 0.01, 0.008, 5e-3, 3e-3, 1e-3]
     #kl_coeff_list = [1,  2, 5e-3, 3e-3, 1e-3]
     lr_list = [1e-3]
     for kl_coeff in kl_coeff_list:
         for lr in lr_list:
-            flags = flag_reader.read_flag()
-            flags.learn_rate = lr
-            flags.kl_coeff = kl_coeff
-            flags.model_name = flags.data_set + "kl_coeff" + str(kl_coeff) + "lr" + str(lr)+ "reg" + str(flags.reg_scale)
-            train.training_from_flag(flags)
+            for i in range(3):
+                flags = flag_reader.read_flag()
+                flags.learn_rate = lr
+                flags.kl_coeff = kl_coeff
+                flags.model_name = flags.data_set + "kl_coeff" + str(kl_coeff) + "lr" + str(lr)+ "reg" + str(flags.reg_scale) + "_trail_" + str(i)
+                train.training_from_flag(flags)
 
 
 

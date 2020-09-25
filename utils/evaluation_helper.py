@@ -9,6 +9,24 @@ import matplotlib.pyplot as plt
 import os
 from utils.helper_functions import simulator
 
+
+def get_test_ratio_helper(flags):
+    """
+    The unified place for getting the test_ratio the same for all methods for the dataset,
+    This is for easier changing for multi_eval
+    """
+    if flags.data_set == 'ballistics':
+        return 0.039                        # 12800 in total
+    elif flags.data_set == 'sine_wave':
+        return 0.0625                        # 8000 in total
+    elif flags.data_set == 'robotic_arm':
+        return 0.05                          # 10000 in total
+    elif flags.data_set == 'meta_material':
+        return 0.05                         # 10000 in total for Meta material
+    else:
+        print("Your dataset is none of the artificial datasets")
+        return None
+
 def compare_truth_pred(pred_file, truth_file, cut_off_outlier_thres=None, quiet_mode=False):
     """
     Read truth and pred from csv files, compute their mean-absolute-error and the mean-squared-error

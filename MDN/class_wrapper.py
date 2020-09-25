@@ -21,6 +21,7 @@ import numpy as np
 from math import inf
 import matplotlib.pyplot as plt
 # Own module
+from utils.time_recorder import time_keeper
 
 
 class Network(object):
@@ -261,65 +262,26 @@ class Network(object):
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
                 # Initialize the geometry first
+                print('model in eval:', self.model)
                 pi, sigma, mu = self.model(spectra)  # Get the output
                 Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
-                np.savetxt(fxp, Xpred, fmt='%.3f')
+                np.savetxt(fxp, Xpred)
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
-                    np.savetxt(fyp, Ypred, fmt='%.3f')
+                    np.savetxt(fyp, Ypred)
         return Ypred_file, Ytruth_file
 
-    def plot_histogram(self, loss, ind):
+    def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/MDN/'):
         """
-        Plot the loss histogram to see the loss distribution
+        Make evaluation multiple time for deeper comparison for stochastic algorithms
+        :param save_dir: The directory to save the result
+        :return:
         """
-        f = plt.figure()
-        plt.hist(loss, bins=100)
-        plt.xlabel('MSE loss')
-        plt.ylabel('cnt')
-        plt.suptitle('(Avg MSE={:4e})'.format(np.mean(loss)))
-        plt.savefig(os.path.join('data','loss{}.png'.format(ind)))
-        return None
-        
-    def compare_spectra(self, Ypred, Ytruth, T=None, title=None, figsize=[15, 5],
-                        T_num=10, E1=None, E2=None, N=None, K=None, eps_inf=None):
-        """
-        Function to plot the comparison for predicted spectra and truth spectra
-        :param Ypred:  Predicted spectra, this should be a list of number of dimension 300, numpy
-        :param Ytruth:  Truth spectra, this should be a list of number of dimension 300, numpy
-        :param title: The title of the plot, usually it comes with the time
-        :param figsize: The figure size of the plot
-        :return: The identifier of the figure
-        """
-        # Make the frequency into real frequency in THz
-        fre_low = 0.8
-        fre_high = 1.5
-        frequency = fre_low + (fre_high - fre_low) / len(Ytruth) * np.arange(300)
-        f = plt.figure(figsize=figsize)
-        plt.plot(frequency, Ypred, label='Pred')
-        plt.plot(frequency, Ytruth, label='Truth')
-        if T is not None:
-            plt.plot(frequency, T, linewidth=1, linestyle='--')
-        if E2 is not None:
-            for i in range(np.shape(E2)[0]):
-                plt.plot(frequency, E2[i, :], linewidth=1, linestyle=':', label="E2" + str(i))
-        if E1 is not None:
-            for i in range(np.shape(E1)[0]):
-                plt.plot(frequency, E1[i, :], linewidth=1, linestyle='-', label="E1" + str(i))
-        if N is not None:
-            plt.plot(frequency, N, linewidth=1, linestyle=':', label="N")
-        if K is not None:
-            plt.plot(frequency, K, linewidth=1, linestyle='-', label="K")
-        if eps_inf is not None:
-            plt.plot(frequency, np.ones(np.shape(frequency)) * eps_inf, label="eps_inf")
-        # plt.ylim([0, 1])
-        plt.legend()
-        #plt.xlim([fre_low, fre_high])
-        plt.xlabel("Frequency (THz)")
-        plt.ylabel("Transmittance")
-        if title is not None:
-            plt.title(title)
-        return f
+        save_dir += self.flags.data_set
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
+        for i in range(time):
+            self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
+            tk.record(i)
