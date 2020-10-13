@@ -57,7 +57,7 @@ class Network(object):
         :return: the optimizer_eval
         """
         if optimizer_type is None:
-            optmizer_type = self.flags.optim
+            optimizer_type = self.flags.optim
         if optimizer_type == 'Adam':
             op = torch.optim.Adam([geometry_eval], lr=self.flags.lr)
         elif optimizer_type == 'RMSprop':
@@ -120,8 +120,7 @@ class Network(object):
         """
         # For eval mode to change to other optimizers
         if  optimizer_type is None:
-            optmizer_type = self.flags.optim
-        
+            optimizer_type = self.flags.optim
         if optimizer_type == 'Adam':
             op = torch.optim.Adam(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif optimizer_type == 'RMSprop':
@@ -303,7 +302,7 @@ class Network(object):
         # Initialize the geometry_eval or the initial guess xs
         geometry_eval = self.initialize_geometry_eval()
         # Set up the learning schedule and optimizer
-        self.optm_eval = self.make_optimizer_eval(geometry_eval, optimizer_type='SGD')
+        self.optm_eval = self.make_optimizer_eval(geometry_eval)#, optimizer_type='SGD')
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
         
         # expand the target spectra to eval batch size
@@ -507,7 +506,7 @@ class Network(object):
         """
         X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
         geometry_eval_input = geometry_eval * self.build_tensor(X_range) + self.build_tensor(X_lower_bound)
-        if self.flags.data_set == 'robotic_arm':
+        if self.flags.data_set == 'robotic_arm' or self.flags.data_set == 'ballistics':
             return geometry_eval
         return geometry_eval_input
         #return geometry_eval
@@ -521,7 +520,8 @@ class Network(object):
         elif self.flags.data_set == 'ballistics':
             return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
         elif self.flags.data_set == 'robotic_arm':
-            return np.array([1, 2.0, 2.0, 2.0]), np.array([-0.5, -1, -1, -1]), np.array([0.5, 1, 1, 1])
+            #return np.array([1.0, 2.0, 2.0, 2.0]), np.array([-0.5, -1, -1, -1]), np.array([0.5, 1, 1, 1])
+            return np.array([1.2, 2.4, 2.4, 2.4]), np.array([-0.6, -1.2, -1.2, -1.2]), np.array([0.6, 1.2, 1.2, 1.2])
         else:
             sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
 

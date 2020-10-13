@@ -535,7 +535,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
         mse_std_list = np.zeros([len(Ypred_list),])
         mse_quan2575_list = np.zeros([2, len(Ypred_list)])
         if 'NA' in data_dir:
-            cut_front = 20
+            cut_front = 100
         else:
             cut_front = 0
         for i in range(len(Ypred_list)-cut_front):
@@ -575,10 +575,15 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
         #if this is not a folder 
-        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'boundary' in dirs:
+        if not os.path.isdir(os.path.join(data_dir, dirs)):# or dirs == 'NA':# or 'boundary' in dirs:
             print("This is not a folder", dirs)
             continue
         for subdirs in os.listdir(os.path.join(data_dir, dirs)):
+            ##########################
+            # exclude mm temporarily #
+            ##########################
+            if 'meta' in subdirs:
+                continue;
             if os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_min_list.txt')):                               # Dont do for gaussian first and if this has been done
                 continue;
             print("enters folder", subdirs)
@@ -649,7 +654,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
-        if not os.path.isdir(os.path.join(data_dir, dirs)) or 'boundary' in dirs:
+        if not os.path.isdir(os.path.join(data_dir, dirs)):# or dirs == 'NA':# or 'boundary' in dirs::
             print("skipping due to it is not a directory")
             continue;
         for subdirs in os.listdir((os.path.join(data_dir, dirs))):
@@ -837,7 +842,9 @@ def plotGaussian():
 
 if __name__ == '__main__':
     MeanAvgnMinMSEvsTry_all('/work/sr365/multi_eval')
+    #datasets = ['robotic_arm','sine_wave','ballistics']
     datasets = ['meta_material', 'robotic_arm','sine_wave','ballistics']
     for dataset in datasets:
-        DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', dataset)
+        #DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', dataset)
+        DrawAggregateMeanAvgnMSEPlot('/work/sr365/NIPS_previous_submitted_multi_eval/multi_eval', dataset)
     #data_dir, data_name, save_name='aggregate_plot', gif_flag=False): # Depth=2 now based on current directory structure

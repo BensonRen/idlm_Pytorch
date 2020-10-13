@@ -23,6 +23,6 @@ if __name__ == '__main__':
             for reg_scale in reg_scale_list:
                 flags.reg_scale = reg_scale
                 for j in range(3):
-                        flags.model_name = flags.data_set + "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_forward_swipe" +  str(i)
+                        flags.model_name = flags.data_set +"_linear_unit_" + str(linear_unit)+ "reg"+ str(flags.reg_scale) + "trail_"+str(j) + "_forward_swipe" +  str(i)
                         train.training_from_flag(flags)
 

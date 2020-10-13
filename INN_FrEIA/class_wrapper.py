@@ -444,12 +444,12 @@ class Network(object):
                 # Initialize the x first
                 Xpred = self.model(y_cat, rev=True)
                 Xpred = Xpred[:, :dim_x].cpu().data.numpy()
-                np.savetxt(fxt, x.cpu().data.numpy())
-                np.savetxt(fyt, y.cpu().data.numpy())
+                #np.savetxt(fxt, x.cpu().data.numpy())
+                #np.savetxt(fyt, y.cpu().data.numpy())
                 if self.flags.data_set != 'meta_material':
                     Ypred = simulator(self.flags.data_set, Xpred)
                     np.savetxt(fyp, Ypred)
-                np.savetxt(fxp, Xpred)
+                #np.savetxt(fxp, Xpred)
             tk.record(1)
         return Ypred_file, Ytruth_file
 

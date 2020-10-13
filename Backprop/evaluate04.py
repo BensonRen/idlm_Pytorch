@@ -45,8 +45,6 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_m
         save_Simulator_Ypred = False
     flags.batch_size = 1                            # For backprop eval mode, batchsize is always 1
     flags.lr = 0.01
-    if flags.data_set == 'ballistics':
-        flags.lr = 1
     flags.eval_batch_size = eval_flags.eval_batch_size
     flags.train_step = eval_flags.train_step
 

@@ -6,8 +6,8 @@ Params for Back propagation model
 # DATA_SET = 'gaussian_mixture'
 # DATA_SET = 'sine_wave'
 # DATA_SET = 'naval_propulsion'
-DATA_SET = 'robotic_arm'
-# DATA_SET = 'ballistics'
+# DATA_SET = 'robotic_arm'
+DATA_SET = 'ballistics'
 TEST_RATIO = 0.2
 
 # Model Architectural Params for meta_material data Set

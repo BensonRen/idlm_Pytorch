@@ -137,7 +137,7 @@ if __name__ == '__main__':
     #ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
     #ensemble_predict_all('/work/sr365/MM_ensemble/models/','/hpc/home/sr365/NIPS/idlm_Pytorch/INN_FrEIA/data')
     #model_list = ['cINN','MDN','NA','Tandem','VAE','NA_noboundary']
-    model_list = ['NA']
+    model_list = ['NA_noboundary']
     for model in model_list:
         ensemble_predict_all('/work/sr365/MM_ensemble/models/',
                              '/work/sr365/multi_eval/' + model + '/meta_material/',

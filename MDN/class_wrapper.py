@@ -149,6 +149,9 @@ class Network(object):
         # Construct optimizer after the model moved to GPU
         self.optm = self.make_optimizer()
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
+        
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(self.ckpt_dir, 'training time.txt'))
 
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
@@ -239,6 +242,7 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
+        tk.record(1)                # Record the total time of the training peroid
 
     def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed
@@ -252,6 +256,8 @@ class Network(object):
         Xtruth_file = os.path.join(save_dir, 'test_Xtruth_{}.csv'.format(saved_model_str))
         Ytruth_file = os.path.join(save_dir, 'test_Ytruth_{}.csv'.format(saved_model_str))
         Xpred_file = os.path.join(save_dir, 'test_Xpred_{}.csv'.format(saved_model_str))
+        # keep time
+        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
 
         # Open those files to append
         with open(Xtruth_file, 'a') as fxt,open(Ytruth_file, 'a') as fyt,\
@@ -266,12 +272,13 @@ class Network(object):
                 pi, sigma, mu = self.model(spectra)  # Get the output
                 Xpred = mdn.sample(pi, sigma, mu).detach().cpu().numpy()
                 # self.plot_histogram(loss, ind)                                # Debugging purposes
-                np.savetxt(fxt, geometry.cpu().data.numpy())
-                np.savetxt(fyt, spectra.cpu().data.numpy())
-                np.savetxt(fxp, Xpred)
-                if self.flags.data_set != 'meta_material':
-                    Ypred = simulator(self.flags.data_set, Xpred)
-                    np.savetxt(fyp, Ypred)
+                #np.savetxt(fxt, geometry.cpu().data.numpy())
+                #np.savetxt(fyt, spectra.cpu().data.numpy())
+                #np.savetxt(fxp, Xpred)
+                #if self.flags.data_set != 'meta_material':
+                #    Ypred = simulator(self.flags.data_set, Xpred)
+                #    np.savetxt(fyp, Ypred)
+        tk.record(1)
         return Ypred_file, Ytruth_file
 
     def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/MDN/'):

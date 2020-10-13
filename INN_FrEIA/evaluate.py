@@ -32,6 +32,9 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     flags.eval_model = model_dir                    # Reset the eval mode
 
     flags.test_ratio = get_test_ratio_helper(flags)
+
+    # 2020.10.10 only, delete afterward
+    flags.test_ratio *= 2
     
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
@@ -70,7 +73,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ["sine_wave"]
+     data_set_list = ["meta_material"]
      #data_set_list = ["robotic_arm","sine_wave","ballistics"]
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
@@ -86,7 +89,8 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
-    evaluate_different_dataset(multi_flag=True, eval_data_all=False)
+    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    #evaluate_different_dataset(multi_flag=True, eval_data_all=False)
     # Call the evaluate function from model
     # evaluate_from_model(useless_flags.eval_model)
 
