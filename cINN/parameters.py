@@ -19,14 +19,14 @@ COUPLE_LAYER_NUM = 5
 DIM_SPEC = None
 # The below definitions are useless now since we are using the package
 SUBNET_LINEAR = []                                          # Linear units for Subnet FC layer
-LINEAR_SE = []                      # Linear units for spectra encoder
-CONV_OUT_CHANNEL_SE = []
-CONV_KERNEL_SIZE_SE = []
-CONV_STRIDE_SE = []
-#LINEAR_SE = [150, 500, 500, 500, 500, DIM_Y]                                              # Linear units for spectra encoder
-#CONV_OUT_CHANNEL_SE = [4, 4, 4]
-#CONV_KERNEL_SIZE_SE = [5, 5, 8]
-#CONV_STRIDE_SE = [1, 1, 2]
+
+##########################################################
+# Originally for Spectra encoder, now for hybrid cINN+NA #
+##########################################################
+LINEAR = [2, 500, 5000, 5000, 500, 1]                      # Linear units for spectra encoder
+CONV_OUT_CHANNEL = []
+CONV_KERNEL_SIZE = []
+CONV_STRIDE = []
 
 # Loss ratio
 LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)

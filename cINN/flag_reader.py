@@ -20,7 +20,7 @@ def read_flag():
     """
     parser = argparse.ArgumentParser()
     # Data_Set parameter
-    parser.add_argument('--data-set', default=DATA_SET, type=str, help='which data set you are chosing')
+    parser.add_argument('--datat', default=DATA_SET, type=str, help='which data set you are chosing')
     parser.add_argument('--test-ratio', default=TEST_RATIO, type=float, help='the ratio of the test set')
     # VAE model architecture hyper parameters
     parser.add_argument('--dim-z', default=DIM_Z, type=int, help='dimension of the latent variable z')
@@ -29,10 +29,10 @@ def read_flag():
     parser.add_argument('--dim-spec', default=DIM_SPEC, type=int, help='dimension of the spectra encoded conponent')
     parser.add_argument('--couple-layer-num', default=COUPLE_LAYER_NUM, type=int, help='The number of coupling blocks to use')
     parser.add_argument('--subnet-linear', type=list, default=SUBNET_LINEAR, help='The fc layers units for subnetwork')
-    parser.add_argument('--linear-se', type=list, default=LINEAR_SE, help='The fc layers units for spectra encoder model')
-    parser.add_argument('--conv-out-channel-se', type=list, default=CONV_OUT_CHANNEL_SE, help='The output channel of your 1d conv for spectra encoder model')
-    parser.add_argument('--conv-kernel-size-se', type=list, default=CONV_KERNEL_SIZE_SE, help='The kernel size of your 1d conv for spectra encoder model')
-    parser.add_argument('--conv-stride-se', type=list, default=CONV_STRIDE_SE, help='The strides of your 1d conv fro spectra encoder model')
+    parser.add_argument('--linear', type=list, default=LINEAR, help='The fc layers units for spectra encoder model')
+    parser.add_argument('--conv-out-channel', type=list, default=CONV_OUT_CHANNEL, help='The output channel of your 1d conv for spectra encoder model')
+    parser.add_argument('--conv-kernel-size', type=list, default=CONV_KERNEL_SIZE, help='The kernel size of your 1d conv for spectra encoder model')
+    parser.add_argument('--conv-stride', type=list, default=CONV_STRIDE, help='The strides of your 1d conv fro spectra encoder model')
     # Loss ratio
     parser.add_argument('--lambda-mse', type=float, default=LAMBDA_MSE, help='the coefficient for mse loss lambda')
     parser.add_argument('--lambda-z', type=float, default=LAMBDA_Z, help='the coefficient for latent variable MMD loss lambda')
