@@ -9,7 +9,7 @@ import os
 # Libs
 
 # Own module
-from parameters import *
+from cINN.parameters import *
 
 # Torch
 

@@ -18,7 +18,6 @@ from utils.evaluation_helper import get_test_ratio_helper
 # Libs
 import numpy as np
 import matplotlib.pyplot as plt
-from thop import profile, clever_format
 
 
 def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, save_misc=False, MSE_Simulator=False, save_Simulator_Ypred=True):
