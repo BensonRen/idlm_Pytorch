@@ -37,9 +37,6 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False):
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.test_ratio = get_test_ratio_helper(flags)
 
-    # 2020.10.10 only, delete afterward
-    flags.test_ratio *= 2
-
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")
@@ -98,7 +95,7 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model, multi_flag=True)
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
     
-    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
-    #evaluate_different_dataset(multi_flag=True, eval_data_all=False)
+    #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    evaluate_different_dataset(multi_flag=True, eval_data_all=False)
     #evaluate_all("models/sine_wave")
 

@@ -420,11 +420,13 @@ def get_bvl(file_path):
         return float(bvl)
 
 
-def MeanAvgnMinMSEvsTry(data_dir):
+def MeanAvgnMinMSEvsTry(data_dir, forward_filter=False, num_trails_for_forward=2048):
     """
     Plot the mean average Mean and Min Squared error over Tries
     :param data_dir: The directory where the data is in
     :param title: The title for the plot
+    :param forward_filter: Post NeurIPS work, try out do the same forward model filtering for all other methods
+    :param num_trails: Post NeurIPS work, for forward filters work (matching of yfp and yp requires index), default to be None to make sure it is compatible with previous version
     :return:
     """
     # Read Ytruth file
@@ -435,7 +437,12 @@ def MeanAvgnMinMSEvsTry(data_dir):
     Yt = pd.read_csv(os.path.join(data_dir, 'Ytruth.csv'), header=None, delimiter=' ').values
     print("shape of ytruth is", np.shape(Yt))
     # Get all the Ypred into list
-    Ypred_list = []
+    if forward_filter and num_trails_for_forward is not None:
+        Ypred_list = [0] * num_trails_for_forward
+        Y_forward_list = [0] * num_trails_for_forward
+        print('length of Ypred_list is ', len(Ypred_list))
+    else:
+        Ypred_list = []
     
     #################################
     # Special handling for Backprop #
@@ -470,18 +477,34 @@ def MeanAvgnMinMSEvsTry(data_dir):
     else:
         for files in os.listdir(data_dir):
             if 'Ypred' in files:
-                #print(files)
                 Yp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
                 if len(np.shape(Yp)) == 1:                          # For ballistic data set where it is a coloumn only
                     Yp = np.reshape(Yp, [-1, 1])
                 #print("shape of Ypred file is", np.shape(Yp))
-                Ypred_list.append(Yp)
+                #################################################################
+                # Below is for the forward filtering function that is post NIPS #
+                #################################################################
+                if forward_filter:
+                    inference_num = eval(files.split('.')[0].split('inference')[-1])            # Get inference number by some manipulation of the string
+                    print('inference num ', inference_num)
+                    Ypred_list[inference_num] = Yp                                              # Put the Yp in the designated position
+                else:
+                    Ypred_list.append(Yp)
+            elif forward_filter and 'Y_forward' in files:
+                Yfp = pd.read_csv(os.path.join(data_dir, files), header=None, delimiter=' ').values
+                if len(np.shape(Yfp)) == 1:                          # For ballistic data set where it is a coloumn only
+                    Yfp = np.reshape(Yfp, [-1, 1])
+
+                inference_num = eval(files.split('.')[-2].split('inference')[-1])            # Get inference number by some manipulation of the string
+                Y_forward_list[inference_num] = Yfp                                              # Put the Yp in the designated position
+
     # Calculate the large MSE matrix
     mse_mat = np.zeros([len(Ypred_list), len(Yt)])
+    mse_forward_mat = np.zeros([len(Ypred_list), len(Yt)])              # For forward filter
     print("shape of mse_mat is", np.shape(mse_mat))
     
-    for ind, yp in enumerate(Ypred_list):
-        if np.shape(yp) != np.shape(Yt):
+    for ind, yp in enumerate(Ypred_list):                               # Loop over each 
+        if np.shape(yp) != np.shape(Yt):                                # Check if this conforms with the Ytruth file
             print("Your Ypred file shape does not match your ytruth, however, we are trying to reshape your ypred file into the Ytruth file shape")
             print("shape of the Yp is", np.shape(yp))
             print("shape of the Yt is", np.shape(Yt))
@@ -501,17 +524,49 @@ def MeanAvgnMinMSEvsTry(data_dir):
             print("shape of np after valid :", np.shape(yp))
             print("shape of Yt after valid :", np.shape(Yt_valid))
             mse = np.mean(np.square(yp - Yt_valid), axis=1)
-            if valid_num == len(valid_index):
+            if valid_num == len(valid_index):           # If all the trails are valid, or not pad the mse matrix
                 mse_mat[ind, :] = mse
             else:
                 mse_mat[ind, :valid_num] = mse
                 mse_mat[ind, valid_num:] = np.mean(mse)
+            if forward_filter:
+                # If the forward filter mode is on, make the mse_forward_mat first
+                yfp = Y_forward_list[ind]
+                yfp = yfp[valid_index, :]
+                mse_forward = np.mean(np.square(yfp - Yt_valid), axis=1)
+                if valid_num == len(valid_index):
+                    mse_forward_mat[ind, :] = mse_forward
+                else:
+                    mse_forward_mat[ind, :valid_num] = mse_forward
+                    mse_forward_mat[ind, valid_num:] = np.mean(mse_forward)
         else:
             mse = np.mean(np.square(yp - Yt), axis=1)
             mse_mat[ind, :] = mse
+            if forward_filter:
+                yfp = Y_forward_list[ind]
+                mse_forward = np.mean(np.square(yfp - Yt), axis=1)
+                mse_forward_mat[ind, :] = mse_forward
     print("shape of the yp is", np.shape(yp)) 
     print("shape of mse is", np.shape(mse))
-    
+   
+    ####################################
+    # Major work for forward filtering #
+    ####################################
+    # This chunk of code would rank the mse_mat according to the ranking of the mse_forward_mat which is the product of foward model that is the same as the NA method
+    if forward_filter:
+        for i in range(len(Yt)):                    # Loop through #target points
+            # get the 2 lists out of the matrix
+            forward_mse_list = mse_forward_mat[:, i]
+            mse_list = mse_mat[:, i]
+            # rank the forward one and mark the index
+            sort_ind = np.argsort(forward_mse_list)
+            mse_list = mse_list[sort_ind]
+            mse_mat[:, i] = mse_list
+
+    #####################################
+    # End line of the forward filtering #
+    #####################################
+
     # Shuffle array and average results
     shuffle_number = 0
     if shuffle_number > 0:
@@ -535,7 +590,7 @@ def MeanAvgnMinMSEvsTry(data_dir):
         mse_std_list = np.zeros([len(Ypred_list),])
         mse_quan2575_list = np.zeros([2, len(Ypred_list)])
         if 'NA' in data_dir:
-            cut_front = 100
+            cut_front = 0
         else:
             cut_front = 0
         for i in range(len(Ypred_list)-cut_front):
@@ -564,10 +619,11 @@ def MeanAvgnMinMSEvsTry(data_dir):
     return None
 
 
-def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory structure
+def MeanAvgnMinMSEvsTry_all(data_dir, forward_filter=None): # Depth=2 now based on current directory structure
     """
     Do the recursive call for all sub_dir under this directory
     :param data_dir: The mother directory that calls
+    :param forward_filter: Post NeurIPS work, try out do the same forward model filtering for all other methods
     :return:
     """
     for dirs in os.listdir(data_dir):
@@ -582,12 +638,11 @@ def MeanAvgnMinMSEvsTry_all(data_dir): # Depth=2 now based on current directory 
             ##########################
             # exclude mm temporarily #
             ##########################
-            if 'meta' in subdirs:
-                continue;
-            if os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_min_list.txt')):                               # Dont do for gaussian first and if this has been done
-                continue;
+            #if 'meta' in subdirs:
+            #    continue;
+            if os.path.isfile(os.path.join(data_dir, dirs, subdirs, 'mse_min_list.txt')):                                            continue;
             print("enters folder", subdirs)
-            MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs))
+            MeanAvgnMinMSEvsTry(os.path.join(data_dir, dirs, subdirs), forward_filter=forward_filter)
     return None
 
 
@@ -650,7 +705,6 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
     # Loop through the directories
     avg_dict, min_dict, std_dict, quan2575_dict = {}, {}, {}, {}
     for dirs in os.listdir(data_dir):
-        # Dont include Backprop for now and check if it is a directory
         print("entering :", dirs)
         print("this is a folder?:", os.path.isdir(os.path.join(data_dir, dirs)))
         print("this is a file?:", os.path.isfile(os.path.join(data_dir, dirs)))
@@ -687,7 +741,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
                         "meta_material":        eval_time_dict_meta_material,
                         "ballistics":           eval_time_dict_ballistics}
        
-    def plotDict(dict, name, data_name=None, logy=False, time_in_s_table=None, plot_points=51, avg_dict=None, resolution=10, err_dict=None):
+    def plotDict(dict, name, data_name=None, logy=False, time_in_s_table=None, plot_points=51, avg_dict=None, resolution=5, err_dict=None, assign_color=False):
         """
         :param name: the name to save the plot
         :param dict: the dictionary to plot
@@ -698,6 +752,7 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         :param resolution: The resolution of points
         :param err_dict: The error bar dictionary which takes the error bar input
         :param avg_dict: The average dict for plotting the starting point
+        :param assign_color: Whether assign color as labelled in the color dict for manual tuning
         """
         color_dict = {"NA":"g", "Tandem": "b", "VAE": "r","cINN":"m", 
                         "INN":"k", "Random": "y","MDN": "violet", "Tandem__with_boundary":"orange", "NA__boundary_prior":"violet","NA__no_boundary_prior":"m","INN_new":"violet",
@@ -712,11 +767,16 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
             print(key)
             #print(dict[key])
             if err_dict is None:
-                plt.plot(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution],c=color_dict[key],label=key)
+                if assign_color:
+                    plt.plot(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution],c=color_dict[key],label=key)
+                else:
+                    plt.plot(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution],label=key)
             else:
                 print(np.shape(err_dict[key]))
-                plt.errorbar(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution],c=color_dict[key],
-                        yerr=err_dict[key][:, :plot_points:resolution], label=key.replace('_',' '), capsize=5)#, errorevery=resolution)#,
+                if assign_color:
+                    plt.errorbar(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution],c=color_dict[key], yerr=err_dict[key][:, :plot_points:resolution], label=key.replace('_',' '), capsize=5)#, errorevery=resolution)#,
+                else:
+                    plt.errorbar(x_axis[:plot_points:resolution], dict[key][:plot_points:resolution], yerr=err_dict[key][:, :plot_points:resolution], label=key.replace('_',' '), capsize=5)#, errorevery=resolution)#,
                         #dash_capstyle='round')#, uplims=True, lolims=True)
             # This is for plotting the averaged value in the first round
             #if avg_dict is not  None:
@@ -736,16 +796,16 @@ def DrawAggregateMeanAvgnMSEPlot(data_dir, data_name, save_name='aggregate_plot'
         elif 'sine' in data_name:
             data_name = 'D2: ' + data_name
         elif 'robo' in data_name:
-            data_name = 'D2: ' + data_name
-        elif 'meta' in data_name:
             data_name = 'D3: ' + data_name
+        elif 'meta' in data_name:
+            data_name = 'D4: ' + data_name
 
         plt.title(data_name.replace('_',' '), fontsize=20)
         plt.grid(True, axis='both',which='both',color='b',alpha=0.3)
         plt.savefig(os.path.join(data_dir, data_name + save_name + name), transparent=True)
         plt.close('all')
-    #plotDict(avg_dict, '_avg.png')
-    #plotDict(min_dict, '_min.png')
+    #plotDict(avg_dict, '_avg.png', data_name=data_name)
+    #plotDict(min_dict, '_min.png', data_name=data_name)
     #plotDict(avg_dict, '_avglog_time.png', logy=True, time_in_s_table=time_in_s_table)
     #plotDict(min_dict, '_minlog_time.png', logy=True, time_in_s_table=time_in_s_table)
     #plotDict(avg_dict, '_avglog.png', logy=True)
@@ -841,10 +901,10 @@ def plotGaussian():
                 plotData(data_x, data_y, save_dir=dirs+'generated_gaussian_inference0.png',eval_mode=True)
 
 if __name__ == '__main__':
-    MeanAvgnMinMSEvsTry_all('/work/sr365/multi_eval')
+    #MeanAvgnMinMSEvsTry_all('/work/sr365/forward_filter', forward_filter=True)
     #datasets = ['robotic_arm','sine_wave','ballistics']
     datasets = ['meta_material', 'robotic_arm','sine_wave','ballistics']
     for dataset in datasets:
-        #DrawAggregateMeanAvgnMSEPlot('/work/sr365/multi_eval', dataset)
+        #DrawAggregateMeanAvgnMSEPlot('/work/sr365/forward_filter', dataset)
         DrawAggregateMeanAvgnMSEPlot('/work/sr365/NIPS_previous_submitted_multi_eval/multi_eval', dataset)
     #data_dir, data_name, save_name='aggregate_plot', gif_flag=False): # Depth=2 now based on current directory structure

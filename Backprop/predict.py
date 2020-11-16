@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def predict_from_model(pre_trained_model, Xpred_file, no_plot=True):
+def predict_from_model(pre_trained_model, Xpred_file, no_plot=True, no_save=False):
     """
     Predicting interface. 1. Retreive the flags 2. get data 3. initialize network 4. eval
     :param model_dir: The folder to retrieve the model
@@ -55,6 +55,9 @@ def predict_from_model(pre_trained_model, Xpred_file, no_plot=True):
         pred_file, truth_file = ntwk.predict(Xpred_file, no_save=False)
         flags.eval_model = pred_file.replace('.','_') # To make the plot name different
         plotMSELossDistrib(pred_file, truth_file, flags)
+    elif no_save is not None:
+        # In case you want to save the files but don't want the plots (for pre-screening purposes)
+        pred_file, truth_file = ntwk.predict(Xpred_file, no_save=False)
     else:
         pred_file, truth_file = ntwk.predict(Xpred_file, no_save=True)
     
@@ -101,15 +104,15 @@ def ensemble_predict(model_list, Xpred_file, model_dir=None, no_plot=True, remov
 
 
 
-def predict_all(models_dir="data"):
+def predict_all(predict_model ,models_dir="data"):
     """
     This function predict all the models in the models/. directory
     :return: None
     """
     for file in os.listdir(models_dir):
-        if 'Xpred' in file and 'meta_material' in file:                     # Only meta material has this need currently
+        if 'Xpred' in file:# and 'sine_wave' in file:                     # Only meta material has this need currently
             print("predicting for file", file)
-            predict_from_model("models/meta_materialreg0.0005trail_2_complexity_swipe_layer1000_num6", 
+            predict_from_model(predict_model, 
             os.path.join(models_dir,file))
     return None
 
@@ -137,6 +140,13 @@ def predict_ensemble_for_all(model_dir, Xpred_file_dirs):
 
 
 if __name__ == '__main__':
+    #data_set_list = ["robotic_arm","sine_wave","ballistics","meta_material"]
+    data_set_list = ["ballistics"]
+    #model_list = ['MDN']
+    model_list = ['INN','VAE','MDN','cINN']
+    for dataset in data_set_list:
+        for model in model_list:
+            predict_all(predict_model="models/" + dataset, models_dir="/work/sr365/forward_filter/" + model + "/" + dataset)
     """
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
     k_list = [5,10,15,19]
@@ -146,7 +156,7 @@ if __name__ == '__main__':
                                 """
     #ensemble_predict_master('/work/sr365/new_data_investigation/MM_both_augmented_ensemble/', 
     #                        '/work/sr365/new_data_investigation/MM_both_augmented_ensemble/Xpred.csv')
-    predict_from_model("models/20200603_123559/","data/Xpred.csv",no_plot=False)
+    #predict_from_model("models/20200603_123559/","data/Xpred.csv",no_plot=False)
    
     #ensemble_predict_master('/work/sr365/ensemble_forward/models', '/work/sr365/ensemble_forward/Xpred.csv')
     #predict_ensemble_for_all('/work/sr365/new_data_investigation/MM_both_augmented_ensemble/', '/hpc/home/sr365/Pytorch/VAE/data/')  

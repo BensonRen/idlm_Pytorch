@@ -534,9 +534,9 @@ class Network(object):
         :return: pred_file, truth_file to compare
         """
         self.load()         # load the model
-        Ypred_file = Xpred_file.replace('Xpred', 'Ypred')
-        Ytruth_file = Ypred_file.replace('Ypred', 'Ytruth')
-        Xpred = pd.read_csv(Xpred_file, header=None, delimiter=',')     # Read the input
+        Ypred_file = Xpred_file.replace('Xpred', 'Y_forward_pred')
+        Ytruth_file = Xpred_file.replace('Xpred', 'Ytruth')
+        Xpred = pd.read_csv(Xpred_file, header=None, delimiter=' ')     # Read the input
         Xpred.info()
         Xpred_tensor = torch.from_numpy(Xpred.values).to(torch.float)
 
@@ -546,7 +546,7 @@ class Network(object):
             Xpred_tensor = Xpred_tensor.cuda()
         Ypred = self.model(Xpred_tensor)
         if self.flags.model_name is not None:
-                Ypred_file = Ypred_file.replace('Ypred', 'Ypred' + self.flags.model_name)
+                Ypred_file = Ypred_file.replace('Y_forward_pred', 'Y_forward_pred' + self.flags.model_name)
         if no_save:                             # If instructed dont save the file and return the array
              return Ypred.cpu().data.numpy(), Ytruth_file
         np.savetxt(Ypred_file, Ypred.cpu().data.numpy())

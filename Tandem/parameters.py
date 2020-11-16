@@ -71,7 +71,8 @@ NORMALIZE_INPUT = True
 
 #EVAL_MODEL = 'robotic_armreg0.0001trail_1_complexity_swipe_layer500_num5'
 #EVAL_MODEL = 'ballistics'
-EVAL_MODEL = 'sine_wave'
+EVAL_MODEL = 'meta_material'
+#EVAL_MODEL = 'sine_wave'
 #EVAL_MODEL = 'retrain_without_boundaryrobotic_armreg0.0001trail_1_complexity_swipe_layer500_num5'
 #EVAL_MODEL = 'retrain_without_boundayballistics'
 #EVAL_MODEL = 'meta_materialreg0.0005trail_2_complexity_swipe_layer250_num6'

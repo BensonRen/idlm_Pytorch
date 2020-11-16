@@ -67,8 +67,8 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ['robotic_arm']
-     #data_set_list = ['sine_wave','ballistics','robotic_arm','meta_material']
+     #data_set_list = ['robotic_arm']
+     data_set_list = ['sine_wave','ballistics','robotic_arm','meta_material']
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model

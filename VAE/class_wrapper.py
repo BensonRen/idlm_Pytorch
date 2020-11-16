@@ -260,12 +260,6 @@ class Network(object):
                 if cuda:
                     geometry = geometry.cuda()
                     spectra = spectra.cuda()
-                # Initialize the geometry first
-                if self.flags.data_set == 'gaussian_mixture':
-                    spectra = spectra.unsqueeze(1)
-                if cuda:
-                    geometry = geometry.cuda()
-                    spectra = spectra.cuda()
                 Xpred = self.model.inference(spectra).cpu().data.numpy()
                 np.savetxt(fxt, geometry.cpu().data.numpy())
                 np.savetxt(fyt, spectra.cpu().data.numpy())
@@ -277,7 +271,8 @@ class Network(object):
         return Ypred_file, Ytruth_file
     
     
-    def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/VAE/'):
+    #def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/VAE/'):
+    def evaluate_multiple_time(self, time=2048, save_dir='/work/sr365/forward_filter/VAE/'):
         """
         Make evaluation multiple time for deeper comparison for stochastic algorithms
         :param save_dir: The directory to save the result

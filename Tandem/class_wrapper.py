@@ -471,14 +471,14 @@ class Network(object):
                     spectra = spectra.cuda()
                 Xpred = self.model_b(spectra)
                 #Ypred = self.model_f(Xpred).cpu().data.numpy()
-                np.savetxt(fyt, spectra.cpu().data.numpy())
-                np.savetxt(fxt, geometry.cpu().data.numpy())
-                if self.flags.data_set != 'meta_material':
-                    Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
-                    np.savetxt(fyp, Ypred)
-                if self.flags.data_set == 'ballistics':
-                    Xpred[:, 3] *= 15
-                np.savetxt(fxp, Xpred.cpu().data.numpy())
+                #np.savetxt(fyt, spectra.cpu().data.numpy())
+                #np.savetxt(fxt, geometry.cpu().data.numpy())
+                #if self.flags.data_set != 'meta_material':
+                #    Ypred = simulator(self.flags.data_set, Xpred.cpu().data.numpy())
+                #    np.savetxt(fyp, Ypred)
+                #if self.flags.data_set == 'ballistics':
+                #    Xpred[:, 3] *= 15
+                #np.savetxt(fxp, Xpred.cpu().data.numpy())
         tk.record(1)
         return Ypred_file, Ytruth_file
 

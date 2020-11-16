@@ -3,6 +3,8 @@ import numpy
 
 # This is the program to delete all the duplicate Xtruth Ytruth files generated
 input_dir = './'
+delete_mse_file_mode = True                            # Deleting the mse file for the forward filtering
+
 
 # For all the architectures
 for folders in os.listdir(input_dir):
@@ -15,16 +17,23 @@ for folders in os.listdir(input_dir):
                 current_folder = os.path.join(input_dir, folders, dataset)
                 print("current folder is:", current_folder)
                 for file in os.listdir(current_folder):
+                    current_file = os.path.join(current_folder, file)
                     if '_Ytruth_' in file:
                         if 'ce0.csv' in file or 'NA' in folders:
-                            os.rename(os.path.join(current_folder, file), os.path.join(current_folder, 'Ytruth.csv'))
+                            os.rename(current_file, os.path.join(current_folder, 'Ytruth.csv'))
                         else:
-                            os.remove(os.path.join(current_folder, file))
+                            os.remove(current_file)
                     elif '_Xtruth_' in file:
                         if 'ce0.csv' in file or 'NA' in folders:
-                            os.rename(os.path.join(current_folder, file), os.path.join(current_folder, 'Xtruth.csv'))
+                            os.rename(current_file, os.path.join(current_folder, 'Xtruth.csv'))
                         else:
-                            os.remove(os.path.join(current_folder, file))
+                            os.remove(current_file)
+                    if os.path.getsize(current_file) == 0:
+                        print('deleting file {} due to empty'.format(current_file))
+                        os.remove(current_file)
+                    if delete_mse_file_mode and 'mse_' in file:
+                        os.remove(current_file)
+                        
                     
 
                     

@@ -135,12 +135,7 @@ def ensemble_predict_all(model_dir, Xpred_file_dir, plot_mode=True):
 if __name__ == '__main__':
     #predict_all('/work/sr365/multi_eval/Random/meta_material')
     #ensemble_predict_master('/work/sr365/MM_ensemble/models/','datapool/Xpred.csv')
-    #ensemble_predict_all('/work/sr365/MM_ensemble/models/','/hpc/home/sr365/NIPS/idlm_Pytorch/INN_FrEIA/data')
-    #model_list = ['cINN','MDN','NA','Tandem','VAE','NA_noboundary']
-    model_list = ['NA_noboundary']
+    #ensemble_predict_all('/work/sr365/MM_ensemble/models/','/work/sr365/1017exp/cINN/meta_material/', plot_mode=False)
+    model_list = ['MDN','cINN']#'INN','VAE']
     for model in model_list:
-        ensemble_predict_all('/work/sr365/MM_ensemble/models/',
-                             '/work/sr365/multi_eval/' + model + '/meta_material/',
-                             plot_mode=False)
-
-    
+        ensemble_predict_all('/work/sr365/MM_ensemble/models/','/work/sr365/forward_filter/' + model +'/meta_material/', plot_mode=False)
