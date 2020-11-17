@@ -35,7 +35,7 @@ class Network(object):
                 self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
             else:
                 self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
-        self.model = self.create_model()
+        self.model_cINN, self.model_NA = self.create_mode()
         # self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
         # self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
@@ -46,17 +46,15 @@ class Network(object):
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
 
-    def create_model(self):
+    def create_model_cINN(self):
         """
         Function to create the network module from provided model fn and flags
         :return: the created nn module
         """
-        # encoder = Encoder(self.flags)
-        # decoder = Decoder(self.flags)
-        # spec_enc = SpectraEncoder(self.flags)
-        model = self.model_fn(self.flags)
-        print(model)
-        return model
+        model_cINN, model_NA = self.model_fn(self.flags)
+        print(model_cINN)
+        print(model_NA)
+        return model_cINN, model_NA
 
 
     def MMD(self, x, y):
@@ -86,7 +84,7 @@ class Network(object):
 
         return torch.mean(XX + YY - 2. * XY)
 
-    def make_loss(self, z):
+    def make_loss_cINN(self, z):
         """
         Create a tensor that represents the loss. This is consistant both at training time \
         and inference time for Backward model
@@ -98,6 +96,32 @@ class Network(object):
         neg_log_likeli = 0.5 * zz - jac
         return torch.mean(neg_log_likeli), torch.mean(jac), torch.mean(zz)                      # The MSE Loss
 
+    def make_loss_NA(self, logit=None, labels=None, G=None):
+        """
+        Create a tensor that represents the loss. This is consistant both at training time \
+        and inference time for Backward model
+        :param logit: The output of the network
+        :param labels: The ground truth labels
+        :return: the total loss
+        """
+        if logit is None:
+            return None
+        # if self.flags.data_set != 'gaussian_mixture':
+        MSE_loss = nn.functional.mse_loss(logit, labels)  # The MSE Loss
+        BDY_loss = 0
+        if G is not None:
+            if self.flags.data_set != 'ballistics':  # For non-ballisitcs dataset
+                X_range, X_lower_bound, X_upper_bound = self.get_boundary_lower_bound_uper_bound()
+                X_mean = (X_lower_bound + X_upper_bound) / 2  # Get the mean
+            else:  # For ballistics dataset
+                X_mean = [0, 1.5, 0.787, 1]
+                X_range = [2, 1.5, 1.256, 1]
+            relu = torch.nn.ReLU()
+            BDY_loss_all = 1 * relu(torch.abs(G - self.build_tensor(X_mean)) - 0.5 * self.build_tensor(X_range))
+            BDY_loss = torch.mean(BDY_loss_all)
+        self.MSE_loss = MSE_loss
+        self.Boundary_loss = BDY_loss
+        return torch.add(MSE_loss, BDY_loss)
 
     def make_optimizer(self):
         """
@@ -124,28 +148,46 @@ class Network(object):
         return lr_scheduler.ReduceLROnPlateau(optimizer=optm, mode='min',
                                               factor=self.flags.lr_decay_rate,
                                               patience=20, verbose=True, threshold=1e-4)
-
-    def save(self):
+    def save_NA(self):
         """
         Saving the model to the current check point folder with name best_model_forward.pt
         :return: None
         """
-        # torch.save(self.model.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
-        torch.save(self.model, os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
+        # torch.save(self.model_NA.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
+        torch.save(self.model_NA, os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
 
-    def load(self):
+    def load_NA(self):
+        """
+        Loading the model_NA from the check point folder with name best_model_forward.pt
+        :return:
+        """
+        # self.model_NA.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
+        if torch.cuda.is_available():
+            self.model_NA = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'))
+        else:
+            self.model_NA = torch.load(os.path.join(self.ckpt_dir, 'best_model_forward.pt'), map_location=torch.device('cpu'))
+
+    def save_cINN(self):
+        """
+        Saving the model to the current check point folder with name best_model_forward.pt
+        :return: None
+        """
+        # torch.save(self.model_cINN.state_dict, os.path.join(self.ckpt_dir, 'best_model_state_dict.pt'))
+        torch.save(self.model_cINN, os.path.join(self.ckpt_dir, 'best_model_cINN.pt'))
+
+    def load_cINN(self):
         """
         Loading the model from the check point folder with name best_model_forward.pt
         :return:
         """
-        # self.model.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
+        # self.model_cINN.load_state_dict(torch.load(os.path.join(self.ckpt_dir, 'best_model_state_dict.pt')))
         if torch.cuda.is_available():
-            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'))
+            self.model_cINN = torch.load(os.path.join(self.ckpt_dir, 'best_model_cINN.pt'))
         else:
-            self.model = torch.load(os.path.join(self.ckpt_dir, 'best_model_INN.pt'), map_location = torch.device('cpu'))
+            self.model_cINN = torch.load(os.path.join(self.ckpt_dir, 'best_model_cINN.pt'), map_location = torch.device('cpu'))
 
 
-    def train(self):
+    def train_cINN(self):
         """
         The major training function. This would start the training using information given in the flags
         :return: None
@@ -153,9 +195,9 @@ class Network(object):
         print("Starting training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
-            self.model.cuda()
+            self.model_cINN.cuda()
 
-        # Construct optimizer after the model moved to GPU
+        # Construct optimizer after the model_cINN moved to GPU
         self.optm = self.make_optimizer()
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
 
@@ -169,8 +211,8 @@ class Network(object):
         for epoch in range(self.flags.train_step):
             # Set to Training Mode
             train_loss = 0
-            self.model.train()
-            # If MMD on x-space is present from the start, the model can get stuck.
+            self.model_cINN.train()
+            # If MMD on x-space is present from the start, the model_cINN can get stuck.
             # Instead, ramp it up exponetially.
             loss_factor = min(1., 2. * 0.002 ** (1. - (float(epoch) / self.flags.train_step)))
 
@@ -186,14 +228,14 @@ class Network(object):
                 # Forward step #
                 ################
                 self.optm.zero_grad()                                   # Zero the gradient first
-                z = self.model(x, y)                                    # Get the zpred
+                z = self.model_cINN(x, y)                                    # Get the zpred
                 loss, jac, zz = self.make_loss(z)                                # Make the z loss
                 loss.backward()
 
                 ######################
                 #  Gradient Clipping #
                 ######################
-                for parameter in self.model.parameters():
+                for parameter in self.model_cINN.parameters():
                     parameter.grad.data.clamp_(-self.flags.grad_clamp, self.flags.grad_clamp)
 
                 #########################
@@ -213,8 +255,8 @@ class Network(object):
                 self.log.add_scalar('Loss/train_zz', zz, epoch)
 
                 # Set to Evaluation Mode
-                self.model.eval()
-                print("Doing Evaluation on the model now")
+                self.model_cINN.eval()
+                print("Doing Evaluation on the model_cINN now")
 
                 test_loss = 0
                 for j, (x, y) in enumerate(self.test_loader):  # Loop through the eval set
@@ -231,7 +273,7 @@ class Network(object):
                     # Forward step #
                     ################
                     self.optm.zero_grad()  # Zero the gradient first
-                    z = self.model(x, y)  # Get the zpred
+                    z = self.model_cINN(x, y)  # Get the zpred
                     loss, jac, zz = self.make_loss(z)  # Make the z loss
 
                     test_loss += loss                                 # Aggregate the loss
@@ -246,11 +288,11 @@ class Network(object):
                 print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
                       % (epoch, train_avg_loss, test_avg_loss ))
 
-                # Model improving, save the model down
+                # Model improving, save the model_cINN down
                 if test_avg_loss < self.best_validation_loss:
                     self.best_validation_loss = train_avg_loss
-                    self.save()
-                    print("Saving the model down...")
+                    self.save_cINN()
+                    print("Saving the model_cINN down...")
 
                     if self.best_validation_loss < self.flags.stop_threshold:
                         print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
@@ -260,6 +302,86 @@ class Network(object):
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         tk.record(1)                # Record the total time of the training peroid
+
+    def train_NA(self):
+        """
+        The major training function. This would start the training using information given in the flags
+        :return: None
+        """
+        cuda = True if torch.cuda.is_available() else False
+        if cuda:
+            self.model_NA.cuda()
+
+        # Construct optimizer after the model_NA moved to GPU
+        self.optm = self.make_optimizer()
+        self.lr_scheduler = self.make_lr_scheduler(self.optm)
+
+        # Time keeping
+        tk = time_keeper(time_keeping_file=os.path.join(self.ckpt_dir, 'training time.txt'))
+
+        for epoch in range(self.flags.train_step):
+            # Set to Training Mode
+            train_loss = 0
+            # boundary_loss = 0                 # Unnecessary during training since we provide geometries
+            self.model_NA.train()
+            for j, (geometry, spectra) in enumerate(self.train_loader):
+                if cuda:
+                    geometry = geometry.cuda()                          # Put data onto GPU
+                    spectra = spectra.cuda()                            # Put data onto GPU
+                self.optm.zero_grad()                               # Zero the gradient first
+                logit = self.model_NA(geometry)                        # Get the output
+                loss = self.make_loss(logit, spectra)               # Get the loss tensor
+                loss.backward()                                     # Calculate the backward gradients
+                self.optm.step()                                    # Move one step the optimizer
+                train_loss += loss                                  # Aggregate the loss
+                # boundary_loss += self.Boundary_loss                 # Aggregate the BDY loss
+
+            # Calculate the avg loss of training
+            train_avg_loss = train_loss.cpu().data.numpy() / (j + 1)
+            # boundary_avg_loss = boundary_loss.cpu().data.numpy() / (j + 1)
+
+            if epoch % self.flags.eval_step:                      # For eval steps, do the evaluations and tensor board
+                # Record the training loss to the tensorboard
+                self.log.add_scalar('Loss/train', train_avg_loss, epoch)
+                # self.log.add_scalar('Loss/BDY_train', boundary_avg_loss, epoch)
+
+                # Set to Evaluation Mode
+                self.model_NA.eval()
+                print("Doing Evaluation on the model_NA now")
+                test_loss = 0
+                for j, (geometry, spectra) in enumerate(self.test_loader):  # Loop through the eval set
+                    if cuda:
+                        geometry = geometry.cuda()
+                        spectra = spectra.cuda()
+                    logit = self.model_NA(geometry)
+                    loss = self.make_loss(logit, spectra)                   # compute the loss
+                    test_loss += loss                                       # Aggregate the loss
+
+                # Record the testing loss to the tensorboard
+                test_avg_loss = test_loss.cpu().data.numpy() / (j+1)
+                self.log.add_scalar('Loss/test', test_avg_loss, epoch)
+
+                print("This is Epoch %d, training loss %.5f, validation loss %.5f" \
+                      % (epoch, train_avg_loss, test_avg_loss ))
+                # Plotting the first spectra prediction for validation
+                # f = self.compare_spectra(Ypred=logit[0,:].cpu().data.numpy(), Ytruth=spectra[0,:].cpu().data.numpy())
+                # self.log.add_figure(tag='spectra compare',figure=f,global_step=epoch)
+
+                # Model improving, save the model_NA down
+                if test_avg_loss < self.best_validation_loss:
+                    self.best_validation_loss = test_avg_loss
+                    self.save_NA()
+                    print("Saving the model_NA down...")
+
+                    if self.best_validation_loss < self.flags.stop_threshold:
+                        print("Training finished EARLIER at epoch %d, reaching loss of %.5f" %\
+                              (epoch, self.best_validation_loss))
+                        break
+
+            # Learning rate decay upon plateau
+            self.lr_scheduler.step(train_avg_loss)
+        self.log.close()
+        tk.record(1)                    # Record at the end of the training
 
     def evaluate(self, save_dir='data/', prefix=''):
         self.load()                             # load the model as constructed

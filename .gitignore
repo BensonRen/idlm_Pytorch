@@ -17,4 +17,5 @@ dataIn
 */data
 **__pycache__**
 EDAL_work/
-.idea/
+.idea
+**.iml
