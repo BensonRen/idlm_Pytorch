@@ -906,5 +906,6 @@ if __name__ == '__main__':
     datasets = ['meta_material', 'robotic_arm','sine_wave','ballistics']
     for dataset in datasets:
         #DrawAggregateMeanAvgnMSEPlot('/work/sr365/forward_filter', dataset)
-        DrawAggregateMeanAvgnMSEPlot('/work/sr365/NIPS_previous_submitted_multi_eval/multi_eval', dataset)
+        #DrawAggregateMeanAvgnMSEPlot('/work/sr365/NIPS_previous_submitted_multi_eval/multi_eval', dataset)
+        DrawAggregateMeanAvgnMSEPlot('/work/sr365/NIPS_multi_eval_backup/multi_eval/compare', dataset)
     #data_dir, data_name, save_name='aggregate_plot', gif_flag=False): # Depth=2 now based on current directory structure

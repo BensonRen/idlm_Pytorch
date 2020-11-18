@@ -35,7 +35,7 @@ class Network(object):
                 self.ckpt_dir = os.path.join(ckpt_dir, time.strftime('%Y%m%d_%H%M%S', time.localtime()))
             else:
                 self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
-        self.model_cINN, self.model_NA = self.create_mode()
+        self.model_cINN, self.model_NA = self.create_model()
         # self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
         # self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
@@ -46,7 +46,7 @@ class Network(object):
         self.log = SummaryWriter(self.ckpt_dir)     # Create a summary writer for keeping the summary to the tensor board
         self.best_validation_loss = float('inf')    # Set the BVL to large number
 
-    def create_model_cINN(self):
+    def create_model(self):
         """
         Function to create the network module from provided model fn and flags
         :return: the created nn module
@@ -92,7 +92,7 @@ class Network(object):
         :return: the total loss
         """
         zz = torch.sum(z**2, dim=1)
-        jac = self.model.log_jacobian(run_forward=False)                # get the log jacobian
+        jac = self.model_cINN.log_jacobian(run_forward=False)                # get the log jacobian
         neg_log_likeli = 0.5 * zz - jac
         return torch.mean(neg_log_likeli), torch.mean(jac), torch.mean(zz)                      # The MSE Loss
 
@@ -123,18 +123,22 @@ class Network(object):
         self.Boundary_loss = BDY_loss
         return torch.add(MSE_loss, BDY_loss)
 
-    def make_optimizer(self):
+    def make_optimizer(self, part='cINN'):
         """
         Make the corresponding optimizer from the flags. Only below optimizers are allowed. Welcome to add more
         :return:
         """
+        if part == 'cINN':
+            model = self.model_cINN
+        elif part == 'NA':
+            model = self.model_NA
         # parameters = [self.encoder.parameters(), self.decoder.parameters(), self.spec_enc.parameters()]
         if self.flags.optim == 'Adam':
-            op = torch.optim.Adam(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.Adam(model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'RMSprop':
-            op = torch.optim.RMSprop(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.RMSprop(model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         elif self.flags.optim == 'SGD':
-            op = torch.optim.SGD(self.model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
+            op = torch.optim.SGD(model.parameters(), lr=self.flags.lr, weight_decay=self.flags.reg_scale)
         else:
             raise Exception("Your Optimizer is neither Adam, RMSprop or SGD, please change in param or contact Ben")
         return op
@@ -198,7 +202,7 @@ class Network(object):
             self.model_cINN.cuda()
 
         # Construct optimizer after the model_cINN moved to GPU
-        self.optm = self.make_optimizer()
+        self.optm = self.make_optimizer(part='cINN')
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
 
         dim_x = self.flags.dim_x
@@ -229,10 +233,10 @@ class Network(object):
                 ################
                 self.optm.zero_grad()                                   # Zero the gradient first
                 z = self.model_cINN(x, y)                                    # Get the zpred
-                loss, jac, zz = self.make_loss(z)                                # Make the z loss
+                loss, jac, zz = self.make_loss_cINN(z)                                # Make the z loss
                 loss.backward()
 
-                ######################
+                ######################_
                 #  Gradient Clipping #
                 ######################
                 for parameter in self.model_cINN.parameters():
@@ -274,7 +278,7 @@ class Network(object):
                     ################
                     self.optm.zero_grad()  # Zero the gradient first
                     z = self.model_cINN(x, y)  # Get the zpred
-                    loss, jac, zz = self.make_loss(z)  # Make the z loss
+                    loss, jac, zz = self.make_loss_cINN(z)  # Make the z loss
 
                     test_loss += loss                                 # Aggregate the loss
 
@@ -313,7 +317,7 @@ class Network(object):
             self.model_NA.cuda()
 
         # Construct optimizer after the model_NA moved to GPU
-        self.optm = self.make_optimizer()
+        self.optm = self.make_optimizer(part='NA')
         self.lr_scheduler = self.make_lr_scheduler(self.optm)
 
         # Time keeping
@@ -330,7 +334,7 @@ class Network(object):
                     spectra = spectra.cuda()                            # Put data onto GPU
                 self.optm.zero_grad()                               # Zero the gradient first
                 logit = self.model_NA(geometry)                        # Get the output
-                loss = self.make_loss(logit, spectra)               # Get the loss tensor
+                loss = self.make_loss_NA(logit, spectra)               # Get the loss tensor
                 loss.backward()                                     # Calculate the backward gradients
                 self.optm.step()                                    # Move one step the optimizer
                 train_loss += loss                                  # Aggregate the loss
@@ -354,7 +358,7 @@ class Network(object):
                         geometry = geometry.cuda()
                         spectra = spectra.cuda()
                     logit = self.model_NA(geometry)
-                    loss = self.make_loss(logit, spectra)                   # compute the loss
+                    loss = self.make_loss_NA(logit, spectra)                   # compute the loss
                     test_loss += loss                                       # Aggregate the loss
 
                 # Record the testing loss to the tensorboard
