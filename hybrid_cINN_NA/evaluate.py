@@ -32,6 +32,8 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, test_r
         print("after removing prefix models/, now model_dir is:", model_dir)
     flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
+    flags.batch_size = 1
+    flags.backprop_step=30
 
     if test_ratio is None:
         flags.test_ratio = get_test_ratio_helper(flags)
@@ -39,7 +41,6 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, test_r
         # To make the test ratio swipe with respect to inference time
         # also making the batch size large enough
         flags.test_ratio = test_ratio
-        flags.batch_size = 2000
     # Get the data
     train_loader, test_loader = data_reader.read_data(flags, eval_data_all=eval_data_all)
     print("Making network now")
@@ -48,7 +49,9 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, test_r
     ntwk = Network(make_cINN_and_NA, flags, train_loader, test_loader, inference_mode=True, saved_model=flags.eval_model)
     #print(model_dir)
     print("number of trainable parameters is :")
-    pytorch_total_params = sum(p.numel() for p in ntwk.model.parameters() if p.requires_grad)
+    pytorch_total_params = sum(p.numel() for p in ntwk.model_cINN.parameters() if p.requires_grad)
+    print(pytorch_total_params)
+    pytorch_total_params = sum(p.numel() for p in ntwk.model_NA.parameters() if p.requires_grad)
     print(pytorch_total_params)
     # Evaluation process
     print("Start eval now:")
@@ -90,10 +93,9 @@ if __name__ == '__main__':
 
     print(useless_flags.eval_model)
     # Call the evaluate function from model
-    #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=True)
+    evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=False)
     #for i in range(10,1000,10):
     #test_ratio = float(1/10000*200)
-    #evaluate_from_model(useless_flags.eval_model, multi_flag=True, eval_data_all=False, test_ratio=test_ratio)
-    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
+    #evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_all("models/MM")
 

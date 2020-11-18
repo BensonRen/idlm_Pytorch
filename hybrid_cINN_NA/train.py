@@ -31,8 +31,9 @@ def training_from_flag(flags):
     ntwk = Network(make_cINN_and_NA, flags, train_loader, test_loader)
 
     # Training process
-    print("Start training now...")
+    print("Start training cINN now...")
     ntwk.train_cINN()
+    print("Start training NA now..")
     ntwk.train_NA()
 
     # Do the house keeping, write the parameters and put into folder, also use pickle to save the flags obejct

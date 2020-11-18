@@ -42,10 +42,9 @@ def read_flag():
     parser.add_argument('--y-range', type=list, default=Y_RANGE, help='columns of output parameters')
     parser.add_argument('--grad-clamp', default=GRAD_CLAMP, type=float, help='gradient is clamped within [-15, 15]')
     parser.add_argument('--batch-size', default=BATCH_SIZE, type=int, help='batch size (100)')
-    parser.add_argument('--eval-batch-size', default=EVAL_BATCH_SIZE, type=int, help='The Batch size for back propagation')
-    parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps between evaluations')
     parser.add_argument('--train-step', default=TRAIN_STEP, type=int, help='# steps to train on the dataSet')
     parser.add_argument('--verb-step', default=VERB_STEP, type=int, help='# steps to print and check best performance')
+    parser.add_argument('--eval-step', default=EVAL_STEP, type=int, help='# steps to print and check best performance in evaluation')
     parser.add_argument('--lr', default=LEARN_RATE, type=float, help='learning rate')
     parser.add_argument('--lr-decay-rate', default=LR_DECAY_RATE, type=float,
                         help='decay learn rate by multiplying this factor')

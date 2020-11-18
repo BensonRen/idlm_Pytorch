@@ -21,7 +21,8 @@ def get_test_ratio_helper(flags):
         #return 0.039                        # 500 in total
     elif flags.data_set == 'sine_wave':
         #return 0.0125                        # 100 in total
-        return 0.025                          # 200 in total
+        #return 0.025                          # 200 in total
+        return 0.00625                          # 50 in total
         #return 0.0625                        # 500 in total
     elif flags.data_set == 'robotic_arm':
         #return 0.05                          # 500 in total

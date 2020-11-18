@@ -27,8 +27,8 @@ LINEAR = [2, 500, 5000, 5000, 500, 1]                      # Linear units for sp
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
-EVAL_BATCH_SIZE = 2048
-BACKPROP_STEP = 300
+EVAL_BATCH_SIZE = 1
+BACKPROP_STEP = 30
 
 # Loss ratio
 LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
@@ -57,7 +57,7 @@ X_RANGE = [i for i in range(2, 10 )]
 #Y_RANGE = [i for i in range(10 , 2011 )]                       # Real Meta-material dataset range
 Y_RANGE = [i for i in range(10 , 310 )]                         # Artificial Meta-material dataset
 FORCE_RUN = True
-MODEL_NAME  = None
+MODEL_NAME  = 'sine_wave'
 # MODEL_NAME  = 'dim_z_2 + wBN + 100 + lr1e-3 + reg5e-3'
 DATA_DIR = '../'                                               # All simulated simple dataset
 #DATA_DIR = '/work/sr365/'                                      # real Meta-material dataset
@@ -68,8 +68,8 @@ NORMALIZE_INPUT = True
 # Running specific params
 USE_CPU_ONLY = False
 #EVAL_MODEL = "ballistics_Ben_version"
-EVAL_MODEL = "meta_material"
-#EVAL_MODEL = "sine_wave"
+#EVAL_MODEL = "meta_material"
+EVAL_MODEL = "sine_wave"
 #EVAL_MODEL = "ballistics_Jakob_version"
 #EVAL_MODEL = "robotic_armcouple_layer_num6trail_0"
 #EVAL_MODEL = "retrain_time_evalsine_wavecouple_layer_num10trail_0"

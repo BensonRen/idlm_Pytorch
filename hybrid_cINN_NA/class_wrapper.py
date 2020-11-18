@@ -37,7 +37,6 @@ class Network(object):
                 self.ckpt_dir = os.path.join(ckpt_dir, flags.model_name)
         self.model_cINN, self.model_NA = self.create_model()
         # self.encoder, self.decoder, self.spec_enc = self.create_model()     # The model itself
-        # self.loss = self.make_loss()                            # The loss function
         self.optm = None                                        # The optimizer: Initialized at train() due to GPU
         self.optm_eval = None                                   # The eval_optimizer: Initialized at eva() due to GPU
         self.lr_scheduler = None                                # The lr scheduler: Initialized at train() due to GPU
@@ -215,6 +214,7 @@ class Network(object):
         The major training function. This would start the training using information given in the flags
         :return: None
         """
+        self.best_validation_loss = float('inf')    # Set the BVL to large number
         print("Starting training now")
         cuda = True if torch.cuda.is_available() else False
         if cuda:
@@ -331,6 +331,7 @@ class Network(object):
         The major training function. This would start the training using information given in the flags
         :return: None
         """
+        self.best_validation_loss = float('inf')    # Set the BVL to large number
         cuda = True if torch.cuda.is_available() else False
         if cuda:
             self.model_NA.cuda()
@@ -401,6 +402,7 @@ class Network(object):
                               (epoch, self.best_validation_loss))
                         break
 
+                
             # Learning rate decay upon plateau
             self.lr_scheduler.step(train_avg_loss)
         self.log.close()
@@ -483,15 +485,15 @@ class Network(object):
         for i in range(self.flags.backprop_step):
             self.optm_eval.zero_grad()  # Zero the gradient first
             x = self.model_cINN(z, target_spectra_expand, rev=True)
-            logit = self.model(x)  # Get the output
+            logit = self.model_NA(x)  # Get the output
             ###################################################
             # Boundar loss controled here: with Boundary Loss #
             ###################################################
-            loss = self.make_loss(logit, target_spectra_expand, G=x)  # Get the loss
+            loss = self.make_loss_NA(logit, target_spectra_expand, G=x)  # Get the loss
             ##################################################
             # Boundar loss controled here: NO  Boundary Loss #
             ##################################################
-            # loss = self.make_loss(logit, target_spectra_expand)         # Get the loss
+            # loss = self.make_loss_NA(logit, target_spectra_expand)         # Get the loss
             loss.backward()
             # update weights and learning rate scheduler
             if i != self.flags.backprop_step - 1:
@@ -545,6 +547,22 @@ class Network(object):
         best_estimate_index = np.argmin(MSE_list)
         Xpred_best = np.reshape(np.copy(x.cpu().data.numpy()[best_estimate_index, :]), [1, -1])
         return Xpred_best, MSE_list
+
+    def get_boundary_lower_bound_uper_bound(self):
+        if self.flags.data_set == 'sine_wave': 
+            return np.array([2, 2]), np.array([-1, -1]), np.array([1, 1])
+        elif self.flags.data_set == 'meta_material':
+            return np.array([2.272,2.272,2.272,2.272,2,2,2,2]), np.array([-1,-1,-1,-1,-1,-1,-1,-1]), np.array([1.272,1.272,1.272,1.272,1,1,1,1])
+        elif self.flags.data_set == 'ballistics':
+            return np.array([1, 1, 1, 1]), np.array([0, 0, 0, 0]), None
+        elif self.flags.data_set == 'robotic_arm':
+            #return np.array([1.0, 2.0, 2.0, 2.0]), np.array([-0.5, -1, -1, -1]), np.array([0.5, 1, 1, 1])
+            return np.array([1.2, 2.4, 2.4, 2.4]), np.array([-0.6, -1.2, -1.2, -1.2]), np.array([0.6, 1.2, 1.2, 1.2])
+        else:
+            sys.exit("In Backprop, during initialization from uniform to dataset distrib: Your data_set entry is not correct, check again!")
+
+    def build_tensor(self, nparray, requires_grad=False):
+        return torch.tensor(nparray, requires_grad=requires_grad, device='cuda', dtype=torch.float)
 
     #def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/cINN/'):
     def evaluate_multiple_time(self, time=2048, save_dir='/work/sr365/forward_filter/cINN/'):
