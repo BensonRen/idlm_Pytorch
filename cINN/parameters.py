@@ -27,6 +27,8 @@ LINEAR = [2, 500, 5000, 5000, 500, 1]                      # Linear units for sp
 CONV_OUT_CHANNEL = []
 CONV_KERNEL_SIZE = []
 CONV_STRIDE = []
+EVAL_BATCH_SIZE = 2048
+BACKPROP_STEP = 300
 
 # Loss ratio
 LAMBDA_MSE = 3.             # The Loss factor of the MSE loss (reconstruction loss)
