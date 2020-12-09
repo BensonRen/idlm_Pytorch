@@ -33,7 +33,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, test_r
     flags = helper_functions.load_flags(os.path.join("models", model_dir))
     flags.eval_model = model_dir                    # Reset the eval mode
     flags.batch_size = 1
-    flags.backprop_step=50
+    flags.backprop_step=300
     flags.eval_batch_size=2048
 
     if test_ratio is None:
@@ -57,7 +57,7 @@ def evaluate_from_model(model_dir, multi_flag=False, eval_data_all=False, test_r
     # Evaluation process
     print("Start eval now:")
     if multi_flag:
-        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/NIPS_multi_eval_backup/multi_eval/compare/hybrid_cINN_NA_no_BDY_50bp/'+flags.data_set, save_all=True)
+        pred_file, truth_file = ntwk.evaluate(save_dir='/work/sr365/NIPS_multi_eval_backup/multi_eval/hybrid_cINN_NA_0bp/'+flags.data_set, save_all=True)
     else:
         pred_file, truth_file = ntwk.evaluate()
 
@@ -81,7 +81,7 @@ def evaluate_different_dataset(multi_flag, eval_data_all):
      """
      This function is to evaluate all different datasets in the model with one function call
      """
-     data_set_list = ["robotic_arm","ballistics","sine_wave"]
+     data_set_list = ["robotic_arm","sine_wave","ballistics","meta_material"]
      for eval_model in data_set_list:
         useless_flags = flag_reader.read_flag()
         useless_flags.eval_model = eval_model
@@ -98,6 +98,6 @@ if __name__ == '__main__':
     #evaluate_from_model(useless_flags.eval_model, multi_flag=False, eval_data_all=False)
     #for i in range(10,1000,10):
     #test_ratio = float(1/10000*200)
-    evaluate_different_dataset(multi_flag=True, eval_data_all=False)
+    evaluate_different_dataset(multi_flag=False, eval_data_all=False)
     #evaluate_all("models/")
 

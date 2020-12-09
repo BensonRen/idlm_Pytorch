@@ -46,7 +46,7 @@ def retrain_different_dataset(ind=None):
      This function is to evaluate all different datasets in the model with one function call
      """
      from utils.helper_functions import load_flags
-     data_set_list = ['sine_wave']
+     data_set_list = ['ballistics']
      #data_set_list = ['meta_material']
      for eval_model in data_set_list:
         flags = load_flags(os.path.join("models", eval_model))

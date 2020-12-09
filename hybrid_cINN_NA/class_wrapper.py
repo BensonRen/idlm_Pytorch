@@ -474,7 +474,7 @@ class Network(object):
         :return:
         """
         # Create a noisy z vector with noise level same as y
-        z = torch.randn(self.flags.eval_batch_size, self.flags.dim_z, device=device)
+        z = torch.randn(self.flags.eval_batch_size, self.flags.dim_z, device=device, requires_grad=True)
         # Set up the learning schedule and optimizer
         self.optm_eval = self.make_optimizer_eval(z)
         self.lr_scheduler = self.make_lr_scheduler(self.optm_eval)
@@ -489,12 +489,14 @@ class Network(object):
             ###################################################
             # Boundar loss controled here: with Boundary Loss #
             ###################################################
-            loss = self.make_loss_NA(logit, target_spectra_expand, G=x)  # Get the loss
+            #loss = self.make_loss_NA(logit, target_spectra_expand, G=x)  # Get the loss
             ##################################################
             # Boundar loss controled here: NO  Boundary Loss #
             ##################################################
-            # loss = self.make_loss_NA(logit, target_spectra_expand)         # Get the loss
+            loss = self.make_loss_NA(logit, target_spectra_expand)         # Get the loss
             loss.backward()
+            print('This is epoch {} of point {}, the loss is {}'.format(i, ind, loss.cpu().data.numpy()))
+            #print('gradient = {}'.format(z.grad))
             # update weights and learning rate scheduler
             if i != self.flags.backprop_step - 1:
                 self.optm_eval.step()  # Move one step the optimizer
@@ -563,17 +565,4 @@ class Network(object):
 
     def build_tensor(self, nparray, requires_grad=False):
         return torch.tensor(nparray, requires_grad=requires_grad, device='cuda', dtype=torch.float)
-
-    #def evaluate_multiple_time(self, time=200, save_dir='/work/sr365/multi_eval/cINN/'):
-    def evaluate_multiple_time(self, time=2048, save_dir='/work/sr365/forward_filter/cINN/'):
-        """
-        Make evaluation multiple time for deeper comparison for stochastic algorithms
-        :param save_dir: The directory to save the result
-        :return:
-        """
-        save_dir += self.flags.data_set
-        tk = time_keeper(os.path.join(save_dir, 'evaluation_time.txt'))
-        for i in range(time):
-            self.evaluate(save_dir=save_dir, prefix='inference' + str(i))
-            tk.record(i)
 
